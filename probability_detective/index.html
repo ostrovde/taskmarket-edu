@@ -1,0 +1,2895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<meta name="description" content="Probability Detective — a self-contained, offline interactive lesson about probability for learners around age 12. Fair coins, biased coins, dice sums and fair-game design. No accounts, no tracking, no gambling.">
+<title>Probability Detective — Case Files in Chance</title>
+<style>
+/* ============================================================
+   Probability Detective — all styles inline, no external assets
+   Palette (dark "detective board"). Contrast checked for WCAG AA.
+   Tokens:
+     --bg        #0b1220  background
+     --surface   #141d31  cards / panels
+     --surface-2 #1d2942  raised surface, table header
+     --line      #41527a  borders (decorative)
+     --line-2    #6b7ea8  borders of interactive controls (3:1 vs surface)
+     --text      #f1f5fd  body text      (~15:1 on --surface)
+     --muted     #c3cfe6  secondary text (~11:1 on --surface)
+     --accent    #5ad2f0  brand accent   (9.5:1 on --bg; used with dark text on buttons)
+     --accent-ink#06202b  text on accent (11.6:1)
+     --note      #ffd166  observed data / highlights
+     --ok        #86efac  success text   (11:1)
+     --warn      #fca5a5  "needs another look" text (8.6:1)
+     --info      #7dd3fc  information text (9.4:1)
+   ============================================================ */
+:root{
+  --bg:#0b1220; --surface:#141d31; --surface-2:#1d2942;
+  --line:#41527a; --line-2:#6b7ea8;
+  --text:#f1f5fd; --muted:#c3cfe6;
+  --accent:#5ad2f0; --accent-ink:#06202b;
+  --note:#ffd166; --ok:#86efac; --warn:#fca5a5; --info:#7dd3fc;
+  --radius:14px; --radius-sm:10px;
+  --step-1:8px; --step-2:16px; --step-3:24px; --step-4:32px;
+  --shadow:0 6px 20px rgba(3,8,20,.45);
+  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --scale:1;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text); font-family:var(--font);
+  font-size:calc(16px * var(--scale)); line-height:1.6; letter-spacing:.005em;
+}
+body.large-type{--scale:1.15}
+h1,h2,h3,h4{line-height:1.25; margin:0 0 var(--step-2)}
+h1{font-size:1.6rem; letter-spacing:.01em}
+h2{font-size:1.35rem}
+h3{font-size:1.12rem}
+h4{font-size:1rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+p{margin:0 0 var(--step-2); max-width:70ch}
+a{color:var(--accent)}
+a:hover{color:#a9e8f8}
+ul,ol{margin:0 0 var(--step-2); padding-left:1.25em}
+li{margin:0 0 .4em}
+code,kbd{font-family:var(--mono); font-size:.9em}
+code{background:#0a1324; border:1px solid var(--line); border-radius:6px; padding:.05em .35em}
+kbd{background:var(--surface-2); border:1px solid var(--line-2); border-bottom-width:2px; border-radius:6px; padding:.05em .4em}
+hr{border:0; border-top:1px solid var(--line); margin:var(--step-3) 0}
+
+/* ---------- skip link & focus ---------- */
+/* Kept off-screen with a transform, never with a large negative `left`:
+   an element parked at left:-9999px adds ~10,000px to the document scroll
+   width, which would break the "no horizontal scrolling" requirement. */
+.skip-link{position:absolute; left:0; top:0; z-index:100; background:var(--accent); color:var(--accent-ink); padding:12px 18px; border-radius:0 0 var(--radius-sm) 0; font-weight:700; transform:translateY(-140%)}
+.skip-link:focus{transform:translateY(0)}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:4px}
+svg:focus{outline:3px solid var(--accent); outline-offset:2px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1200px; margin:0 auto; padding:var(--step-3) var(--step-2) 56px}
+header.masthead{border-bottom:1px solid var(--line); background:linear-gradient(180deg,#101a2e,#0b1220)}
+.masthead .inner{max-width:1200px; margin:0 auto; padding:var(--step-2)}
+.brand{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.brand .badge{
+  width:44px;height:44px;flex:0 0 44px;border-radius:12px;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;font-weight:800;font-size:1.1rem;letter-spacing:.02em
+}
+.brand .name{font-weight:800; font-size:1.15rem}
+.brand .name span{display:block; font-weight:500; font-size:.82rem; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+.progress-wrap{margin-top:var(--step-2)}
+.progress-row{display:flex; justify-content:space-between; gap:12px; font-size:.88rem; color:var(--muted)}
+.bar{height:12px; background:#0a1324; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:6px}
+.bar>i{display:block; height:100%; background:var(--accent); width:0}
+.bar>i.done{background:var(--ok)}
+nav.tabs{display:flex; overflow-x:auto; padding:12px var(--step-2); border-bottom:1px solid var(--line); background:#0e1626; position:sticky; top:0; z-index:20; scrollbar-width:thin; min-width:0}
+nav.tabs .tab-inner{display:flex; gap:8px; max-width:1200px; width:100%; min-width:0}
+button.tab{
+  flex:0 0 auto; min-height:48px; padding:10px 16px; border-radius:999px; cursor:pointer;
+  background:var(--surface); color:var(--text); border:1px solid var(--line-2); font:inherit; font-weight:600
+}
+button.tab:hover{background:var(--surface-2)}
+button.tab[aria-selected="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+button.tab .tick{font-weight:800}
+
+/* ---------- cards ---------- */
+section.panel{display:none}
+section.panel.active{display:block; animation:fade .18s ease-out}
+@keyframes fade{from{opacity:.4}to{opacity:1}}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:var(--step-3); margin:0 0 var(--step-3); box-shadow:var(--shadow)}
+.card.tight{padding:var(--step-2)}
+.card>h2:first-child,.card>h3:first-child{margin-top:0}
+.grid2{display:grid; grid-template-columns:1fr; gap:var(--step-3)}
+.grid3{display:grid; grid-template-columns:1fr; gap:var(--step-2)}
+/* Grid and flex children default to min-width:auto, which refuses to shrink
+   below their content. Without this line a wide row (a points stepper, a data
+   table, a long <code> sample) pushes the whole page wider than a 360px screen. */
+.grid2>*,.grid3>*{min-width:0}
+@media (min-width:760px){
+  .grid2{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+}
+.lead{font-size:1.06rem; color:var(--text)}
+.small{font-size:.9rem}
+.muted{color:var(--muted)}
+.tag{display:inline-block; font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-ink); background:var(--accent); padding:3px 10px; border-radius:999px}
+
+/* ---------- controls ---------- */
+button, input, select{font:inherit; color:inherit}
+.btn{
+  min-height:48px; padding:11px 18px; border-radius:12px; cursor:pointer; font-weight:700;
+  background:var(--surface-2); color:var(--text); border:1px solid var(--line-2);
+  transition:background-color .15s ease, transform .1s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; text-align:center
+}
+.btn:hover{background:#26355a}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{background:#8ee2f7}
+.btn.ghost{background:transparent}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.55; cursor:not-allowed}
+.btn.small{min-height:44px; padding:8px 12px; font-size:.92rem}
+.btn.wide{width:100%}
+.btn-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 var(--step-2)}
+fieldset{border:1px solid var(--line); border-radius:var(--radius-sm); padding:var(--step-2); margin:0 0 var(--step-2)}
+legend{padding:0 8px; font-weight:700; color:var(--muted); font-size:.95rem}
+label{display:block; font-weight:600; margin:0 0 4px}
+input[type="text"],input[type="number"],select{
+  min-height:48px; width:100%; max-width:260px; padding:9px 12px; border-radius:10px;
+  background:#0a1324; border:1px solid var(--line-2); color:var(--text)
+}
+input[type="range"]{width:100%; max-width:280px; accent-color:var(--accent); min-height:44px}
+input[type="checkbox"],input[type="radio"]{width:22px;height:22px; accent-color:var(--accent); vertical-align:middle; margin:0 6px 0 0}
+.radio{
+  display:flex; align-items:center; gap:10px; min-height:48px; padding:6px 10px; border:1px solid var(--line);
+  border-radius:10px; background:#101a2e; cursor:pointer; font-weight:600
+}
+.radio:hover{background:var(--surface-2)}
+.radio input{flex:0 0 22px}
+.radio-stack{display:grid; gap:8px; margin:0 0 var(--step-2)}
+.pill-btn{
+  min-height:44px; padding:8px 14px; border-radius:999px; cursor:pointer; font-weight:700;
+  background:var(--surface-2); border:1px solid var(--line-2); color:var(--text)
+}
+.pill-btn:hover{background:#26355a}
+.hint{font-size:.9rem; color:var(--muted); margin:6px 0 0}
+
+/* ---------- feedback ---------- */
+.feedback{border-radius:var(--radius-sm); padding:14px 16px; margin:var(--step-2) 0; border:1px solid var(--line-2); background:#101a2e}
+.feedback .fb-head{font-weight:800; display:flex; gap:10px; align-items:center; margin-bottom:6px}
+.feedback .fb-icon{font-family:var(--mono); font-weight:700; font-size:1rem; flex:0 0 auto}
+.feedback p:last-child{margin-bottom:0}
+.feedback.ok{border-left:6px solid var(--ok)} .feedback.ok .fb-head{color:var(--ok)}
+.feedback.warn{border-left:6px solid var(--warn)} .feedback.warn .fb-head{color:var(--warn)}
+.feedback.info{border-left:6px solid var(--info)} .feedback.info .fb-head{color:var(--info)}
+.feedback.calc{border-left:6px solid var(--note)} .feedback.calc .fb-head{color:var(--note)}
+.calc-line{font-family:var(--mono); font-size:.95rem; background:#0a1324; border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin:8px 0; overflow-x:auto}
+
+/* ---------- tables ---------- */
+.table-wrap{overflow-x:auto; max-width:100%; border:1px solid var(--line); border-radius:var(--radius-sm); background:#0a1324}
+table{border-collapse:collapse; width:100%; min-width:520px}
+caption{caption-side:top; text-align:left; padding:10px 12px; font-weight:700; color:var(--muted)}
+th,td{padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top}
+thead th{background:var(--surface-2); position:sticky; top:0; font-size:.9rem; letter-spacing:.02em}
+tbody tr:nth-child(even){background:#0d1729}
+td.num,th.num{font-family:var(--mono); text-align:right; font-variant-numeric:tabular-nums}
+tr.total-row{background:#17233c !important; font-weight:700}
+tr.hl-top{background:#1b3320 !important}
+tr.hl-bot{background:#3a2020 !important}
+.obs-mark{color:var(--note); font-weight:700}
+.chip{display:inline-flex; align-items:center; gap:6px; font-size:.85rem; border:1px solid var(--line-2); border-radius:999px; padding:2px 10px; margin:0 6px 6px 0; background:#101a2e; font-family:var(--mono)}
+.chip.obs{border-color:var(--note); color:var(--note)}
+
+/* ---------- charts ---------- */
+.chart-block{margin:var(--step-2) 0}
+.chart-head{display:flex; justify-content:space-between; gap:12px; align-items:baseline; flex-wrap:wrap; margin-bottom:8px}
+.chart-head h3{margin:0}
+canvas{display:block; width:100%; height:260px; background:#0d1729; border:1px solid var(--line); border-radius:var(--radius-sm)}
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin:8px 0 0; font-size:.9rem}
+.legend .key{display:inline-flex; align-items:center; gap:8px}
+.legend .swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--line-2); display:inline-block}
+.legend .swatch.theory{background:var(--accent)}
+.legend .swatch.obs{background:var(--note)}
+.legend .swatch.line{background:transparent; border-top:3px solid var(--warn); border-left:0;border-right:0;border-bottom:0;height:0;width:22px;border-radius:0}
+.chart-fallback{font-family:var(--mono); white-space:pre; overflow-x:auto; background:#0a1324; border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px; font-size:.85rem}
+
+/* ---------- dice grid ---------- */
+.dgrid{display:grid; grid-template-columns:auto repeat(6,minmax(40px,1fr)); gap:4px; max-width:640px; margin:0 0 var(--step-2)}
+.dgrid .hdr{display:grid; place-items:center; font-weight:700; color:var(--muted); font-size:.9rem; min-height:28px}
+.dgrid .cell{
+  min-height:44px; min-width:40px; display:grid; place-items:center; font-family:var(--mono); font-weight:700;
+  background:#101a2e; border:1px solid var(--line); border-radius:8px; color:var(--text); cursor:pointer; padding:0
+}
+.dgrid .cell:hover{background:var(--surface-2)}
+.dgrid .cell[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.dgrid .cell.freq-1{box-shadow:inset 0 -6px 0 0 #35507f}
+.dgrid .cell.freq-2{box-shadow:inset 0 -6px 0 0 #4b6fb0}
+.dgrid .cell.freq-3{box-shadow:inset 0 -6px 0 0 #7a63c9}
+.dgrid .cell.freq-4{box-shadow:inset 0 -6px 0 0 #b06a9a}
+.dgrid .cell.freq-5{box-shadow:inset 0 -6px 0 0 #d98a5a}
+.dgrid .cell.freq-6{box-shadow:inset 0 -6px 0 0 #ffd166}
+.dgrid .cell[aria-pressed="true"].freq-1,.dgrid .cell[aria-pressed="true"].freq-2,
+.dgrid .cell[aria-pressed="true"].freq-3,.dgrid .cell[aria-pressed="true"].freq-4,
+.dgrid .cell[aria-pressed="true"].freq-5,.dgrid .cell[aria-pressed="true"].freq-6{box-shadow:inset 0 -6px 0 0 #06202b}
+
+/* ---------- steppers ---------- */
+.stepper{display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0}
+.stepper>span:first-child{flex:1 1 auto; min-width:0}
+.stepper .btn{min-width:52px; font-family:var(--mono); font-size:1.15rem; padding:8px 10px}
+.stepper .val{min-width:66px; text-align:center; font-family:var(--mono); font-size:1.3rem; font-weight:800; font-variant-numeric:tabular-nums}
+.side-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+.side-head .dot{width:14px;height:14px;border-radius:4px;display:inline-block}
+.dot.you{background:var(--accent)} .dot.rival{background:var(--warn)}
+
+/* ---------- evidence ---------- */
+.evidence{border:1px dashed var(--line-2); border-radius:var(--radius-sm); padding:var(--step-2); background:#101a2e; margin-top:var(--step-2)}
+.evidence pre{white-space:pre-wrap; word-break:break-word; font-family:var(--mono); font-size:.85rem; margin:0}
+.evidence .ev-text{max-height:420px; overflow:auto}
+
+/* ---------- misc ---------- */
+.visually-hidden{position:absolute!important; width:1px;height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+details{border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; background:#101a2e; margin:0 0 var(--step-2)}
+details+details{margin-top:-8px}
+summary{cursor:pointer; font-weight:700; min-height:44px; display:flex; align-items:center}
+summary::marker{color:var(--accent)}
+.status-line{display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:.9rem; color:var(--muted)}
+.kbd-note{font-size:.85rem; color:var(--muted)}
+footer.site{border-top:1px solid var(--line); margin-top:var(--step-4); padding-top:var(--step-2); font-size:.9rem; color:var(--muted)}
+.nowrap{white-space:nowrap}
+.lab-flag{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-2); border-radius:10px; padding:10px 12px; background:#101a2e; margin-bottom:var(--step-2)}
+.lab-flag .mark{font-family:var(--mono); font-weight:800}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important; scroll-behavior:auto!important}
+}
+@media (max-width:520px){
+  .wrap{padding:var(--step-2) 12px 48px}
+  .card{padding:18px 14px}
+  h1{font-size:1.35rem}
+  canvas{height:220px}
+  table{min-width:460px}
+  .stepper{gap:6px}
+  .stepper .val{min-width:56px; font-size:1.2rem}
+  .calc-line{font-size:.86rem}
+  nav.tabs{padding:10px 12px}
+  .dgrid{grid-template-columns:auto repeat(6,minmax(34px,1fr))}
+  .dgrid .cell{min-width:34px; min-height:40px; font-size:.85rem}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to the main content</a>
+
+<header class="masthead">
+  <div class="inner">
+    <div class="brand">
+      <div class="badge" aria-hidden="true">PD</div>
+      <div class="name">Probability Detective<span>Case files in chance &middot; ages ~12</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <span id="progressLabel">Progress: 0 of 3 case files closed</span>
+        <span>Saved in this browser only</span>
+      </div>
+      <div class="bar" role="progressbar" id="progressBar" aria-labelledby="progressLabel" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-valuetext="0 of 3 case files closed"><i id="progressFill"></i></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Lesson sections">
+  <div class="tab-inner" role="tablist" aria-label="Lesson sections">
+    <button class="tab" id="tab-home" role="tab" aria-selected="true" aria-controls="panel-home" tabindex="0" data-view="home">Start here</button>
+    <button class="tab" id="tab-coin" role="tab" aria-selected="false" aria-controls="panel-coin" tabindex="-1" data-view="coin">1 &middot; Coin Lab <span class="tick" data-tick-coin></span></button>
+    <button class="tab" id="tab-dice" role="tab" aria-selected="false" aria-controls="panel-dice" tabindex="-1" data-view="dice">2 &middot; Dice Lab <span class="tick" data-tick-dice></span></button>
+    <button class="tab" id="tab-game" role="tab" aria-selected="false" aria-controls="panel-game" tabindex="-1" data-view="game">3 &middot; Fair Game <span class="tick" data-tick-game></span></button>
+    <button class="tab" id="tab-workshop" role="tab" aria-selected="false" aria-controls="panel-workshop" tabindex="-1" data-view="workshop">Final challenge</button>
+    <button class="tab" id="tab-wrapup" role="tab" aria-selected="false" aria-controls="panel-wrapup" tabindex="-1" data-view="wrapup">Case closed</button>
+  </div>
+</nav>
+
+<div class="visually-hidden" role="status" aria-live="polite" id="live"></div>
+
+<main id="main" class="wrap" tabindex="-1">
+
+  <!-- ============ HOME ============ -->
+  <section class="panel active" id="panel-home" role="tabpanel" aria-labelledby="tab-home" tabindex="-1">
+    <div class="card">
+      <span class="tag">Your briefing</span>
+      <h1 style="margin-top:12px">Detective, we have three cases about chance</h1>
+      <p class="lead">People say things like &ldquo;this coin is hot, heads must be next&rdquo; or &ldquo;a 7 is lucky&rdquo;. Your job is to check those claims with experiments — not with feelings. You will predict first, then collect real data, then explain what the data actually shows.</p>
+      <p><strong>Time:</strong> about 10&ndash;15 minutes. <strong>You need:</strong> nothing but this page. No account, no name, no email, no money, no betting — and nothing you type leaves this device.</p>
+      <div class="btn-row">
+        <button class="btn primary" data-testid="startBtn" id="startBtn">Start the investigation</button>
+        <button class="btn ghost" data-jump="wrapup">Skip to the rules of the game</button>
+      </div>
+      <p class="hint" id="homeResume" hidden></p>
+    </div>
+
+    <div class="grid3">
+      <div class="card tight">
+        <h2 style="font-size:1.05rem">Case 1 &middot; Coin Lab</h2>
+        <p class="small">Predict how often a coin lands heads, then run 10, 100 and 1,000 flips. Includes a clearly labelled <em>biased</em> coin whose chance you control.</p>
+        <button class="btn small" data-jump="coin">Open Case 1</button>
+      </div>
+      <div class="card tight">
+        <h2 style="font-size:1.05rem">Case 2 &middot; Dice Lab</h2>
+        <p class="small">Roll one die, then compare the <em>sums</em> of two dice. Find out why some sums show up far more often than others.</p>
+        <button class="btn small" data-jump="dice">Open Case 2</button>
+      </div>
+      <div class="card tight">
+        <h2 style="font-size:1.05rem">Case 3 &middot; Fair Game</h2>
+        <p class="small">Build a points game with exact rules, calculate the expected advantage, simulate it — and then design a brand-new fair game of your own.</p>
+        <button class="btn small" data-jump="game">Open Case 3</button>
+      </div>
+    </div>
+
+    <div class="card" id="objectives">
+      <h2>What you will be able to do afterwards</h2>
+      <ul>
+        <li>Tell the difference between <strong>theoretical probability</strong> (what the maths says) and <strong>observed frequency</strong> (what actually happened in your run).</li>
+        <li>Explain why a small sample can look wildly different from the theory, using your own numbers.</li>
+        <li>Compare experiments at 10, 100 and 1,000 trials and describe what changes.</li>
+        <li>Explain what makes a simple game <strong>fair</strong> — using probabilities and expected points, not luck.</li>
+      </ul>
+      <details>
+        <summary>How to drive this page (keyboard, sound, motion)</summary>
+        <ul class="small">
+          <li>Everything works with a keyboard: <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> to move, <kbd>Enter</kbd> or <kbd>Space</kbd> to press a button, arrow keys to move between the section tabs and inside the dice grid.</li>
+          <li>The section tabs are also in the address bar as <code>#coin</code>, <code>#dice</code>, <code>#game</code>, so the browser Back button works.</li>
+          <li>There is a <strong>Bigger text</strong> button in the &ldquo;Case closed&rdquo; section. The page also follows your system settings for reduced motion.</li>
+          <li>No sound is required and none plays by itself. Results are shown with words, numbers and tables — never by colour alone.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Is this about gambling?</summary>
+        <p class="small">No. There is no betting, no money, no points you can buy, no prizes and nothing to win or lose outside the experiment. Points in Case 3 are counters on a page, used only to compare two mathematical expectations. If someone ever tells you a betting system can beat chance, the arithmetic in Case 3 is exactly how you check it.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ COIN ============ -->
+  <section class="panel" id="panel-coin" role="tabpanel" aria-labelledby="tab-coin" tabindex="-1">
+    <div class="card">
+      <span class="tag">Case 1</span>
+      <h1 style="margin-top:12px">The Coin Laboratory</h1>
+      <p class="lead">A <strong>fair</strong> coin has probability 1/2 of landing heads. A <strong>biased</strong> coin has a different, known probability — here you set it yourself, and the machine flips exactly that coin. Your results are produced by a documented pattern-following generator, so an identical setup always gives an identical result.</p>
+      <div class="lab-flag">
+        <span class="mark" aria-hidden="true">&#9633;</span>
+        <p class="small" style="margin:0"><strong>Detective habit:</strong> write down what you expect <em>before</em> you press a button. A prediction you can revise is worth more than a guess you hide. Nothing here is scored, timed or ranked.</p>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="card" data-testid="coinPredict" id="coinPredictCard">
+      <h2>Step 1 &middot; Make a prediction</h2>
+      <fieldset id="coinPredictFieldset">
+        <legend>Which face will come up more often?</legend>
+        <div class="radio-stack" role="radiogroup" aria-labelledby="coinPredictLegend">
+          <label class="radio"><input type="radio" name="coinPredict" value="heads" id="predictHeads"><span>Heads more often</span></label>
+          <label class="radio"><input type="radio" name="coinPredict" value="tails" id="predictTails"><span>Tails more often</span></label>
+        </div>
+      </fieldset>
+      <div class="btn-row">
+        <button class="btn primary" id="coinPredictSubmit" data-testid="coinPredictSubmit">Save my prediction and open the lab</button>
+        <button class="btn ghost" id="coinPredictSkip" data-testid="coinPredictSkip">Skip — just show me the lab</button>
+      </div>
+      <div class="feedback info" id="coinPredictFeedback" data-testid="coinPredictFeedback" hidden>
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">&#9432;</span><span>Prediction status</span></div>
+        <p id="coinPredictFeedbackText"></p>
+        <p class="hint">You can change or cancel this at any time. Changing your mind after seeing data is a normal part of science.</p>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="card" data-testid="coinLab" id="coinLabCard">
+      <h2>Step 2 &middot; Run the experiments</h2>
+
+      <fieldset>
+        <legend>Which coin is in the machine?</legend>
+        <div class="btn-row" role="group" aria-label="Preset coins">
+          <button class="btn small" data-bias="0.5" aria-pressed="true">Fair coin &mdash; P(heads) = 0.50</button>
+          <button class="btn small" data-bias="0.75" aria-pressed="false">Biased coin &mdash; P(heads) = 0.75</button>
+          <button class="btn small" data-bias="0.25" aria-pressed="false">Biased coin &mdash; P(heads) = 0.25</button>
+          <button class="btn small" data-bias="1" aria-pressed="false">Extreme coin &mdash; P(heads) = 1.00</button>
+          <button class="btn small" data-bias="0" aria-pressed="false">Extreme coin &mdash; P(heads) = 0.00</button>
+        </div>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap">
+          <label for="biasRange" class="nowrap">P(heads) = <output id="biasOut" class="obs-mark">0.50</output></label>
+          <input type="range" id="biasRange" min="0" max="1" step="0.05" value="0.5" aria-describedby="biasHelp">
+          <input type="number" id="biasNumber" min="0" max="1" step="0.05" value="0.5" aria-label="Exact probability of heads, 0 to 1" style="max-width:110px">
+        </div>
+        <p class="hint" id="biasHelp">The coin is labelled with its probability. A real biased coin would not tell you — here the label is what makes the arithmetic checkable. 0.00 means it can never land heads; 1.00 means it always does.</p>
+        <p style="margin:10px 0 0"><span class="chip obs">Coins in machine: <span id="coinName" class="obs-mark">Fair coin, P(heads) = 0.50</span></span></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Random seed (this is what makes a run repeatable)</legend>
+        <div class="btn-row">
+          <label for="seedInput" class="nowrap">Seed</label>
+          <input type="text" id="seedInput" data-testid="seedInput" value="detective-1" spellcheck="false" autocomplete="off" aria-describedby="seedHelp" style="max-width:220px">
+          <button class="btn small" id="seedApply">Use this seed</button>
+          <button class="btn small ghost" id="seedRandom">Pick a random seed</button>
+        </div>
+        <p class="hint" id="seedHelp">Every random number below comes from this seed. Same seed + same coin + same trial sizes = exactly the same numbers, on any computer. Change the seed and you get a different, equally valid run. Current seed: <code id="seedCurrent">detective-1</code></p>
+      </fieldset>
+
+      <div class="btn-row" style="gap:14px">
+        <span class="small muted">Add flips to the experiment:</span>
+        <button class="btn primary" data-trials="10" data-testid="coinTrials10">+ 10 flips</button>
+        <button class="btn primary" data-trials="100" data-testid="coinTrials100">+ 100 flips</button>
+        <button class="btn primary" data-trials="1000" data-testid="coinTrials1000">+ 1,000 flips</button>
+        <button class="btn ghost" id="coinReset" data-testid="coinReset">Reset the coin lab</button>
+      </div>
+      <p class="hint">Each press <em>adds</em> to the same experiment, so you can watch the running result grow. Press &ldquo;Reset the coin lab&rdquo; for a fresh start (your seed stays the same, so you can compare a fresh 10 with the old 10).</p>
+
+      <div class="status-line" style="margin:var(--step-2) 0">
+        <span class="chip">Flips so far: <strong id="coinTotal">0</strong></span>
+        <span class="chip obs">Heads: <strong id="coinHeads">0</strong></span>
+        <span class="chip">Tails: <strong id="coinTails">0</strong></span>
+        <span class="chip" id="coinLastBlock">No run yet</span>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="card" data-testid="coinResults" id="coinResultsCard">
+      <h2>Step 3 &middot; Read the evidence</h2>
+
+      <div class="table-wrap">
+        <table id="coinTable">
+          <caption>What actually happened in this experiment (cumulative)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Flips in experiment</th>
+              <th scope="col" class="num">Heads</th>
+              <th scope="col" class="num">Tails</th>
+              <th scope="col" class="num">Observed proportion of heads</th>
+              <th scope="col" class="num">Theoretical probability</th>
+              <th scope="col" class="num">Observed &minus; theory</th>
+            </tr>
+          </thead>
+          <tbody id="coinTableBody">
+            <tr><td colspan="6" class="muted">No flips yet. Press &ldquo;+ 10 flips&rdquo; above and this table fills itself with real numbers.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">The table and the chart below always come from the same numbers — the chart just draws the last column of the table.</p>
+
+      <div class="chart-block">
+        <div class="chart-head">
+          <h3>Observed proportion of heads vs. the theoretical value</h3>
+          <button class="btn small ghost" data-table-toggle="coinChartTable">Show the same values as a table</button>
+        </div>
+        <canvas id="coinChart" data-testid="coinChart" role="img" aria-label="Bar chart of the observed proportion of heads at each sample size of this experiment. The full numbers are in the table below."></canvas>
+        <div class="legend">
+          <span class="key"><span class="swatch obs" aria-hidden="true"></span>Observed proportion (your data)</span>
+          <span class="key"><span class="swatch theory" aria-hidden="true"></span>Theoretical probability (the maths)</span>
+        </div>
+        <div id="coinChartTable" hidden style="margin-top:12px">
+          <div class="table-wrap">
+            <table>
+              <caption>Same values as the chart above</caption>
+              <thead><tr><th scope="col">Flips in experiment</th><th scope="col" class="num">Observed proportion of heads</th><th scope="col" class="num">Small-sample bar (10 steps)</th></tr></thead>
+              <tbody id="coinChartTableBody"><tr><td colspan="3" class="muted">Run some flips first.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="feedback calc" id="coinCompare" data-testid="coinCompare" hidden>
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">&#9312;</span><span>Comparing your prediction with the evidence</span></div>
+        <div id="coinCompareBody"></div>
+      </div>
+
+      <div class="feedback info" id="coinHint" data-testid="coinHint" hidden>
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">?</span><span>Stuck? One hint</span></div>
+        <p id="coinHintText"></p>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost small" id="coinHintBtn">Give me a hint</button>
+        <button class="btn ghost small" id="coinChangePrediction">Change my prediction</button>
+      </div>
+
+      <div class="card tight" style="background:#0d1729; border-style:dashed">
+        <h3>Two ideas behind everything above</h3>
+        <p><strong>Theoretical probability</strong> is a property of the coin: for a fair coin it is exactly 0.5. It does not change because of what happened in the last few flips. After ten heads in a row, the chance of heads on the next flip is still 0.5 — the coin does not remember, and it does not owe you a tails.</p>
+        <p><strong>Observed frequency</strong> is what your run produced: heads divided by flips. With 10 flips it can easily be 0.7 or 0.3. With 1,000 flips it usually sits closer to the theoretical value — but that is a tendency, not a promise. A longer run can be further from 0.5 than a shorter one. What bigger samples do is make <em>large</em> misses much rarer.</p>
+        <p style="margin-bottom:0">Because the flips are independent, the running proportion is not &ldquo;due&rdquo; to correct itself. If it drifts back toward 0.5, that is the growing pile of ordinary flips diluting the early lucky streak — not the coin paying a debt.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DICE ============ -->
+  <section class="panel" id="panel-dice" role="tabpanel" aria-labelledby="tab-dice" tabindex="-1">
+    <div class="card">
+      <span class="tag">Case 2</span>
+      <h1 style="margin-top:12px">The Dice Investigation</h1>
+      <p class="lead">A fair six-sided die has six outcomes, and if the die is fair they are equally likely: each face has probability 1/6 &asymp; 0.167. Now the interesting part — what happens when you add <strong>two</strong> dice together? Before you scroll down, guess: are all the sums from 2 to 12 equally likely?</p>
+      <p class="hint">Write your guess down. You will be able to test it right here in a few seconds, and being wrong now costs nothing at all.</p>
+    </div>
+
+    <div class="card">
+      <h2>Choose what to investigate</h2>
+      <div class="btn-row" role="tablist" aria-label="Dice investigations">
+        <button class="btn" id="tab-die1" role="tab" aria-selected="true" aria-controls="dieTab1" tabindex="0" data-dietab="one">One die</button>
+        <button class="btn" id="tab-die2" role="tab" aria-selected="false" aria-controls="dieTab2" tabindex="-1" data-dietab="sum">Sum of two dice</button>
+        <button class="btn" id="tab-die3" role="tab" aria-selected="false" aria-controls="dieTab3" tabindex="-1" data-dietab="why">Why some sums win</button>
+      </div>
+      <p class="hint">All three tabs use the same seed and the same generator as the Coin Lab. Results below come only from rolls that really happened.</p>
+    </div>
+
+    <div class="card" id="dieTab1" role="tabpanel" aria-labelledby="tab-die1" tabindex="-1" data-testid="diceLab">
+      <h2>One die &mdash; do the six faces behave equally?</h2>
+      <fieldset>
+        <legend>Roll the die</legend>
+        <div class="btn-row">
+          <button class="btn primary" data-rolls="10" data-testid="dieRoll10">+ 10 rolls</button>
+          <button class="btn primary" data-rolls="100" data-testid="dieRoll100">+ 100 rolls</button>
+          <button class="btn primary" data-rolls="1000" data-testid="dieRoll1000">+ 1,000 rolls</button>
+          <button class="btn ghost" id="dieReset" data-testid="dieReset">Reset the dice lab</button>
+        </div>
+        <p class="hint">Rolls are added to the same table, so you can compare a short run with a long one.</p>
+        <div class="status-line">
+          <span class="chip">Rolls so far: <strong id="dieTotal">0</strong></span>
+          <span class="chip" id="dieLastBlock">No rolls yet</span>
+        </div>
+      </fieldset>
+
+      <div class="chart-block">
+        <div class="chart-head">
+          <h3>How often each face came up</h3>
+          <button class="btn small ghost" data-table-toggle="dieChartTable">Show the same values as a table</button>
+        </div>
+        <canvas id="dieChart" role="img" aria-label="Bar chart comparing the observed number of rolls for each face of the die with the expected number. The full numbers are in the table below."></canvas>
+        <div class="legend">
+          <span class="key"><span class="swatch obs" aria-hidden="true"></span>Observed count</span>
+          <span class="key"><span class="swatch theory" aria-hidden="true"></span>Expected count (rolls &divide; 6)</span>
+        </div>
+        <div id="dieChartTable" hidden style="margin-top:12px">
+          <div class="table-wrap">
+            <table>
+              <caption>Same values as the chart above</caption>
+              <thead><tr><th scope="col">Face</th><th scope="col" class="num">Observed count</th><th scope="col" class="num">Observed proportion</th><th scope="col" class="num">Expected count</th><th scope="col" class="num">Bar (10 steps)</th></tr></thead>
+              <tbody id="dieChartTableBody"><tr><td colspan="5" class="muted">Roll some dice first.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="dieTable">
+          <caption>Full record for a fair six-sided die</caption>
+          <thead><tr><th scope="col">Face</th><th scope="col" class="num">Observed count</th><th scope="col" class="num">Observed proportion</th><th scope="col" class="num">Theoretical probability</th><th scope="col" class="num">Difference</th></tr></thead>
+          <tbody id="dieTableBody"><tr><td colspan="5" class="muted">No rolls yet.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="hint">Every face is inside the permitted range 1&ndash;6 by construction — the generator picks one of exactly six values, so you will never see a 0 or a 7.</p>
+    </div>
+
+    <div class="card" id="dieTab2" role="tabpanel" aria-labelledby="tab-die2" tabindex="-1" hidden>
+      <h2>Sum of two dice &mdash; the surprise</h2>
+      <p>Now roll two dice and add them. The possible sums run from 2 to 12 — eleven different answers. A common first guess is that eleven answers means eleven equal chances. Let us check that with real rolls.</p>
+      <fieldset>
+        <legend>Roll two dice and add them</legend>
+        <div class="btn-row">
+          <button class="btn primary" data-sums="10" data-testid="sumRoll10">+ 10 rolls</button>
+          <button class="btn primary" data-sums="100" data-testid="sumRoll100">+ 100 rolls</button>
+          <button class="btn primary" data-sums="1000" data-testid="sumRoll1000">+ 1,000 rolls</button>
+          <button class="btn ghost" id="sumReset" data-testid="sumReset">Reset the dice lab</button>
+        </div>
+        <div class="status-line">
+          <span class="chip">Rolls so far: <strong id="sumTotal">0</strong></span>
+          <span class="chip" id="sumLastBlock">No rolls yet</span>
+        </div>
+      </fieldset>
+
+      <div class="chart-block">
+        <div class="chart-head">
+          <h3>How often each sum came up</h3>
+          <button class="btn small ghost" data-table-toggle="sumChartTable">Show the same values as a table</button>
+        </div>
+        <canvas id="sumChart" data-testid="sumChart" role="img" aria-label="Grouped bar chart of the observed number of times each sum from 2 to 12 appeared, next to the number of ways that sum can be made with two dice. The full numbers are in the table below."></canvas>
+        <div class="legend">
+          <span class="key"><span class="swatch obs" aria-hidden="true"></span>Observed count in this experiment</span>
+          <span class="key"><span class="swatch theory" aria-hidden="true"></span>Ways to make the sum (out of 36)</span>
+        </div>
+        <div id="sumChartTable" hidden style="margin-top:12px">
+          <div class="table-wrap">
+            <table>
+              <caption>Same values as the chart above</caption>
+              <thead><tr><th scope="col">Sum</th><th scope="col" class="num">Observed count</th><th scope="col" class="num">Observed proportion</th><th scope="col" class="num">Ways out of 36</th><th scope="col" class="num">Theoretical probability</th></tr></thead>
+              <tbody id="sumChartTableBody"><tr><td colspan="5" class="muted">Roll some dice first.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="sumTable">
+          <caption>The full record, plus the exact arithmetic</caption>
+          <thead><tr><th scope="col">Sum</th><th scope="col" class="num">Observed count</th><th scope="col" class="num">Observed proportion</th><th scope="col" class="num">Ways to make it</th><th scope="col" class="num">Theoretical probability</th></tr></thead>
+          <tbody id="sumTableBody"><tr><td colspan="5" class="muted">No rolls yet.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="feedback calc" id="sumVerdict" data-testid="sumVerdict">
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">=</span><span>Are the sums equally likely? Here is the arithmetic</span></div>
+        <p>A sum is not one outcome — it is a whole family of outcomes. Two fair dice have 6 &times; 6 = 36 equally likely pairs, and different sums are made by different numbers of pairs:</p>
+        <div class="calc-line">ways(7) = 6 of 36 &rarr; 6 &divide; 36 = 0.1667<br>ways(2) = 1 of 36 &rarr; 1 &divide; 36 = 0.0278</div>
+        <p>Six ways against one way: a 7 is <strong>six times</strong> as likely as a 2. So the eleven sums are <em>not</em> equally likely, even though the dice themselves are perfectly fair. Fairness of the parts does not mean fairness of the totals.</p>
+        <p style="margin-bottom:0">The count of ways for every sum is in the table above, and you can see all 36 pairs in the next tab.</p>
+      </div>
+    </div>
+
+    <div class="card" id="dieTab3" role="tabpanel" aria-labelledby="tab-die3" tabindex="-1" hidden data-testid="diceWhy">
+      <h2>Why some sums win &mdash; all 36 pairs</h2>
+      <p>A 6&times;6 grid holds every possible pair of dice. Below, the number shown in each cell is the <strong>sum</strong> of that pair, and the stripe along the bottom of a cell shows how common that sum is overall. Choose a sum to highlight its cells; count them and you have the numerator of its probability.</p>
+      <div class="btn-row" role="group" aria-label="Highlight a sum">
+        <button class="pill-btn" data-sum="2">2</button>
+        <button class="pill-btn" data-sum="3">3</button>
+        <button class="pill-btn" data-sum="4">4</button>
+        <button class="pill-btn" data-sum="5">5</button>
+        <button class="pill-btn" data-sum="6">6</button>
+        <button class="pill-btn" data-sum="7">7</button>
+        <button class="pill-btn" data-sum="8">8</button>
+        <button class="pill-btn" data-sum="9">9</button>
+        <button class="pill-btn" data-sum="10">10</button>
+        <button class="pill-btn" data-sum="11">11</button>
+        <button class="pill-btn" data-sum="12">12</button>
+        <button class="pill-btn" data-sum="0">Show all</button>
+      </div>
+      <div class="dgrid" id="diceGridHost" data-testid="diceGrid" role="group" aria-label="Grid of all 36 dice pairs, six rows by six columns. Arrow keys move between cells; Enter highlights the sum of the focused cell."></div>
+      <p id="diceGridStatus" data-testid="diceGridStatus" class="chip obs" style="display:inline-flex">Showing all 36 pairs.</p>
+      <div class="table-wrap" style="margin-top:var(--step-2)">
+        <table>
+          <caption>Sum &rarr; number of ways, counted from the grid</caption>
+          <thead><tr><th scope="col">Sum</th><th scope="col" class="num">Ways</th><th scope="col" class="num">Probability</th><th scope="col">Comment</th></tr></thead>
+          <tbody id="waysTableBody"></tbody>
+        </table>
+      </div>
+      <details>
+        <summary>Ways to use the grid with a keyboard</summary>
+        <p class="small">Press <kbd>Tab</kbd> until a cell is focused, then use the arrow keys to move around the 6&times;6 grid. Pressing <kbd>Enter</kbd> or <kbd>Space</kbd> on a cell highlights every cell with the same sum, and the message above the grid announces how many pairs make that sum. The same information is in the table underneath.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section class="panel" id="panel-game" role="tabpanel" aria-labelledby="tab-game" tabindex="-1">
+    <div class="card">
+      <span class="tag">Case 3</span>
+      <h1 style="margin-top:12px">The Fair-Game Designer</h1>
+      <p class="lead">Two players roll one die each turn. Each of them wins points only when <em>their own</em> condition comes up, and their conditions never overlap. Your job: work out whether the two sides get the same expected advantage per turn — and if not, fix it with arithmetic instead of hope.</p>
+      <div class="lab-flag">
+        <span class="mark" aria-hidden="true">&#9633;</span>
+        <p class="small" style="margin:0">Points here are counters on this page. They are not money, not tokens, not a score you can lose, and nothing is recorded about you. This is an arithmetic model of fairness, and it is the same arithmetic you would use to check a real claim about a game.</p>
+      </div>
+      <details open>
+        <summary>The rules, written out exactly</summary>
+        <ol class="small">
+          <li>One fair six-sided die is rolled once per turn. Each face (1&ndash;6) has probability 1/6.</li>
+          <li>Player <strong>You</strong> win your points if the roll matches your condition. The other player (<strong>Rival</strong>, just a name for the other side of the calculation) wins their points if the roll matches theirs.</li>
+          <li>Most rolls match nobody, and then nobody scores. A turn can also be a draw, but never a double win.</li>
+          <li>The die is fair and independent: the previous roll never changes the next one.</li>
+          <li>Expected points per turn for a side = (probability that their condition comes up) &times; (points they receive). That number is the average over a very long series of turns.</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="card" data-testid="gameBuilder">
+      <h2>Step 1 &middot; Set the rules</h2>
+      <div class="grid2">
+        <fieldset>
+          <legend>Your side</legend>
+          <div class="side-head"><span class="dot you" aria-hidden="true"></span><strong>You</strong></div>
+          <label for="youCond">You win when the roll is</label>
+          <select id="youCond" data-testid="youCond">
+            <option value="odd">an odd number (1, 3 or 5)</option>
+            <option value="even" selected>an even number (2, 4 or 6)</option>
+            <option value="low">1, 2 or 3</option>
+            <option value="high">4, 5 or 6</option>
+            <option value="match2">either of two chosen numbers</option>
+            <option value="matchOne">one exact number (6)</option>
+          </select>
+          <div id="youTargetWrap" hidden style="margin-top:12px">
+            <label for="youTarget">Your two numbers</label>
+            <select id="youTarget">
+              <option value="1,2">1 and 2</option>
+              <option value="1,3">1 and 3</option>
+              <option value="1,4">1 and 4</option>
+              <option value="1,5">1 and 5</option>
+              <option value="1,6">1 and 6</option>
+              <option value="2,3">2 and 3</option>
+              <option value="2,4">2 and 4</option>
+              <option value="2,5">2 and 5</option>
+              <option value="2,6">2 and 6</option>
+              <option value="3,4">3 and 4</option>
+              <option value="3,5">3 and 5</option>
+              <option value="3,6">3 and 6</option>
+              <option value="4,5">4 and 5</option>
+              <option value="4,6">4 and 6</option>
+              <option value="5,6">5 and 6</option>
+            </select>
+          </div>
+          <div class="stepper" style="margin-top:12px">
+            <span>Points you win:</span>
+            <button class="btn small" id="youMinus" aria-label="One point fewer for you">&minus;</button>
+            <span class="val" id="youPts" data-testid="youPts">2</span>
+            <button class="btn small" id="youPlus" aria-label="One point more for you">+</button>
+          </div>
+          <p class="hint" id="youProbLine" data-testid="youProbLine">Probability your condition comes up: 3/6 = 0.500</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>The other side</legend>
+          <div class="side-head"><span class="dot rival" aria-hidden="true"></span><strong>Rival</strong></div>
+          <label for="rivCond">Rival wins when the roll is</label>
+          <select id="rivCond" data-testid="rivCond">
+            <option value="odd" selected>an odd number (1, 3 or 5)</option>
+            <option value="even">an even number (2, 4 or 6)</option>
+            <option value="low">1, 2 or 3</option>
+            <option value="high">4, 5 or 6</option>
+            <option value="match2">either of two chosen numbers</option>
+            <option value="matchOne">one exact number (6)</option>
+          </select>
+          <div id="rivTargetWrap" hidden style="margin-top:12px">
+            <label for="rivTarget">Rival's two numbers</label>
+            <select id="rivTarget">
+              <option value="1,2">1 and 2</option>
+              <option value="1,3">1 and 3</option>
+              <option value="1,4">1 and 4</option>
+              <option value="1,5">1 and 5</option>
+              <option value="1,6">1 and 6</option>
+              <option value="2,3">2 and 3</option>
+              <option value="2,4">2 and 4</option>
+              <option value="2,5">2 and 5</option>
+              <option value="2,6">2 and 6</option>
+              <option value="3,4">3 and 4</option>
+              <option value="3,5">3 and 5</option>
+              <option value="3,6">3 and 6</option>
+              <option value="4,5">4 and 5</option>
+              <option value="4,6">4 and 6</option>
+              <option value="5,6">5 and 6</option>
+            </select>
+          </div>
+          <div class="stepper" style="margin-top:12px">
+            <span>Points Rival wins:</span>
+            <button class="btn small" id="rivMinus" aria-label="One point fewer for the rival">&minus;</button>
+            <span class="val" id="rivPts" data-testid="rivPts">2</span>
+            <button class="btn small" id="rivPlus" aria-label="One point more for the rival">+</button>
+          </div>
+          <p class="hint" id="rivProbLine" data-testid="rivProbLine">Probability Rival's condition comes up: 3/6 = 0.500</p>
+        </fieldset>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn ghost small" id="swapSides">Swap the two conditions</button>
+        <button class="btn ghost small" id="setFairter">Apply the value that makes the game exactly fair</button>
+        <button class="btn ghost small" id="perfectMatch">Example: only a 6 wins (1 in 6)</button>
+      </div>
+      <p class="hint">Rival's two numbers: pick the same two numbers for both sides and the conditions overlap — the app will tell you why that makes the calculation meaningless, and how to fix it. A roll can never count for both sides in this model.</p>
+    </div>
+
+    <div class="card" data-testid="gameMath">
+      <h2>Step 2 &middot; The exact arithmetic</h2>
+      <div class="table-wrap">
+        <table>
+          <caption>Fairness table — computed from the rules you set, not from simulation</caption>
+          <thead><tr><th scope="col">Side</th><th scope="col">Condition</th><th scope="col" class="num">Probability</th><th scope="col" class="num">Points per win</th><th scope="col" class="num">Expected points per turn</th></tr></thead>
+          <tbody id="fairTableBody"></tbody>
+        </table>
+      </div>
+      <div class="feedback calc" id="fairVerdict" data-testid="fairVerdict">
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">=</span><span>Verdict</span></div>
+        <div id="fairVerdictBody"><p>Set the rules above and the verdict appears here immediately.</p></div>
+      </div>
+      <details open>
+        <summary>Why expected points decide fairness</summary>
+        <p class="small">A single turn tells you almost nothing: on one roll the die either matches your condition or it does not. Fairness is a statement about the <em>long run</em>. If you play a very large number of turns, your average gain per turn settles around</p>
+        <div class="calc-line">expected points per turn = probability of your condition &times; points you win</div>
+        <p class="small">The game is fair between the two sides exactly when those two products are equal — the same expected points per turn for both. It is not about who has the bigger single win: winning 6 points with probability 1/6 has the same long-run value as winning 1 point with probability 1.</p>
+      </details>
+    </div>
+
+    <div class="card" data-testid="gameSim">
+      <h2>Step 3 &middot; Simulate it and check the arithmetic</h2>
+      <p>A simulation does not decide whether a game is fair — the products above do. What the simulation shows is how much a <em>short</em> series can wander away from that long-run value, and how the wander shrinks as the series gets longer.</p>
+      <div class="btn-row">
+        <button class="btn primary" data-gameturns="60" data-testid="gameRun60">Play 60 turns</button>
+        <button class="btn primary" data-gameturns="600" data-testid="gameRun600">Play 600 turns</button>
+        <button class="btn ghost" id="gameReset" data-testid="gameReset">Reset the simulation</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption>Turns actually played with the current rules</caption>
+          <thead><tr><th scope="col">Turns played</th><th scope="col" class="num">Your points</th><th scope="col" class="num">Rival points</th><th scope="col" class="num">Averages per turn (you / rival)</th><th scope="col" class="num">Gap in averages</th></tr></thead>
+          <tbody id="gameSimBody"><tr><td colspan="5" class="muted">No turns played yet. Set the rules, then press a button above.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="feedback info" id="gameSimNote" data-testid="gameSimNote" hidden>
+        <div class="fb-head"><span class="fb-icon" aria-hidden="true">&#8635;</span><span>What the simulation just showed</span></div>
+        <p id="gameSimNoteBody"></p>
+      </div>
+      <p class="hint">The whole simulation restarts if you change a rule, a condition or the points — the table always matches the rules currently on screen.</p>
+    </div>
+
+    <div class="card" data-testid="challenge">
+      <h2>Step 4 &middot; Your own fair game (final challenge)</h2>
+      <p>Everything so far is practice. Now design a game nobody has set up for you: choose the machine, choose the two conditions, and choose the points so that the two sides have <strong>exactly equal expected points per turn</strong>. Then run the evidence and check your own work.</p>
+      <div class="grid2">
+        <fieldset>
+          <legend>Your game</legend>
+          <label for="chalMachine">Random machine</label>
+          <select id="chalMachine" data-testid="chalMachine">
+            <option value="coin" selected>Coin &mdash; P(heads) = 0.50</option>
+            <option value="biased">Biased coin &mdash; P(heads) = 0.75</option>
+            <option value="die">Fair six-sided die</option>
+          </select>
+          <div style="margin-top:12px">
+            <label for="chalYouCond">You win when</label>
+            <select id="chalYouCond" data-testid="chalYouCond"></select>
+          </div>
+          <div style="margin-top:12px">
+            <label for="chalRivCond">Rival wins when</label>
+            <select id="chalRivCond" data-testid="chalRivCond"></select>
+          </div>
+          <div class="stepper" style="margin-top:12px">
+            <span>Points you win:</span>
+            <button class="btn small" id="chalYouMinus" aria-label="One point fewer for you">&minus;</button>
+            <span class="val" id="chalYouPts" data-testid="chalYouPts">2</span>
+            <button class="btn small" id="chalYouPlus" aria-label="One point more for you">+</button>
+          </div>
+          <div class="stepper" style="margin-top:10px">
+            <span>Points Rival wins:</span>
+            <button class="btn small" id="chalRivMinus" aria-label="One point fewer for the rival">&minus;</button>
+            <span class="val" id="chalRivPts" data-testid="chalRivPts">1</span>
+            <button class="btn small" id="chalRivPlus" aria-label="One point more for the rival">+</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Live check of your design</legend>
+          <div class="table-wrap">
+            <table>
+              <caption>Your game, in numbers</caption>
+              <thead><tr><th scope="col">Side</th><th scope="col" class="num">Probability</th><th scope="col" class="num">Points</th><th scope="col" class="num">Expected per turn</th></tr></thead>
+              <tbody id="chalTableBody"></tbody>
+            </table>
+          </div>
+          <div class="feedback calc" id="chalCheck" data-testid="chalCheck">
+            <div class="fb-head"><span class="fb-icon" aria-hidden="true">?</span><span>Fairness check</span></div>
+            <div id="chalCheckBody"><p>Choose a machine and two conditions to begin.</p></div>
+          </div>
+        </fieldset>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" data-chalturns="400" data-testid="chalRun">Run 400 turns of my game</button>
+        <button class="btn ghost" id="chalReset">Start my design over</button>
+      </div>
+      <div id="chalResult" data-testid="chalResult"></div>
+    </div>
+  </section>
+
+  <!-- ============ WORKSHOP ============ -->
+  <section class="panel" id="panel-workshop" role="tabpanel" aria-labelledby="tab-workshop" tabindex="-1">
+    <div class="card">
+      <h2>How to check any claim about chance</h2>
+      <p>You have just used the same four moves on three different machines. They work on any claim you will ever meet:</p>
+      <ol>
+        <li><strong>Name the machine and its probabilities.</strong> What are the possible outcomes, and what chance does each have? If you cannot state that, you cannot reason about it yet.</li>
+        <li><strong>Predict before you look.</strong> Writing it down first is what stops you from quietly moving the goalposts afterwards.</li>
+        <li><strong>Collect real data and compare.</strong> Small samples wobble a lot. A run of 10 tells you almost nothing; 1,000 tells you much more.</li>
+        <li><strong>Explain the gap with arithmetic, not with a story.</strong> &ldquo;The coin owes me&rdquo; is a story. &ldquo;6 of 36 pairs make a 7&rdquo; is arithmetic.</li>
+      </ol>
+      <details>
+        <summary>Ways to describe chance honestly (the language detectives use)</summary>
+        <ul class="small">
+          <li>&ldquo;It is <strong>possible</strong> but unlikely&rdquo; &mdash; describes a low-probability outcome; it does not say it cannot happen.</li>
+          <li>&ldquo;About 1 in 6&rdquo; &mdash; describes a long-run proportion, not a promise about the next six rolls.</li>
+          <li>&ldquo;The last five were red, so black is due&rdquo; &mdash; this is the <strong>gambler&rsquo;s fallacy</strong>. An independent machine does not balance its own history. What balances a proportion is the growing total, not a debt.</li>
+          <li>&ldquo;My sample was small&rdquo; &mdash; a real and complete explanation for a surprising result, not an excuse.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Three traps this page is designed to spring (harmlessly, on purpose)</summary>
+        <ul class="small">
+          <li><strong>Expecting balance in a small sample.</strong> Ten flips can give eight heads. Nothing is broken.</li>
+          <li><strong>Assuming equal outcomes mean equal totals.</strong> Two fair dice, but the sums are not equally likely, because bigger sums can be made in more ways.</li>
+          <li><strong>Comparing the biggest reward instead of the expected points.</strong> A rare five-point outcome can be worth less per turn than a common one-point outcome. Multiply the probability by the points and compare the products.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ WRAPUP ============ -->
+  <section class="panel" id="panel-wrapup" role="tabpanel" aria-labelledby="tab-wrapup" tabindex="-1">
+    <div class="card">
+      <h2>Case closed &mdash; your summary</h2>
+      <div id="summaryBox" data-testid="summaryBox">
+        <p class="muted">Nothing recorded yet. Finish the Coin Lab, the Dice Lab and the Fair Game to build your summary.</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" data-jump="home">Back to the briefing</button>
+        <button class="btn" id="copyEvidence" data-testid="copyEvidence">Copy my results as text</button>
+        <button class="btn ghost" id="printPage">Print / save as PDF</button>
+        <button class="btn ghost" id="resetAll" data-testid="resetAll">Reset everything on this page</button>
+        <button class="btn ghost" id="largeType" aria-pressed="false">Bigger text</button>
+      </div>
+      <p class="hint" id="copyNote" role="status">Progress is kept only in this browser&rsquo;s local storage, so it survives a refresh on this device and nothing is sent anywhere. &ldquo;Reset everything&rdquo; erases it. The temporary activity records below live in memory and disappear when you close the tab.</p>
+      <div class="evidence" id="evidenceBox" data-testid="evidenceBox" hidden>
+        <h3 style="margin-top:0">Activity record (this visit, in memory)</h3>
+        <p class="hint" style="margin-top:0">Every run below carries the seed that produced it. Set that seed in the Coin Lab and you will reproduce exactly these numbers.</p>
+        <div class="ev-text"><pre id="evidenceText"></pre></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What comes next (a suggestion, not a test)</h2>
+      <ul>
+        <li><strong>Two-minute practice:</strong> with the fair coin at 0.50, run +10 flips one at a time and watch how far the proportion jumps. Then do the same with +1,000. Say out loud what stayed and what changed.</li>
+        <li><strong>Dice, again but smaller:</strong> in the Sum of two dice tab, run +10 twice with different seeds. Do the bars look like the &ldquo;ways out of 36&rdquo; bars? Now do +1,000. Explain the difference to someone.</li>
+        <li><strong>Real world:</strong> find a claim that smells like &ldquo;this is due&rdquo; or &ldquo;this system beats chance&rdquo;. Write the machine, the probabilities, and the expected value. The arithmetic above is exactly how you check it.</li>
+        <li><strong>Next-level challenge:</strong> can you design a game where you win twice as often as the rival, yet the rival still has the higher expected points per turn? What does that teach you about &ldquo;winning more often&rdquo;?</li>
+      </ul>
+      <p class="muted small">This page does not grade you, does not compare you with anyone, and does not keep a score anywhere. There is no wrong answer that costs you something.</p>
+    </div>
+  </section>
+
+  <footer class="site">
+    <p><strong>Probability Detective</strong> &mdash; a self-contained, offline lesson. No accounts, no tracking, no advertising, no payments, no chat, no uploads, no external requests of any kind. Original code and text, released under the MIT License (see <code>LICENSE</code>). Full teaching notes, sources and limitations: <code>EDUCATOR_GUIDE.md</code>; verification record: <code>TEST_REPORT.md</code>.</p>
+    <p class="small">Content responsibility: this is a lesson about probability and experimental evidence. It teaches the arithmetic of games of chance in order to make that arithmetic checkable, and it contains no gambling, betting or casino-style reward mechanics — no stakes, no wagers, no prizes, and no way to win or lose anything.</p>
+  </footer>
+</main>
+
+<noscript>
+  <div class="wrap"><div class="card"><h2>This lesson needs JavaScript</h2><p>The experiments run in your browser, so JavaScript must be enabled. No data leaves your device in any case.</p></div></div>
+</noscript>
+
+<script>
+/* ==========================================================================
+   Probability Detective
+   Part 1 — PD core: seeded randomness, sampling, statistics and the
+   fairness model. Pure calculation only: it touches no DOM API, so the exact
+   same code the page runs is also the code the automated tests run
+   (tests/tests.js extracts the block between the PD:CORE markers below).
+   ========================================================================== */
+/* PD:CORE:START */
+var PD = (function () {
+  'use strict';
+
+  /* --- string -> 32-bit seed (so "detective-1" is a real, repeatable seed) -- */
+  function xmur3(str) {
+    var h = 1779033703 ^ str.length;
+    for (var i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return h >>> 0;
+    };
+  }
+
+  /* --- mulberry32: the documented generator used for every random value --- */
+  function mulberry32(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      var r = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      return r < 1 ? r : 0.9999999999999999; /* guarantee 0 <= r < 1 */
+    };
+  }
+
+  /* Deterministic, inspectable generator. Every method depends only on the
+     current internal state, and the state itself can be read and restored, so
+     a run saved in an evidence card reproduces the exact same continuation. */
+  function createRng(seedLike) {
+    var seedText = String(seedLike);
+    var seedInt = xmur3(seedText)();
+    var currentState = seedInt;
+    function nextDraw() {
+      currentState = (currentState + 0x6D2B79F5) | 0;
+      var t = Math.imul(currentState ^ (currentState >>> 15), 1 | currentState);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      var r = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      return r < 1 ? r : 0.9999999999999999; /* guarantee 0 <= r < 1 */
+    }
+    return {
+      seedText: seedText,
+      seedInt: seedInt,
+      random: nextDraw,
+      rollDie: function (sides) { return 1 + Math.floor(nextDraw() * (sides || 6)); },
+      getState: function () { return currentState; },
+      setState: function (value) {
+        var clean = Number(value) | 0;
+        currentState = clean | 0;
+        return true;
+      }
+    };
+  }
+
+  function clamp(x, lo, hi) { return x < lo ? lo : (x > hi ? hi : x); }
+
+  function binomialCoefficient(n, k) {
+    if (k < 0 || k > n) { return 0; }
+    var kk = Math.min(k, n - k);
+    var result = 1;
+    for (var i = 1; i <= kk; i++) {
+      result = result * (n - kk + i) / i;
+    }
+    return result;
+  }
+
+  /* Exact binomial probability P(heads = k) for n independent flips. */
+  function binomialProbability(n, k, p) {
+    if (k < 0 || k > n) { return 0; }
+    if (p <= 0) { return k === 0 ? 1 : 0; }
+    if (p >= 1) { return k === n ? 1 : 0; }
+    return binomialCoefficient(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+  }
+
+  /* --- coin flipping ------------------------------------------------------ */
+  function flipCoins(count, pHeads, rng) {
+    var heads = 0;
+    for (var i = 0; i < count; i++) {
+      if (rng.random() < pHeads) { heads += 1; }
+    }
+    return heads;
+  }
+  function flipCoinsDetailed(count, pHeads, rng) {
+    var heads = flipCoins(count, pHeads, rng);
+    return { trials: count, heads: heads, tails: count - heads };
+  }
+
+  /* --- dice ------------------------------------------------------------- */
+  function rollDie(rng, sides) { return 1 + Math.floor(rng.random() * (sides || 6)); }
+  function countDieRolls(n, rng, sides) {
+    var s = sides || 6;
+    var counts = new Array(s + 1).fill(0);
+    for (var i = 0; i < n; i++) { counts[rollDie(rng, s)] += 1; }
+    return { trials: n, sides: s, counts: counts };
+  }
+  function rollTwoDiceSums(n, rng, sides) {
+    var s = sides || 6;
+    var totals = new Array(2 * s + 1).fill(0);
+    for (var i = 0; i < n; i++) {
+      totals[rollDie(rng, s) + rollDie(rng, s)] += 1;
+    }
+    return { trials: n, sides: s, totals: totals };
+  }
+  /* waysToMakeSum(k, 6) = number of ordered pairs (a,b) with a+b = k and 1..6 */
+  function waysToMakeSum(sum, sides) {
+    var s = sides || 6;
+    var ways = 0;
+    for (var a = 1; a <= s; a++) {
+      var b = sum - a;
+      if (b >= 1 && b <= s) { ways += 1; }
+    }
+    return ways;
+  }
+
+  /* --- summary statistics ------------------------------------------------ */
+  function mean(values) {
+    if (!values.length) { return 0; }
+    var t = 0;
+    for (var i = 0; i < values.length; i++) { t += values[i]; }
+    return t / values.length;
+  }
+  function standardDeviation(values) {
+    if (values.length < 2) { return 0; }
+    var m = mean(values);
+    var t = 0;
+    for (var i = 0; i < values.length; i++) { t += (values[i] - m) * (values[i] - m); }
+    return Math.sqrt(t / (values.length - 1));
+  }
+
+  /* --- fairness model for the points game --------------------------------- */
+  /* A condition describes exactly when a side scores. Two conditions are
+     required to be mutually exclusive, so no roll can score for both sides. */
+  function parseTargets(text) {
+    if (text === undefined || text === null) { return []; }
+    return String(text).split(',').map(function (piece) { return parseInt(piece.trim(), 10); })
+      .filter(function (v) { return isFinite(v); });
+  }
+  var CONDITION_LABELS = {
+    odd: 'odd numbers (1, 3, 5)',
+    even: 'even numbers (2, 4, 6)',
+    low: '1, 2 or 3',
+    high: '4, 5 or 6',
+    match2: 'two chosen numbers',
+    matchOne: 'one exact number'
+  };
+  function conditionProbability(condition, options) {
+    var opts = options || {};
+    var sides = opts.sides || 6;
+    if (condition === 'odd') { return Math.floor(sides / 2) / sides; }
+    if (condition === 'even') { return Math.floor(sides / 2) / sides; }
+    if (condition === 'low') { return Math.ceil(sides / 2) / sides; }
+    if (condition === 'high') { return Math.floor(sides / 2) / sides; }
+    if (condition === 'match2') {
+      var targets = parseTargets(opts.targets).filter(function (v) { return v >= 1 && v <= sides; });
+      return targets.length / sides;
+    }
+    if (condition === 'matchOne') { return 1 / sides; }
+    return 0;
+  }
+  function conditionValues(condition, options) {
+    var opts = options || {};
+    var sides = opts.sides || 6;
+    var values = [];
+    for (var face = 1; face <= sides; face++) { values.push(face); }
+    if (condition === 'odd') { return values.filter(function (v) { return v % 2 === 1; }); }
+    if (condition === 'even') { return values.filter(function (v) { return v % 2 === 0; }); }
+    if (condition === 'low') { return values.filter(function (v) { return v <= Math.ceil(sides / 2); }); }
+    if (condition === 'high') { return values.filter(function (v) { return v > Math.ceil(sides / 2); }); }
+    if (condition === 'match2' || condition === 'matchOne') {
+      var targets = parseTargets(opts.targets);
+      return values.filter(function (v) { return targets.indexOf(v) !== -1; });
+    }
+    return [];
+  }
+  function conditionsOverlap(a, b, options) {
+    var va = conditionValues(a.condition, { sides: options.sides, targets: a.targets });
+    var vb = conditionValues(b.condition, { sides: options.sides, targets: b.targets });
+    return va.some(function (v) { return vb.indexOf(v) !== -1; });
+  }
+  function conditionLabel(condition, options) {
+    var opts = options || {};
+    var sides = opts.sides || 6;
+    if (condition === 'match2' || condition === 'matchOne') {
+      var targets = parseTargets(opts.targets).filter(function (v) { return v >= 1 && v <= sides; });
+      if (!targets.length) { return 'no numbers selected yet'; }
+      return targets.join(' or ');
+    }
+    return CONDITION_LABELS[condition] || condition;
+  }
+  function expectedPerTurn(probability, points) { return probability * points; }
+  function payoutForFairGame(targetProbability, targetPoints, otherProbability) {
+    if (!(otherProbability > 0)) { return null; }
+    return (targetProbability * targetPoints) / otherProbability;
+  }
+  function simulateGame(turns, config, rng) {
+    var sides = config.sides || 6;
+    var youValues = conditionValues(config.you.condition, { sides: sides, targets: config.you.targets });
+    var rivValues = conditionValues(config.rival.condition, { sides: sides, targets: config.rival.targets });
+    var youPoints = 0, rivalPoints = 0, youWins = 0, rivalWins = 0, ties = 0, neither = 0;
+    for (var i = 0; i < turns; i++) {
+      var roll = rollDie(rng, sides);
+      var hitYou = youValues.indexOf(roll) !== -1;
+      var hitRiv = rivValues.indexOf(roll) !== -1;
+      if (hitYou) { youPoints += config.you.points; youWins += 1; }
+      if (hitRiv) { rivalPoints += config.rival.points; rivalWins += 1; }
+      if (!hitYou && !hitRiv) { neither += 1; }
+      if (hitYou && hitRiv) { ties += 1; }
+    }
+    return {
+      turns: turns, youPoints: youPoints, rivalPoints: rivalPoints,
+      youWins: youWins, rivalWins: rivalWins, neither: neither, ties: ties,
+      youAverage: turns ? youPoints / turns : 0,
+      rivalAverage: turns ? rivalPoints / turns : 0
+    };
+  }
+  /* Long-run behaviour of a fair coin. This measures the two claims the lesson
+     makes: the proportion settles near 1/2, and a long run of heads leaves the
+     next flip at 1/2 — the coin does not "owe" a tails after a streak. */
+  function simulateFairCoinRun(flips, rng) {
+    var flipsArr = [];
+    var heads = 0;
+    var longestRun = 0;
+    var run = 0;
+    for (var i = 0; i < flips; i++) {
+      var isHeads = rng.random() < 0.5;
+      flipsArr.push(isHeads);
+      if (isHeads) {
+        heads += 1;
+        run += 1;
+        if (run > longestRun) { longestRun = run; }
+      } else {
+        run = 0;
+      }
+    }
+    var after = [];
+    for (var j = 3; j < flipsArr.length; j++) {
+      if (flipsArr[j - 3] && flipsArr[j - 2] && flipsArr[j - 1] && flipsArr[j]) {
+        if (j + 1 < flipsArr.length) { after.push(flipsArr[j + 1]); }
+      }
+    }
+    return {
+      flips: flips, heads: heads, proportion: flips ? heads / flips : 0,
+      longestRunOfHeads: longestRun,
+      flipsAfterFourHeads: after.length,
+      headsAfterFourHeads: after.filter(Boolean).length,
+      proportionAfterFourHeads: after.length ? after.filter(Boolean).length / after.length : null
+    };
+  }
+
+  return {
+    xmur3: xmur3,
+    mulberry32: mulberry32,
+    createRng: createRng,
+    clamp: clamp,
+    binomialCoefficient: binomialCoefficient,
+    binomialProbability: binomialProbability,
+    flipCoins: flipCoins,
+    flipCoinsDetailed: flipCoinsDetailed,
+    rollDie: rollDie,
+    countDieRolls: countDieRolls,
+    rollTwoDiceSums: rollTwoDiceSums,
+    waysToMakeSum: waysToMakeSum,
+    mean: mean,
+    standardDeviation: standardDeviation,
+    conditionProbability: conditionProbability,
+    conditionValues: conditionValues,
+    conditionLabel: conditionLabel,
+    conditionsOverlap: conditionsOverlap,
+    expectedPerTurn: expectedPerTurn,
+    payoutForFairGame: payoutForFairGame,
+    simulateGame: simulateGame,
+    simulateFairCoinRun: simulateFairCoinRun
+  };
+})();
+if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
+/* PD:CORE:END */
+
+/* ==========================================================================
+   Part 2 — the page: state, activities, charts, accessibility helpers.
+   The page keeps learning content in the markup and calculation in PD above;
+   this part only wires inputs to those calculations and draws results.
+   ========================================================================== */
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') { return; }
+
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+  var STORAGE_KEY = 'probability-detective/progress-v1';
+  var TRIAL_LADDER = [10, 100, 1000]; /* the three sample sizes the lesson compares */
+  var MAX_POINTS = 12;
+
+  var state = {
+    view: 'home',
+    seedText: 'detective-1',
+    rng: null,
+    block: 0,
+    progress: { coin: false, dice: false, game: false },
+    coin: {
+      pHeads: 0.5, prediction: null, skipped: false,
+      trials: 0, heads: 0, history: [], chartProportions: [], chartTrials: [], lastBlock: null
+    },
+    die: { trials: 0, counts: [0,0,0,0,0,0,0], lastBlock: null },
+    sum: { trials: 0, totals: [], lastBlock: null },
+    gridSum: 0,
+    game: { you: { condition: 'even', targets: '1,2', points: 2 }, rival: { condition: 'odd', targets: '1,2', points: 2 }, turns: 0, youPts: 0, rivPts: 0, rows: [] },
+    chal: { machine: 'coin', you: { condition: 'heads', targets: '', points: 2 }, rival: { condition: 'tails', targets: '', points: 1 }, ran: false, result: null },
+    evidence: []
+  };
+
+  /* ---------- small helpers ------------------------------------------- */
+  function esc(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function fmt(value, digits) {
+    if (!isFinite(value)) { return '&mdash;'; }
+    var d = digits === undefined ? 3 : digits;
+    return value.toFixed(d);
+  }
+  function signed(value, digits) {
+    var d = digits === undefined ? 3 : digits;
+    if (!isFinite(value)) { return '&mdash;'; }
+    return (value >= 0 ? '+' : '\u2212') + Math.abs(value).toFixed(d);
+  }
+  function pct(value, digits) {
+    return fmt(value * 100, digits === undefined ? 1 : digits) + '%';
+  }
+  function group(value) {
+    var text = String(value);
+    return text.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function progressBar(value, width) {
+    var w = width || 10;
+    var filled = Math.round(PD.clamp(value, 0, 1) * w);
+    var out = '';
+    for (var i = 0; i < w; i++) { out += (i < filled ? '#' : '.'); }
+    return out;
+  }
+  function announce(message) {
+    var live = $('#live');
+    if (!live) { return; }
+    live.textContent = message;
+  }
+  function randomSeedText() {
+    var words = ['coin', 'die', 'clue', 'case', 'chance', 'orbit', 'maple', 'comet', 'anchor', 'zebra'];
+    var left = words[Math.floor(Math.random() * words.length)];
+    var num = Math.floor(Math.random() * 9000) + 1000;
+    return left + '-' + num;
+  }
+  function storageAvailable() {
+    try {
+      window.localStorage.setItem('pd-check', '1');
+      window.localStorage.removeItem('pd-check');
+      return true;
+    } catch (err) { return false; }
+  }
+  var HAS_STORAGE = storageAvailable();
+
+  function loadProgress() {
+    if (!HAS_STORAGE) { return; }
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) { return; }
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.progress) {
+        state.progress.coin = !!parsed.progress.coin;
+        state.progress.dice = !!parsed.progress.dice;
+        state.progress.game = !!parsed.progress.game;
+      }
+    } catch (err) { /* unreadable storage must never break the lesson */ }
+  }
+  function saveProgress() {
+    if (!HAS_STORAGE) { return; }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ progress: state.progress, savedAt: new Date().toISOString() }));
+    } catch (err) { /* private mode: lesson still works, just does not persist */ }
+  }
+  function completedCount() {
+    var n = 0;
+    if (state.progress.coin) { n += 1; }
+    if (state.progress.dice) { n += 1; }
+    if (state.progress.game) { n += 1; }
+    return n;
+  }
+  function setMilestone(key, value) {
+    if (state.progress[key] === value) { return; }
+    state.progress[key] = value;
+    saveProgress();
+    renderProgress();
+    renderTicks();
+    renderSummary();
+  }
+  function renderProgress() {
+    var n = completedCount();
+    var label = $('#progressLabel');
+    var bar = $('#progressBar');
+    var fill = $('#progressFill');
+    if (label) { label.textContent = 'Progress: ' + n + ' of 3 case files closed'; }
+    if (bar) {
+      bar.setAttribute('aria-valuenow', String(n));
+      bar.setAttribute('aria-valuetext', n + ' of 3 case files closed');
+    }
+    if (fill) {
+      fill.style.width = (n / 3 * 100) + '%';
+      fill.className = n === 3 ? 'done' : '';
+    }
+  }
+  function renderTicks() {
+    var marks = [['coin', '[data-tick-coin]'], ['dice', '[data-tick-dice]'], ['game', '[data-tick-game]']];
+    marks.forEach(function (pair) {
+      var node = $(pair[1]);
+      if (node) { node.textContent = state.progress[pair[0]] ? '\u2713' : ''; }
+    });
+  }
+
+  /* ---------- routing -------------------------------------------------- */
+  var VIEWS = ['home', 'coin', 'dice', 'game', 'workshop', 'wrapup'];
+  /* Direct links. Every section is addressable, and the three required
+     activities also answer to short, stable aliases so that a link can be
+     shared (or captured by an automated screenshot run) without depending on
+     the wording of a tab:  #activity-1 -> coin lab, #activity-2 -> dice lab,
+     #activity-3 -> fair-game designer. */
+  var VIEW_ALIASES = {
+    'activity-1': 'coin', 'activity-2': 'dice', 'activity-3': 'game',
+    'activity-4': 'workshop', 'activity-5': 'wrapup',
+    'lab-coin': 'coin', 'lab-dice': 'dice', 'lab-game': 'game',
+    'case-1': 'coin', 'case-2': 'dice', 'case-3': 'game'
+  };
+  function resolveView(name) {
+    var key = String(name || '').replace(/^#/, '').trim().toLowerCase();
+    if (VIEW_ALIASES[key]) { return VIEW_ALIASES[key]; }
+    return VIEWS.indexOf(key) === -1 ? 'home' : key;
+  }
+  function showView(view, moveFocus) {
+    if (VIEWS.indexOf(view) === -1) { view = 'home'; }
+    state.view = view;
+    VIEWS.forEach(function (name) {
+      var panel = document.getElementById('panel-' + name);
+      if (panel) { panel.classList.toggle('active', name === view); }
+      var tab = document.getElementById('tab-' + name);
+      if (tab) {
+        var isCurrent = name === view;
+        tab.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        tab.tabIndex = isCurrent ? 0 : -1;
+      }
+    });
+    if (location.hash !== '#' + view) {
+      try { history.replaceState(null, '', '#' + view); } catch (err) { /* file:// in some browsers */ }
+    }
+    if (moveFocus) {
+      var target = document.getElementById('panel-' + view);
+      if (target) { target.focus({ preventScroll: true }); }
+    }
+    if (window.scrollY > 0) { window.scrollTo(0, 0); }
+  }
+  function initRouting() {
+    $$('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () { showView(resolveView(tab.getAttribute('data-view')), false); });
+      tab.addEventListener('keydown', function (event) {
+        var keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+        if (keys.indexOf(event.key) === -1) { return; }
+        event.preventDefault();
+        var tabs = $$('.tab');
+        var index = tabs.indexOf(tab);
+        var next = index;
+        if (event.key === 'ArrowRight') { next = (index + 1) % tabs.length; }
+        if (event.key === 'ArrowLeft') { next = (index - 1 + tabs.length) % tabs.length; }
+        if (event.key === 'Home') { next = 0; }
+        if (event.key === 'End') { next = tabs.length - 1; }
+        tabs[next].focus();
+        showView(resolveView(tabs[next].getAttribute('data-view')), false);
+      });
+    });
+    $$('[data-jump]').forEach(function (button) {
+      button.addEventListener('click', function () { showView(resolveView(button.getAttribute('data-jump')), true); });
+    });
+    /* A hash typed by hand, followed from a link or changed by an automated
+       run opens the matching section without a reload. */
+    window.addEventListener('hashchange', function () {
+      var view = resolveView(location.hash);
+      if (view !== state.view) { showView(view, false); }
+    });
+    /* Opening index.html with no hash starts on the ordinary start screen. */
+    showView(resolveView(location.hash), false);
+  }
+
+  /* ---------- charts --------------------------------------------------- */
+  /* Every chart is drawn from the same numbers that the adjacent table
+     prints, and every chart has a table equivalent next to it. */
+  function prepareCanvas(canvas, cssHeight) {
+    if (!canvas || !canvas.getContext) { return null; }
+    var width = canvas.clientWidth || 640;
+    var height = cssHeight || canvas.clientHeight || 260;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(320, Math.round(width * dpr));
+    canvas.height = Math.round(height * dpr);
+    var ctx = canvas.getContext('2d');
+    if (!ctx) { return null; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: Math.max(320, width), h: height };
+  }
+  function drawGroupedBars(canvas, options) {
+    var frame = prepareCanvas(canvas, options.height);
+    if (!frame) { return false; }
+    var ctx = frame.ctx, w = frame.w, h = frame.h;
+    var pad = { top: 16, right: 12, bottom: 46, left: 52 };
+    var labels = options.labels || [];
+    var groups = options.series || [];
+    var maxValue = 0;
+    groups.forEach(function (series) {
+      series.values.forEach(function (v) { if (v > maxValue) { maxValue = v; } });
+    });
+    if (maxValue <= 0) { maxValue = 1; }
+    var top = maxValue * 1.12;
+    var plotW = w - pad.left - pad.right;
+    var plotH = h - pad.top - pad.bottom;
+    ctx.clearRect(0, 0, w, h);
+    ctx.font = '12px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textBaseline = 'middle';
+
+    /* gridlines + y labels */
+    var ticks = 4;
+    ctx.strokeStyle = '#2c3a5c';
+    ctx.fillStyle = '#c3cfe6';
+    ctx.lineWidth = 1;
+    for (var t = 0; t <= ticks; t++) {
+      var value = top * t / ticks;
+      var y = pad.top + plotH - (value / top) * plotH;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, Math.round(y) + 0.5);
+      ctx.lineTo(pad.left + plotW, Math.round(y) + 0.5);
+      ctx.stroke();
+      ctx.textAlign = 'right';
+      ctx.fillText(value >= 100 ? String(Math.round(value)) : value.toFixed(value >= 10 ? 0 : 2), pad.left - 8, y);
+    }
+    var step = plotW / Math.max(1, labels.length);
+    var barW = Math.max(4, Math.min(30, step / (groups.length + 0.9)));
+    var showValues = step >= 34;
+
+    labels.forEach(function (label, index) {
+      var centre = pad.left + step * index + step / 2;
+      groups.forEach(function (series, gi) {
+        var value = series.values[index] || 0;
+        var barH = (value / top) * plotH;
+        var x = centre - (groups.length * barW) / 2 + gi * barW;
+        ctx.fillStyle = series.color;
+        ctx.fillRect(x, pad.top + plotH - barH, barW, barH);
+        ctx.strokeStyle = series.stroke || '#0b1220';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(Math.round(x) + 0.5, Math.round(pad.top + plotH - barH) + 0.5, Math.max(1, Math.round(barW) - 1), Math.max(0, Math.round(barH) - 1));
+        if (showValues && value > 0) {
+          ctx.fillStyle = '#f1f5fd';
+          ctx.textAlign = 'center';
+          ctx.fillText(value >= 100 ? String(Math.round(value)) : (value >= 10 ? value.toFixed(0) : value.toFixed(2)), x + barW / 2, pad.top + plotH - barH - 9);
+        }
+      });
+      /* x label: rotate only when there is not enough room */
+      ctx.fillStyle = '#c3cfe6';
+      ctx.textAlign = 'center';
+      if (step < 34 && labels.length > 6) {
+        if (index % 2 === 0) { ctx.fillText(String(label), centre, pad.top + plotH + 16); }
+      } else {
+        ctx.fillText(String(label), centre, pad.top + plotH + 16);
+      }
+    });
+    /* axis line */
+    ctx.strokeStyle = '#6b7ea8';
+    ctx.beginPath();
+    ctx.moveTo(pad.left + 0.5, pad.top);
+    ctx.lineTo(pad.left + 0.5, pad.top + plotH + 0.5);
+    ctx.lineTo(pad.left + plotW, pad.top + plotH + 0.5);
+    ctx.stroke();
+    /* theoretical reference line */
+    if (options.reference !== undefined && options.reference !== null) {
+      var refY = pad.top + plotH - (options.reference / top) * plotH;
+      ctx.save();
+      ctx.strokeStyle = '#ffd166';
+      ctx.setLineDash([8, 5]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, refY);
+      ctx.lineTo(pad.left + plotW, refY);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#ffd166';
+      ctx.textAlign = 'left';
+      ctx.fillText(options.referenceLabel || 'theoretical value', pad.left + 6, refY - 10);
+    }
+    /* axis caption */
+    ctx.fillStyle = '#c3cfe6';
+    ctx.textAlign = 'left';
+    ctx.fillText(options.xCaption || '', pad.left, h - 8);
+    return true;
+  }
+  /* Tables are printed from the same arrays the chart receives, so the two can
+     never disagree. */
+  function seriesTable(hostId, headers, rows) {
+    var host = document.getElementById(hostId);
+    if (!host) { return; }
+    var html = '';
+    headers.forEach(function (cell) { html += '<th scope="col" class="num">' + esc(cell) + '</th>'; });
+    html = '<tr>' + html + '</tr>';
+    rows.forEach(function (row) {
+      html += '<tr><th scope="row">' + esc(row[0]) + '</th>';
+      for (var i = 1; i < row.length; i++) {
+        html += '<td class="num">' + esc(row[i]) + '</td>';
+      }
+      html += '</tr>';
+    });
+    host.innerHTML = html;
+  }
+
+  /* ---------- SEED ------------------------------------------------------ */
+  function seedDisplay() {
+    var node = $('#seedCurrent');
+    if (node) { node.textContent = state.seedText; }
+    var input = $('#seedInput');
+    if (input && input.value !== state.seedText) { input.value = state.seedText; }
+  }
+  function applySeed(text, quiet) {
+    var clean = String(text || '').trim().slice(0, 64) || 'detective-1';
+    state.seedText = clean;
+    state.rng = PD.createRng(clean);
+    seedDisplay();
+    if (!quiet) { announce('Seed set to ' + clean + '. New random numbers will follow this seed.'); }
+  }
+
+  /* ---------- COIN LAB -------------------------------------------------- */
+  function coinTheory() { return state.coin.pHeads; }
+  function coinLabel() {
+    var p = coinTheory();
+    if (p === 0.5) { return 'Fair coin, P(heads) = 0.50'; }
+    if (p === 0) { return 'Extreme coin, P(heads) = 0.00 (never heads)'; }
+    if (p === 1) { return 'Extreme coin, P(heads) = 1.00 (always heads)'; }
+    return 'Biased coin, P(heads) = ' + p.toFixed(2);
+  }
+  function setBias(value, source) {
+    var p = PD.clamp(Number(value), 0, 1);
+    if (!isFinite(p)) { p = 0.5; }
+    state.coin.pHeads = Math.round(p * 100) / 100;
+    var range = $('#biasRange'), number = $('#biasNumber'), out = $('#biasOut');
+    if (range && Number(range.value) !== state.coin.pHeads) { range.value = String(state.coin.pHeads); }
+    if (number && source !== 'number') { number.value = String(state.coin.pHeads); }
+    if (number && Number(number.value) !== state.coin.pHeads) { number.value = String(state.coin.pHeads); }
+    if (out) { out.textContent = state.coin.pHeads.toFixed(2); }
+    var name = $('#coinName');
+    if (name) { name.textContent = coinLabel(); }
+    $$('[data-bias]').forEach(function (button) {
+      button.setAttribute('aria-pressed', Number(button.getAttribute('data-bias')) === state.coin.pHeads ? 'true' : 'false');
+    });
+    renderCoinStats();
+    renderCoinTable();
+    renderCoinChart();
+  }
+  function runCoin(count) {
+    var result = PD.flipCoinsDetailed(count, state.coin.pHeads, state.rng);
+    state.coin.trials += result.trials;
+    state.coin.heads += result.heads;
+    state.coin.block += 1;
+    state.coin.lastBlock = {
+      count: result.trials, heads: result.heads, tails: result.tails,
+      p: state.coin.pHeads, seed: state.seedText,
+      blockProportion: result.trials ? result.heads / result.trials : 0,
+      runningProportion: state.coin.trials ? state.coin.heads / state.coin.trials : 0
+    };
+    state.coin.history.push({
+      trials: state.coin.trials, heads: state.coin.heads, tails: state.coin.trials - state.coin.heads,
+      p: state.coin.pHeads, label: 'after +' + count
+    });
+    state.coin.chartProportions.push(state.coin.trials ? state.coin.heads / state.coin.trials : 0);
+    state.coin.chartTrials.push(state.coin.trials);
+    addEvidence('Coin Lab', 'Coin ' + coinLabel() + ', added ' + count + ' flips. Running total ' +
+      state.coin.trials + ' flips: ' + state.coin.heads + ' heads (' + fmt(state.coin.heads / state.coin.trials) +
+      '), theory ' + fmt(state.coin.pHeads) + '. Seed "' + state.seedText + '", block ' + state.coin.block + '.');
+    renderCoinStats();
+    renderCoinTable();
+    renderCoinChart();
+    renderCoinCompare();
+    if (state.coin.trials >= 1000) { setMilestone('coin', true); }
+    announce('Added ' + count + ' flips. ' + result.heads + ' heads and ' + result.tails +
+      ' tails in that block. The experiment now holds ' + state.coin.trials + ' flips with ' + state.coin.heads + ' heads.');
+  }
+  function renderCoinStats() {
+    var total = state.coin.trials;
+    var set = function (id, text) { var node = document.getElementById(id); if (node) { node.textContent = text; } };
+    set('coinTotal', String(total));
+    set('coinHeads', String(state.coin.heads));
+    set('coinTails', String(total - state.coin.heads));
+    var block = state.coin.lastBlock;
+    var last = $('#coinLastBlock');
+    if (last) {
+      last.textContent = block
+        ? 'Last block: +' + block.count + ' flips gave ' + block.heads + ' heads, ' + pct(block.blockProportion) +
+          ' (running proportion ' + pct(block.runningProportion) + ')'
+        : 'No run yet';
+      last.className = block ? 'chip obs' : 'chip';
+    }
+    var progress = $('#coinLabCard');
+    if (progress) { progress.setAttribute('data-trials-run', String(total)); }
+  }
+  function renderCoinTable() {
+    var body = $('#coinTableBody');
+    if (!body) { return; }
+    var rows = state.coin.history;
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="6" class="muted">No flips yet. Press &ldquo;+ 10 flips&rdquo; above and this table fills itself with real numbers.</td></tr>';
+      return;
+    }
+    var html = '';
+    rows.forEach(function (row) {
+      var proportion = row.trials ? row.heads / row.trials : 0;
+      var diff = proportion - row.p;
+      var mark = Math.abs(diff) <= 0.05 ? 'ok' : (Math.abs(diff) <= 0.1 ? 'borderline' : 'far');
+      html += '<tr><td>' + group(row.trials) + ' flips <span class="muted small">(' + esc(row.label) + ')</span></td>' +
+        '<td class="num">' + row.heads + '</td><td class="num">' + row.tails + '</td>' +
+        '<td class="num obs-mark">' + fmt(proportion) + '</td>' +
+        '<td class="num">' + fmt(row.p) + '</td>' +
+        '<td class="num">' + signed(diff) + ' <span class="muted small">(' + (mark === 'ok' ? 'close' : mark === 'borderline' ? 'small gap' : 'big gap') + ')</span></td></tr>';
+    });
+    body.innerHTML = html;
+  }
+  function renderCoinChart() {
+    var canvas = $('#coinChart');
+    var labels = state.coin.chartTrials.map(function (n) { return group(n); });
+    var observed = state.coin.chartProportions.slice();
+    var theory = state.coin.chartTrials.map(function () { return state.coin.pHeads; });
+    if (!labels.length) {
+      labels = ['no flips yet'];
+      observed = [0];
+      theory = [state.coin.pHeads];
+    }
+    var drawn = drawGroupedBars(canvas, {
+      labels: labels,
+      series: [
+        { values: observed, color: '#ffd166', stroke: '#0b1220' },
+        { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
+      ],
+      reference: state.coin.pHeads,
+      referenceLabel: 'theoretical P(heads) = ' + fmt(state.coin.pHeads),
+      xCaption: 'cumulative flips in this experiment',
+      height: 260
+    });
+    var fallbackHost = $('#coinChartFallback');
+    if (!drawn) {
+      if (!fallbackHost) {
+        fallbackHost = document.createElement('p');
+        fallbackHost.id = 'coinChartFallback';
+        fallbackHost.className = 'chart-fallback';
+        canvas.parentNode.insertBefore(fallbackHost, canvas.nextSibling);
+      }
+      var lines = ['chart unavailable — numbers only', 'flips      observed   theory'];
+      state.coin.chartTrials.forEach(function (n, i) {
+        lines.push(String(n).padEnd(10) + ' ' + fmt(state.coin.chartProportions[i]).padEnd(10) + ' ' + fmt(state.coin.pHeads));
+      });
+      fallbackHost.textContent = lines.join('\n');
+    } else if (fallbackHost) {
+      fallbackHost.parentNode.removeChild(fallbackHost);
+    }
+    var rows = state.coin.chartTrials.map(function (n, i) {
+      return [group(n) + ' flips', fmt(state.coin.chartProportions[i]), progressBar(state.coin.chartProportions[i], 10)];
+    });
+    seriesTable('coinChartTableBody', ['Flips', 'Observed proportion of heads', 'Bar (10 steps)'], rows);
+  }
+  function renderCoinCompare() {
+    var card = $('#coinCompare');
+    var body = $('#coinCompareBody');
+    if (!card || !body) { return; }
+    if (!state.coin.trials) { card.hidden = true; return; }
+    card.hidden = false;
+    var overall = state.coin.heads / state.coin.trials;
+    var p = state.coin.pHeads;
+    var diff = overall - p;
+    var html = '';
+    if (state.coin.skipped) {
+      html += '<p>You chose to skip the prediction, and that is a legitimate choice — the data is the same either way. ' +
+        'For the record: ' + state.coin.heads + ' of ' + state.coin.trials + ' flips were heads, a proportion of ' + fmt(overall) +
+        ' against a theoretical ' + fmt(p) + '.</p>';
+    } else if (state.coin.prediction) {
+      var predictedFace = state.coin.prediction;
+      var observedFace = overall >= 0.5 ? 'heads' : 'tails';
+      var correct = predictedFace === observedFace;
+      html += '<p>You predicted <strong>' + esc(predictedFace) + ' would come up more often</strong>, and the leading face so far is <strong>' +
+        esc(observedFace) + '</strong> (' + pct(overall >= 0.5 ? overall : 1 - overall) + ' of all flips).</p>';
+      if (correct) {
+        html += '<p>Your prediction matches this run. Hold on to that feeling for a second and look at the gap: ' +
+          fmt(overall) + ' against ' + fmt(p) + '. The honest version of the result is &ldquo;my prediction agreed with this sample&rdquo;, ' +
+          'not &ldquo;I knew it would happen&rdquo;. Run it again with a different seed and the sample will move.</p>';
+      } else {
+        html += '<p>Your prediction does not match the running result &mdash; and that is exactly the useful case, so let us look at it properly rather than move on.</p>' +
+          '<p><strong>Counterexample first:</strong> a fair coin has theoretical probability 0.50 for heads. If it were guaranteed that heads leads every experiment, ' +
+          'then ' + (TRIAL_LADDER[0]) + '-flip experiments could never come out tails-heavy. Make a fresh run of 10 flips with a different seed and you will see tails lead with no rule broken at all.</p>' +
+          '<p><strong>Worked calculation:</strong> with 10 fair flips, the chance of getting 6 or more heads (or the mirror, 6 or more tails, so any lead of 2 or more) is about 0.75. ' +
+          'So a small sample disagreeing with your prediction is not evidence that you were wrong about the coin &mdash; it is the expected wobble of a small sample.</p>' +
+          '<p>That is why the coin is still perfectly fair if the proportion settles near 0.50 as the flips pile up. Nothing here is a penalty: you can change your prediction below.</p>';
+      }
+      html += '<p class="small muted">Theory for the coin currently loaded: P(heads) = ' + fmt(p) + '. Current running proportion: ' + fmt(overall) + ' over ' + state.coin.trials + ' flips.</p>';
+    }
+    if (state.coin.trials > 0) {
+      html += '<p class="small">Read the gap with this rule of thumb: for a fair coin, the spread of the proportion is about <code>0.5 / Math.sqrt(flips)</code>. ' +
+        'At 10 flips that is about 0.16 &mdash; huge; at 100 flips about 0.05; at 1,000 flips about 0.016 &mdash; small. ' +
+        'That is arithmetic, not a promise: a long run can still land further out than a short one.</p>';
+    }
+    body.innerHTML = html;
+  }
+  function renderCoinHint() {
+    var card = $('#coinHint');
+    var body = $('#coinHintText');
+    if (!card || !body) { return; }
+    var p = state.coin.pHeads;
+    var text;
+    if (!state.coin.trials) {
+      text = 'Nothing to explain yet: run +10 flips first. A useful habit is to say out loud what you expect the proportion to be before the numbers appear.';
+    } else if (state.coin.trials < 1000) {
+      text = 'You have ' + state.coin.trials + ' flips. With that few, a proportion anywhere between roughly ' +
+        fmt(Math.max(0, p - 1.5 * 0.5 / Math.sqrt(state.coin.trials))) + ' and ' +
+        fmt(Math.min(1, p + 1.5 * 0.5 / Math.sqrt(state.coin.trials))) + ' is completely ordinary. Press +100 and +1,000 and watch whether the running proportion moves toward ' + fmt(p) + ' &mdash; then press reset and run it again with the same seed to see the same numbers twice.';
+    } else {
+      text = 'You already have a long run: ' + state.coin.trials + ' flips. The next move a detective would make is a comparison: reset, set a different seed, and run the same +10 / +100 / +1,000 ladder again. Which of the three sample sizes wanders more between the two runs?';
+    }
+    body.textContent = text;
+    card.hidden = false;
+  }
+  function initCoin() {
+    var number = $('#biasNumber'), range = $('#biasRange');
+    if (range) {
+      range.addEventListener('input', function () { setBias(range.value, 'range'); });
+      range.addEventListener('change', function () { setBias(range.value, 'range'); announce('Coin set to ' + coinLabel()); });
+    }
+    if (number) {
+      number.addEventListener('change', function () {
+        var p = Number(number.value);
+        if (!isFinite(p)) { p = 0.5; }
+        setBias(p, 'number');
+        announce('Coin set to ' + coinLabel());
+      });
+    }
+    $$('[data-bias]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        setBias(button.getAttribute('data-bias'), 'preset');
+        announce('Coin changed to ' + coinLabel() + '. The running experiment was reset so that the new table starts clean.');
+        resetCoin(true);
+      });
+    });
+    $$('[data-trials]').forEach(function (button) {
+      button.addEventListener('click', function () { runCoin(Number(button.getAttribute('data-trials'))); });
+    });
+    var reset = $('#coinReset');
+    if (reset) { reset.addEventListener('click', function () { resetCoin(true); }); }
+
+    var submit = $('#coinPredictSubmit');
+    if (submit) {
+      submit.addEventListener('click', function () {
+        var chosen = $('input[name="coinPredict"]:checked');
+        if (!chosen) {
+          var feedback = $('#coinPredictFeedback');
+          var text = $('#coinPredictFeedbackText');
+          if (feedback && text) {
+            feedback.hidden = false;
+            feedback.className = 'feedback warn';
+            feedback.querySelector('.fb-head span:last-child').textContent = 'Nothing chosen yet';
+            text.textContent = 'Pick &ldquo;Heads more often&rdquo; or &ldquo;Tails more often&rdquo;, or use &ldquo;Skip&rdquo;. Both routes are fine and neither costs you anything.';
+          }
+          announce('No prediction selected. Choose one of the two options, or press Skip.');
+          return;
+        }
+        state.coin.prediction = chosen.value === 'heads' ? 'heads' : 'tails';
+        state.coin.skipped = false;
+        renderPrediction();
+        addEvidence('Coin Lab', 'Prediction recorded before running: ' + state.coin.prediction + ' more often.');
+        announce('Prediction saved: ' + state.coin.prediction + ' more often. Now run the flips.');
+        showView('coin', false);
+        var lab = $('#coinLabCard');
+        if (lab) { lab.focus({ preventScroll: true }); }
+      });
+    }
+    var skip = $('#coinPredictSkip');
+    if (skip) {
+      skip.addEventListener('click', function () {
+        state.coin.prediction = null;
+        state.coin.skipped = true;
+        renderPrediction();
+        announce('Prediction skipped. The lab is open and nothing was penalised.');
+        showView('coin', false);
+      });
+    }
+    var changePrediction = $('#coinChangePrediction');
+    if (changePrediction) {
+      changePrediction.addEventListener('click', function () {
+        state.coin.prediction = null;
+        state.coin.skipped = false;
+        var feedback = $('#coinPredictFeedback');
+        if (feedback) { feedback.hidden = true; }
+        renderPrediction();
+        var card = $('#coinPredictCard');
+        if (card) { card.scrollIntoView({ block: 'start', behavior: reducedMotion && reducedMotion.matches ? 'auto' : 'smooth' }); }
+        var heads = $('#predictHeads');
+        if (heads) { heads.focus(); }
+        announce('Prediction cleared. Choose again if you like.');
+      });
+    }
+    var hintBtn = $('#coinHintBtn');
+    if (hintBtn) { hintBtn.addEventListener('click', renderCoinHint); }
+    applySeed(state.seedText, true);
+    setBias(state.coin.pHeads, 'init');
+    renderPrediction();
+    renderCoinStats();
+    renderCoinTable();
+    renderCoinChart();
+    renderCoinCompare();
+  }
+  function renderPrediction() {
+    var feedback = $('#coinPredictFeedback');
+    var text = $('#coinPredictFeedbackText');
+    var head = feedback ? feedback.querySelector('.fb-head span:last-child') : null;
+    if (!feedback || !text) { return; }
+    if (state.coin.prediction) {
+      feedback.hidden = false;
+      feedback.className = 'feedback ok';
+      if (head) { head.textContent = 'Prediction saved (step 1 done)'; }
+      text.innerHTML = 'You predicted that <strong>' + esc(state.coin.prediction) + '</strong> would come up more often. ' +
+        'That is on record before any data appeared &mdash; which is what makes it useful. Run the flips below, and remember you can revise or cancel this at any time.';
+    } else if (state.coin.skipped) {
+      feedback.hidden = false;
+      feedback.className = 'feedback info';
+      if (head) { head.textContent = 'Prediction skipped (that is allowed)'; }
+      text.innerHTML = 'You chose to go straight to the data. Nothing is lost or penalised: you can still run every experiment, and you can change your mind and add a prediction whenever you like.';
+    } else {
+      feedback.hidden = true;
+    }
+  }
+  function resetCoin(clearPrediction) {
+    state.coin.trials = 0;
+    state.coin.heads = 0;
+    state.coin.block = 0;
+    state.coin.history = [];
+    state.coin.chartProportions = [];
+    state.coin.chartTrials = [];
+    state.coin.lastBlock = null;
+    if (clearPrediction) { state.coin.prediction = null; state.coin.skipped = false; renderPrediction(); }
+    applySeed(state.seedText, true);
+    renderCoinStats();
+    renderCoinTable();
+    renderCoinChart();
+    renderCoinCompare();
+    announce('Coin lab reset. The seed is unchanged, so the same trial sizes will reproduce the same numbers.');
+  }
+
+  /* ---------- DICE LAB -------------------------------------------------- */
+  function runDie(count) {
+    var result = PD.countDieRolls(count, state.rng, 6);
+    for (var face = 1; face <= 6; face++) { state.die.counts[face] += result.counts[face]; }
+    state.die.trials += count;
+    state.die.lastBlock = { count: count, counts: result.counts.slice() };
+    addEvidence('Dice Lab', 'One die, added ' + count + ' rolls. Running total ' + state.die.trials + ' rolls. Counts 1-6: ' +
+      state.die.counts.slice(1).join(', ') + '. Seed "' + state.seedText + '".');
+    renderDie();
+    if (state.die.trials >= 1000 || state.sum.trials >= 1000) { setMilestone('dice', true); }
+    announce('Added ' + count + ' die rolls. Face 1 has now appeared ' + state.die.counts[1] + ' times in ' + state.die.trials + ' rolls.');
+  }
+  function runSums(count) {
+    var result = PD.rollTwoDiceSums(count, state.rng, 6);
+    if (!state.sum.totals.length) { state.sum.totals = new Array(13).fill(0); }
+    for (var sum = 2; sum <= 12; sum++) { state.sum.totals[sum] += result.totals[sum]; }
+    state.sum.trials += count;
+    state.sum.lastBlock = { count: count, totals: result.totals.slice() };
+    addEvidence('Dice Lab', 'Sum of two dice, added ' + count + ' rolls. Running total ' + state.sum.trials + ' rolls. Counts 2-12: ' +
+      state.sum.totals.slice(2).join(', ') + '. Seed "' + state.seedText + '".');
+    renderSum();
+    if (state.die.trials >= 1000 || state.sum.trials >= 1000) { setMilestone('dice', true); }
+    announce('Added ' + count + ' two-dice rolls. The most frequent sum so far is ' + mostFrequentSum() + '.');
+  }
+  function mostFrequentSum() {
+    var best = 2;
+    for (var sum = 3; sum <= 12; sum++) {
+      if ((state.sum.totals[sum] || 0) > (state.sum.totals[best] || 0)) { best = sum; }
+    }
+    return best;
+  }
+  function renderDie() {
+    var total = state.die.trials;
+    var set = function (id, text) { var node = document.getElementById(id); if (node) { node.textContent = text; } };
+    set('dieTotal', String(total));
+    var last = $('#dieLastBlock');
+    if (last) {
+      if (state.die.lastBlock) {
+        var block = state.die.lastBlock;
+        last.textContent = 'Last block: +' + block.count + ' rolls &rarr; ' + block.counts.slice(1).join(' / ');
+        last.className = 'chip obs';
+      } else { last.textContent = 'No rolls yet'; last.className = 'chip'; }
+    }
+    var expected = total / 6;
+    var body = $('#dieTableBody');
+    if (body) {
+      if (!total) {
+        body.innerHTML = '<tr><td colspan="5" class="muted">No rolls yet.</td></tr>';
+      } else {
+        var html = '';
+        var maxFace = 1, minFace = 1;
+        for (var f = 2; f <= 6; f++) {
+          if (state.die.counts[f] > state.die.counts[maxFace]) { maxFace = f; }
+          if (state.die.counts[f] < state.die.counts[minFace]) { minFace = f; }
+        }
+        for (var face = 1; face <= 6; face++) {
+          var count = state.die.counts[face];
+          var proportion = count / total;
+          var cls = '';
+          var note = '';
+          if (state.die.counts[maxFace] !== state.die.counts[minFace]) {
+            if (face === maxFace) { cls = ' class="hl-top"'; note = 'most often so far'; }
+            if (face === minFace) { cls = ' class="hl-bot"'; note = 'least often so far'; }
+          }
+          html += '<tr' + cls + '><th scope="row">' + face + '</th><td class="num obs-mark">' + count + '</td>' +
+            '<td class="num">' + fmt(proportion) + '</td><td class="num">' + fmt(1 / 6) + '</td>' +
+            '<td class="num">' + signed(proportion - 1 / 6) + (note ? ' <span class="muted small">(' + note + ')</span>' : '') + '</td></tr>';
+        }
+        html += '<tr class="total-row"><th scope="row">Total</th><td class="num">' + total + '</td><td class="num">1.000</td><td class="num">1.000</td><td class="num">&mdash;</td></tr>';
+        body.innerHTML = html;
+      }
+    }
+    var labels = ['1', '2', '3', '4', '5', '6'];
+    var observed = [1, 2, 3, 4, 5, 6].map(function (f) { return state.die.counts[f]; });
+    var theory = [1, 2, 3, 4, 5, 6].map(function () { return expected; });
+    drawGroupedBars($('#dieChart'), {
+      labels: labels,
+      series: [
+        { values: observed, color: '#ffd166', stroke: '#0b1220' },
+        { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
+      ],
+      xCaption: 'face of the die',
+      height: 260
+    });
+    seriesTable('dieChartTableBody', ['Face', 'Observed count', 'Observed proportion', 'Expected count', 'Bar (10 steps)'],
+      [1, 2, 3, 4, 5, 6].map(function (f) {
+        return [String(f), String(state.die.counts[f]), fmt(total ? state.die.counts[f] / total : 0),
+          fmt(expected, 1), progressBar(total ? state.die.counts[f] / Math.max(1, maxCountDie()) : 0, 10)];
+      }));
+  }
+  function maxCountDie() {
+    var max = 0;
+    for (var f = 1; f <= 6; f++) { if (state.die.counts[f] > max) { max = state.die.counts[f]; } }
+    return max;
+  }
+  function renderSum() {
+    if (!state.sum.totals.length) { state.sum.totals = new Array(13).fill(0); }
+    var total = state.sum.trials;
+    var set = function (id, text) { var node = document.getElementById(id); if (node) { node.textContent = text; } };
+    set('sumTotal', String(total));
+    var last = $('#sumLastBlock');
+    if (last) {
+      if (state.sum.lastBlock) {
+        last.textContent = 'Last block: +' + state.sum.lastBlock.count + ' rolls of two dice';
+        last.className = 'chip obs';
+      } else { last.textContent = 'No rolls yet'; last.className = 'chip'; }
+    }
+    var labels = [], observed = [], theory = [], rows = [];
+    for (var sum = 2; sum <= 12; sum++) {
+      var ways = PD.waysToMakeSum(sum, 6);
+      var count = state.sum.totals[sum] || 0;
+      var proportion = total ? count / total : 0;
+      var probability = ways / 36;
+      labels.push(String(sum));
+      observed.push(count);
+      theory.push(ways);
+      rows.push([String(sum), String(count), fmt(proportion), String(ways) + ' / 36', fmt(probability)]);
+    }
+    var body = $('#sumTableBody');
+    if (body) {
+      if (!total) {
+        body.innerHTML = '<tr><td colspan="5" class="muted">No rolls yet.</td></tr>';
+      } else {
+        var best = mostFrequentSum();
+        var html = '';
+        rows.forEach(function (row, index) {
+          var sum = index + 2;
+          var cls = sum === best ? ' class="hl-top"' : '';
+          var comment = '';
+          if (sum === 7) { comment = ' <span class="muted small">(most ways: 6 of 36)</span>'; }
+          if (sum === 2 || sum === 12) { comment = ' <span class="muted small">(fewest ways: 1 of 36)</span>'; }
+          html += '<tr' + cls + '><th scope="row">' + row[0] + '</th><td class="num obs-mark">' + row[1] + '</td>' +
+            '<td class="num">' + row[2] + '</td><td class="num">' + row[3] + comment + '</td><td class="num">' + row[4] + '</td></tr>';
+        });
+        var sumObserved = 0;
+        for (var s = 2; s <= 12; s++) { sumObserved += state.sum.totals[s] || 0; }
+        html += '<tr class="total-row"><th scope="row">Total</th><td class="num">' + sumObserved + '</td><td class="num">1.000</td><td class="num">36 / 36</td><td class="num">1.000</td></tr>';
+        body.innerHTML = html;
+      }
+    }
+    drawGroupedBars($('#sumChart'), {
+      labels: labels,
+      series: [
+        { values: observed, color: '#ffd166', stroke: '#0b1220' },
+        { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
+      ],
+      xCaption: 'sum of the two dice (observed count next to ways out of 36)',
+      height: 280
+    });
+    seriesTable('sumChartTableBody', ['Sum', 'Observed count', 'Observed proportion', 'Ways out of 36', 'Theoretical probability'],
+      rows.map(function (row, index) { return [row[0], row[1], row[2], row[3], row[4]]; }));
+    /* keep the last block visible as a sentence, so the numbers are never only in a chart */
+    var blockNote = $('#sumLastBlockNote');
+    if (blockNote && state.sum.lastBlock) {
+      var parts = [];
+      for (var s2 = 2; s2 <= 12; s2++) { parts.push(s2 + ': ' + state.sum.lastBlock.totals[s2]); }
+      blockNote.textContent = 'In the last block of ' + state.sum.lastBlock.count + ' rolls: ' + parts.join(', ') + '.';
+    }
+  }
+  function initDice() {
+    state.sum.totals = new Array(13).fill(0);
+    $$('[data-rolls]').forEach(function (button) {
+      button.addEventListener('click', function () { runDie(Number(button.getAttribute('data-rolls'))); });
+    });
+    $$('[data-sums]').forEach(function (button) {
+      button.addEventListener('click', function () { runSums(Number(button.getAttribute('data-sums'))); });
+    });
+    var dieReset = $('#dieReset');
+    if (dieReset) {
+      dieReset.addEventListener('click', function () {
+        state.die.trials = 0; state.die.counts = [0, 0, 0, 0, 0, 0, 0]; state.die.lastBlock = null;
+        applySeed(state.seedText, true);
+        renderDie(); announce('One-die experiment reset. Same seed, so the same rolls will come back in the same order.');
+      });
+    }
+    var sumReset = $('#sumReset');
+    if (sumReset) {
+      sumReset.addEventListener('click', function () {
+        state.sum.trials = 0; state.sum.totals = new Array(13).fill(0); state.sum.lastBlock = null;
+        applySeed(state.seedText, true);
+        renderSum(); announce('Two-dice experiment reset. Same seed, so the same rolls will come back in the same order.');
+      });
+    }
+    /* dice sub-tabs */
+    var dieTabs = [['one', 'tab-die1', 'dieTab1'], ['sum', 'tab-die2', 'dieTab2'], ['why', 'tab-die3', 'dieTab3']];
+    function showDieTab(which, focus) {
+      dieTabs.forEach(function (entry) {
+        var tab = document.getElementById(entry[1]);
+        var panel = document.getElementById(entry[2]);
+        var current = entry[0] === which;
+        if (tab) { tab.setAttribute('aria-selected', current ? 'true' : 'false'); tab.tabIndex = current ? 0 : -1; }
+        if (panel) { panel.hidden = !current; }
+      });
+      if (focus) {
+        var target = document.getElementById(dieTabs.filter(function (e) { return e[0] === which; })[0][2]);
+        if (target) { target.focus({ preventScroll: true }); }
+      }
+      if (which === 'one') { renderDie(); }
+      if (which === 'sum') { renderSum(); }
+    }
+    dieTabs.forEach(function (entry) {
+      var tab = document.getElementById(entry[1]);
+      if (!tab) { return; }
+      tab.addEventListener('click', function () { showDieTab(entry[0], false); });
+      tab.addEventListener('keydown', function (event) {
+        if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].indexOf(event.key) === -1) { return; }
+        event.preventDefault();
+        var order = ['one', 'sum', 'why'];
+        var index = order.indexOf(entry[0]);
+        var next = index + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1);
+        next = (next + order.length) % order.length;
+        var nextTab = document.getElementById(dieTabs.filter(function (e) { return e[0] === order[next]; })[0][1]);
+        if (nextTab) { nextTab.focus(); }
+        showDieTab(order[next], false);
+      });
+    });
+    showDieTab('one', false);
+    buildDiceGrid();
+    renderDie();
+    renderSum();
+    renderWaysTable();
+  }
+
+  /* ---------- WHICH SUMS WIN: 36-cell grid ------------------------------ */
+  function buildDiceGrid() {
+    var host = $('#diceGridHost');
+    if (!host) { return; }
+    var html = '';
+    var first = true;
+    for (var row = 1; row <= 6; row++) {
+      if (first) { html += '<span class="hdr" aria-hidden="true"></span>'; first = false; }
+      html += '<span class="hdr" aria-hidden="true">die 2: ' + row + '</span>';
+    }
+    for (var a = 1; a <= 6; a++) {
+      html += '<span class="hdr" aria-hidden="true">die 1: ' + a + '</span>';
+      for (var b = 1; b <= 6; b++) {
+        var sum = a + b;
+        html += '<button type="button" class="cell freq-' + PD.waysToMakeSum(sum, 6) + '" data-cell-sum="' + sum + '" data-a="' + a + '" data-b="' + b +
+          '" aria-pressed="false" aria-label="Die one shows ' + a + ', die two shows ' + b + ', sum ' + sum + '. Press to highlight all pairs that make ' + sum + '.">' + sum + '</button>';
+      }
+    }
+    host.innerHTML = html;
+    var cells = $$('.cell', host);
+    cells.forEach(function (cell) {
+      cell.tabIndex = 0;
+      cell.addEventListener('click', function () {
+        var sum = Number(cell.getAttribute('data-cell-sum'));
+        highlightSum(state.gridSum === sum ? 0 : sum, cell.getAttribute('aria-label'));
+      });
+      cell.addEventListener('keydown', function (event) {
+        var index = cells.indexOf(cell);
+        var row = Math.floor(index / 6), col = index % 6;
+        var moved = false;
+        if (event.key === 'ArrowRight') { col = Math.min(5, col + 1); moved = true; }
+        if (event.key === 'ArrowLeft') { col = Math.max(0, col - 1); moved = true; }
+        if (event.key === 'ArrowDown') { row = Math.min(5, row + 1); moved = true; }
+        if (event.key === 'ArrowUp') { row = Math.max(0, row - 1); moved = true; }
+        if (event.key === 'Home') { row = 0; col = 0; moved = true; }
+        if (event.key === 'End') { row = 5; col = 5; moved = true; }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          var sum = Number(cell.getAttribute('data-cell-sum'));
+          highlightSum(state.gridSum === sum ? 0 : sum, cell.getAttribute('aria-label'));
+          return;
+        }
+        if (!moved) { return; }
+        event.preventDefault();
+        var next = cells[row * 6 + col];
+        if (next) { next.focus(); }
+      });
+    });
+  }
+  function highlightSum(sum, label) {
+    state.gridSum = sum;
+    var host = $('#diceGridHost');
+    if (!host) { return; }
+    $$('.cell', host).forEach(function (cell) {
+      var matches = sum === 0 || Number(cell.getAttribute('data-cell-sum')) === sum;
+      cell.setAttribute('aria-pressed', matches && sum !== 0 ? 'true' : 'false');
+      cell.style.opacity = matches ? '1' : '0.45';
+    });
+    var status = $('#diceGridStatus');
+    if (status) {
+      if (!sum) {
+        status.textContent = 'Showing all 36 pairs. Press a sum, or focus a cell and press Enter.';
+        status.className = 'chip';
+      } else {
+        var ways = PD.waysToMakeSum(sum, 6);
+        status.textContent = 'Sum ' + sum + ' can be made in ' + ways + ' of 36 equally likely ways, so its probability is ' +
+          ways + '/36 = ' + fmt(ways / 36, 4) + '.  (focused cell: ' + (label || '') + ')';
+        status.className = 'chip obs';
+      }
+    }
+    announce(status ? status.textContent : '');
+  }
+  function renderWaysTable() {
+    var body = $('#waysTableBody');
+    if (!body) { return; }
+    var html = '';
+    for (var sum = 2; sum <= 12; sum++) {
+      var ways = PD.waysToMakeSum(sum, 6);
+      var comment = ways === 6 ? 'the most likely sum: six different pairs make it' :
+        (ways === 1 ? 'only one pair can make it: the least likely sums' : (ways === 5 ? 'second most likely' : ''));
+      html += '<tr' + (ways === 6 ? ' class="hl-top"' : '') + '><th scope="row">' + sum + '</th><td class="num obs-mark">' + ways +
+        '</td><td class="num">' + ways + '/36 = ' + fmt(ways / 36, 4) + '</td><td>' + comment + '</td></tr>';
+    }
+    body.innerHTML = html;
+  }
+
+  /* ---------- FAIR GAME DESIGNER ---------------------------------------- */
+  function configSummary(config) {
+    return 'you: ' + PD.conditionLabel(config.you.condition, { sides: 6, targets: config.you.targets }) + ' for ' + config.you.points +
+      ' pt; rival: ' + PD.conditionLabel(config.rival.condition, { sides: 6, targets: config.rival.targets }) + ' for ' + config.rival.points + ' pt';
+  }
+  function gameOverlap() {
+    return PD.conditionsOverlap(
+      { condition: state.game.you.condition, targets: state.game.you.targets },
+      { condition: state.game.rival.condition, targets: state.game.rival.targets },
+      { sides: 6 }
+    );
+  }
+  function renderGame() {
+    var youP = PD.conditionProbability(state.game.you.condition, { sides: 6, targets: state.game.you.targets });
+    var rivP = PD.conditionProbability(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets });
+    var youE = PD.expectedPerTurn(youP, state.game.you.points);
+    var rivE = PD.expectedPerTurn(rivP, state.game.rival.points);
+    var overlap = gameOverlap();
+
+    var set = function (id, text) { var node = document.getElementById(id); if (node) { node.textContent = text; } };
+    set('youPts', String(state.game.you.points));
+    set('rivPts', String(state.game.rival.points));
+    set('youProbLine', 'Probability your condition comes up: ' + fmt(youP * 6, 2) + '/6 = ' + fmt(youP) +
+      '  (' + PD.conditionLabel(state.game.you.condition, { sides: 6, targets: state.game.you.targets }) + ')');
+    set('rivProbLine', 'Probability Rival\u2019s condition comes up: ' + fmt(rivP * 6, 2) + '/6 = ' + fmt(rivP) +
+      '  (' + PD.conditionLabel(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets }) + ')');
+    var youWrap = $('#youTargetWrap'), rivWrap = $('#rivTargetWrap');
+    if (youWrap) { youWrap.hidden = state.game.you.condition !== 'match2'; }
+    if (rivWrap) { rivWrap.hidden = state.game.rival.condition !== 'match2'; }
+
+    var body = $('#fairTableBody');
+    if (body) {
+      body.innerHTML =
+        '<tr><th scope="row">You</th><td>' + esc(PD.conditionLabel(state.game.you.condition, { sides: 6, targets: state.game.you.targets })) +
+        '</td><td class="num">' + fmt(youP) + '</td><td class="num">' + state.game.you.points + '</td><td class="num obs-mark">' + fmt(youE) + '</td></tr>' +
+        '<tr><th scope="row">Rival</th><td>' + esc(PD.conditionLabel(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets })) +
+        '</td><td class="num">' + fmt(rivP) + '</td><td class="num">' + state.game.rival.points + '</td><td class="num obs-mark">' + fmt(rivE) + '</td></tr>';
+    }
+    var verdict = $('#fairVerdictBody');
+    var card = $('#fairVerdict');
+    if (verdict) {
+      if (overlap) {
+        if (card) { card.className = 'feedback warn'; }
+        verdict.innerHTML = '<p><strong>These two conditions overlap, so the model does not apply as written.</strong> Both sides would score on the same roll, and the &ldquo;expected points&rdquo; would double-count those outcomes.</p>' +
+          '<div class="calc-line">your condition: {' + PD.conditionValues(state.game.you.condition, { sides: 6, targets: state.game.you.targets }).join(', ') + '}<br>' +
+          'rival condition: {' + PD.conditionValues(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets }).join(', ') + '}<br>' +
+          'shared rolls: {' + PD.conditionValues(state.game.you.condition, { sides: 6, targets: state.game.you.targets })
+            .filter(function (v) { return PD.conditionValues(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets }).indexOf(v) !== -1; }).join(', ') + '}</div>' +
+          '<p>Fix it in one of two ways: give each side a different set of numbers, or decide explicitly that a shared roll scores for neither side (a &ldquo;no score&rdquo; rule). Either is a real design decision &mdash; just write it down before you calculate.</p>';
+      } else if (youP === 0 || rivP === 0) {
+        if (card) { card.className = 'feedback info'; }
+        verdict.innerHTML = '<p>One side can never score, so the expected value of that side is 0 by definition &mdash; no simulation needed to see that. Give the side a condition it can actually hit, or say clearly in the rules that this game is not symmetric.</p>';
+      } else if (Math.abs(youE - rivE) < 1e-9) {
+        if (card) { card.className = 'feedback ok'; }
+        verdict.innerHTML = '<p><strong>Fair.</strong> Both sides have the same expected points per turn: ' + fmt(youE) + '. Your probability &times; your points equals the rival\u2019s probability &times; their points, so neither side gains an advantage in the long run.</p>' +
+          '<div class="calc-line">you:   ' + fmt(youP) + ' &times; ' + state.game.you.points + ' = ' + fmt(youE) +
+          '<br>rival: ' + fmt(rivP) + ' &times; ' + state.game.rival.points + ' = ' + fmt(rivE) +
+          '<br>difference: ' + fmt(youE - rivE) + ' points per turn</div>' +
+          '<p>Notice what fairness did <em>not</em> require: the two conditions do not have to look alike, and the two rewards do not have to be equal. A rare win can be worth more points and still be fair.</p>';
+      } else {
+        var leader = youE > rivE ? 'You' : 'the Rival';
+        var gap = Math.abs(youE - rivE);
+        if (card) { card.className = 'feedback warn'; }
+        verdict.innerHTML = '<p><strong>Not fair yet.</strong> ' + leader + ' have the advantage: ' + fmt(gap) + ' expected points per turn.</p>' +
+          '<div class="calc-line">you:   ' + fmt(youP) + ' &times; ' + state.game.you.points + ' points = ' + fmt(youE) + ' points per turn' +
+          '<br>rival: ' + fmt(rivP) + ' &times; ' + state.game.rival.points + ' points = ' + fmt(rivE) + ' points per turn' +
+          '<br>gap:   ' + fmt(youE) + ' &minus; ' + fmt(rivE) + ' = ' + (youE > rivE ? '+' : '\u2212') + fmt(gap) + '</div>' +
+          '<p><strong>Worked fix:</strong> to make it fair, one side\u2019s expected points must equal the other\u2019s. Keeping the probabilities fixed, the rival\u2019s fair payout would be ' +
+          '(your probability &times; your points) &divide; rival\u2019s probability = (' + fmt(youP) + ' &times; ' + state.game.you.points + ') &divide; ' + fmt(rivP) + ' = <strong>' +
+          fmt(PD.payoutForFairGame(youP, state.game.you.points, rivP), 2) + '</strong> points. Because points here are whole numbers, that value may not be reachable exactly &mdash; then adjust the conditions instead (for example swap <em>even</em> for <em>1, 2 or 3</em>), ' +
+          'and the arithmetic will tell you immediately.</p>' +
+          qfix(youP, rivP, youE, rivE) +
+          '<p>Changing the payout by one point moves the expected value by the probability of winning &mdash; that is why a change to a common condition moves the balance much more than a change to a rare one.</p>';
+      }
+    }
+  }
+  function qfix(youP, rivP, youE, rivE) {
+    /* the friendliest exact repair: find whole-number points that are exactly fair */
+    for (var a = 1; a <= 60; a++) {
+      for (var b = 1; b <= 60; b++) {
+        if (Math.abs(youP * a - rivP * b) < 1e-9 && (a !== state.game.you.points || b !== state.game.rival.points)) {
+          return '<p><strong>One exact solution with whole numbers:</strong> ' + a + ' points for your side (' + fmt(youP) + ' &times; ' + a + ' = ' + fmt(youP * a) +
+            ') and ' + b + ' points for the rival (' + fmt(rivP) + ' &times; ' + b + ' = ' + fmt(rivP * b) + '). Try those two numbers in the steppers and the verdict will change.</p>';
+        }
+      }
+    }
+    return '';
+  }
+  function resetGameSim() {
+    state.game.turns = 0; state.game.youPts = 0; state.game.rivPts = 0; state.game.rows = [];
+    renderGameSim(true);
+  }
+  function runGame(turns) {
+    if (gameOverlap()) {
+      announce('These conditions overlap, so the simulation is blocked until the rules are unambiguous.');
+      var verdict = $('#fairVerdictBody');
+      if (verdict) { verdict.scrollIntoView({ block: 'center' }); }
+      return;
+    }
+    var result = PD.simulateGame(turns, { sides: 6, you: state.game.you, rival: state.game.rival }, state.rng);
+    state.game.turns += turns;
+    state.game.youPts += result.youPoints;
+    state.game.rivPts += result.rivalPoints;
+    state.game.rows.push(result);
+    addEvidence('Fair Game', 'Simulated ' + turns + ' turns (' + configSummary(state.game) + '). Block: you ' + result.youPoints +
+      ' pts, rival ' + result.rivalPoints + ' pts. Running averages you ' + fmt(state.game.youPts / state.game.turns) +
+      ' / rival ' + fmt(state.game.rivPts / state.game.turns) + '. Seed "' + state.seedText + '".');
+    renderGameSim(false);
+    if (Math.abs(PD.expectedPerTurn(PD.conditionProbability(state.game.you.condition, { sides: 6, targets: state.game.you.targets }), state.game.you.points) -
+      PD.expectedPerTurn(PD.conditionProbability(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets }), state.game.rival.points)) < 1e-9 &&
+      state.game.turns >= 600) {
+      setMilestone('game', true);
+    }
+    announce('Played ' + turns + ' turns. You have ' + state.game.youPts + ' points, the rival has ' + state.game.rivPts + '.');
+  }
+  function renderGameSim(cleared) {
+    var body = $('#gameSimBody');
+    var note = $('#gameSimNote');
+    var noteBody = $('#gameSimNoteBody');
+    if (!body) { return; }
+    if (!state.game.rows.length) {
+      body.innerHTML = '<tr><td colspan="5" class="muted">' + (cleared ? 'Simulation reset. ' : '') + 'No turns played yet. Set the rules, then press a button above.</td></tr>';
+      if (note) { note.hidden = true; }
+      return;
+    }
+    var html = '';
+    state.game.rows.forEach(function (row, index) {
+      var label = index === state.game.rows.length - 1 ? 'latest block: ' + row.turns + ' turns' : row.turns + ' turns';
+      html += '<tr><td>' + label + '</td><td class="num">' + row.youPoints + '</td><td class="num">' + row.rivalPoints +
+        '</td><td class="num">' + fmt(row.youAverage) + ' / ' + fmt(row.rivalAverage) + '</td><td class="num">' + signed(row.youAverage - row.rivalAverage) + '</td></tr>';
+    });
+    var youAvg = state.game.youPts / state.game.turns;
+    var rivAvg = state.game.rivPts / state.game.turns;
+    html += '<tr class="total-row"><td>All ' + state.game.turns + ' turns</td><td class="num">' + state.game.youPts + '</td><td class="num">' + state.game.rivPts +
+      '</td><td class="num">' + fmt(youAvg) + ' / ' + fmt(rivAvg) + '</td><td class="num">' + signed(youAvg - rivAvg) + '</td></tr>';
+    body.innerHTML = html;
+
+    var youP = PD.conditionProbability(state.game.you.condition, { sides: 6, targets: state.game.you.targets });
+    var rivP = PD.conditionProbability(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets });
+    var youE = PD.expectedPerTurn(youP, state.game.you.points);
+    var rivE = PD.expectedPerTurn(rivP, state.game.rival.points);
+    if (note && noteBody) {
+      note.hidden = false;
+      var spread = 1.5 / Math.sqrt(Math.max(1, state.game.turns));
+      noteBody.innerHTML = 'After ' + state.game.turns + ' turns the observed averages are ' + fmt(youAvg) + ' and ' + fmt(rivAvg) +
+        ' per turn, while the arithmetic says ' + fmt(youE) + ' and ' + fmt(rivE) + '. With this many turns, a gap of about ' + fmt(spread) +
+        ' between an observed average and its expected value is ordinary noise. Play more turns and the observed averages usually move closer to the arithmetic &mdash; ' +
+        'that is what &ldquo;long run&rdquo; means, and it is also why a lucky short series proves nothing about a game.';
+    }
+  }
+  function initGame() {
+    var youCond = $('#youCond'), rivCond = $('#rivCond'), youTarget = $('#youTarget'), rivTarget = $('#rivTarget');
+    if (youCond) { youCond.addEventListener('change', function () { state.game.you.condition = youCond.value; resetGameSim(); renderGame(); }); }
+    if (rivCond) { rivCond.addEventListener('change', function () { state.game.rival.condition = rivCond.value; resetGameSim(); renderGame(); }); }
+    if (youTarget) { youTarget.addEventListener('change', function () { state.game.you.targets = youTarget.value; resetGameSim(); renderGame(); }); }
+    if (rivTarget) { rivTarget.addEventListener('change', function () { state.game.rival.targets = rivTarget.value; resetGameSim(); renderGame(); }); }
+    var steppers = [
+      ['youMinus', 'you', -1], ['youPlus', 'you', 1], ['rivMinus', 'rival', -1], ['rivPlus', 'rival', 1]
+    ];
+    steppers.forEach(function (entry) {
+      var button = document.getElementById(entry[0]);
+      if (!button) { return; }
+      button.addEventListener('click', function () {
+        var side = state.game[entry[1]];
+        side.points = PD.clamp(side.points + entry[2], 1, MAX_POINTS);
+        resetGameSim();
+        renderGame();
+        announce((entry[1] === 'you' ? 'Your points: ' : 'Rival points: ') + side.points);
+      });
+    });
+    var swap = $('#swapSides');
+    if (swap) {
+      swap.addEventListener('click', function () {
+        var tmp = state.game.you;
+        state.game.you = state.game.rival;
+        state.game.rival = tmp;
+        syncGameControls();
+        resetGameSim();
+        renderGame();
+        announce('Conditions swapped.');
+      });
+    }
+    var fairter = $('#setFairter');
+    if (fairter) {
+      fairter.addEventListener('click', function () {
+        var youP = PD.conditionProbability(state.game.you.condition, { sides: 6, targets: state.game.you.targets });
+        var rivP = PD.conditionProbability(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets });
+        var solved = false;
+        for (var a = state.game.you.points; a <= MAX_POINTS && !solved; a++) {
+          for (var b = 1; b <= MAX_POINTS; b++) {
+            if (Math.abs(youP * a - rivP * b) < 1e-9) {
+              state.game.you.points = a;
+              state.game.rival.points = b;
+              solved = true;
+              break;
+            }
+          }
+        }
+        resetGameSim();
+        renderGame();
+        announce(solved ? 'Points set to the fairest whole numbers available within twelve points.' :
+          'No exact whole-number solution exists within twelve points for these conditions. Change a condition, or read the worked fix.');
+      });
+    }
+    var example = $('#perfectMatch');
+    if (example) {
+      example.addEventListener('click', function () {
+        state.game.you.condition = 'matchOne';
+        state.game.rival.condition = 'match2';
+        state.game.you.targets = '6';
+        state.game.rival.targets = '1,2';
+        state.game.you.points = 6;
+        state.game.rival.points = 3;
+        syncGameControls();
+        resetGameSim();
+        renderGame();
+        announce('Example loaded: you win 6 points only on a six, the rival wins 3 points on a one or a two. Check the verdict.');
+      });
+    }
+    $$('[data-gameturns]').forEach(function (button) {
+      button.addEventListener('click', function () { runGame(Number(button.getAttribute('data-gameturns'))); });
+    });
+    var reset = $('#gameReset');
+    if (reset) { reset.addEventListener('click', function () { resetGameSim(); announce('Simulation reset. The rules are unchanged.'); }); }
+    renderGame();
+    renderGameSim(true);
+  }
+  function syncGameControls() {
+    var youCond = $('#youCond'), rivCond = $('#rivCond'), youTarget = $('#youTarget'), rivTarget = $('#rivTarget');
+    if (youCond) { youCond.value = state.game.you.condition; }
+    if (rivCond) { rivCond.value = state.game.rival.condition; }
+    if (youTarget && state.game.you.targets) { youTarget.value = state.game.you.targets; }
+    if (rivTarget && state.game.rival.targets) { rivTarget.value = state.game.rival.targets; }
+  }
+
+  /* ---------- FINAL CHALLENGE ------------------------------------------- */
+  var CHAL_CONDITIONS = {
+    coin: [['heads', 'the coin shows heads'], ['tails', 'the coin shows tails']],
+    biased: [['heads', 'the coin shows heads (P = 0.75)'], ['tails', 'the coin shows tails (P = 0.25)']],
+    die: [['odd', 'an odd number (1, 3, 5)'], ['even', 'an even number (2, 4, 6)'], ['low', '1, 2 or 3'], ['high', '4, 5 or 6'], ['six', 'exactly a 6']]
+  };
+  var CHAL_PROBABILITY = {
+    coin: { heads: 0.5, tails: 0.5 },
+    biased: { heads: 0.75, tails: 0.25 },
+    die: { odd: 0.5, even: 0.5, low: 0.5, high: 0.5, six: 1 / 6 }
+  };
+  var CHAL_COMPLEMENT = { heads: 'tails', tails: 'heads', odd: 'even', even: 'odd', low: 'high', high: 'low', six: null };
+  function chalProbability(machine, condition) {
+    var table = CHAL_PROBABILITY[machine] || {};
+    return table[condition] === undefined ? 0 : table[condition];
+  }
+  function fillChallengeConditions(machine) {
+    var youSelect = $('#chalYouCond'), rivSelect = $('#chalRivCond');
+    var list = CHAL_CONDITIONS[machine] || CHAL_CONDITIONS.coin;
+    [youSelect, rivSelect].forEach(function (select) {
+      if (!select) { return; }
+      select.innerHTML = list.map(function (pair) {
+        return '<option value="' + pair[0] + '">' + esc(pair[1]) + '</option>';
+      }).join('');
+    });
+    if (youSelect) { youSelect.value = list[0][0]; }
+    if (rivSelect) { rivSelect.value = list[1] ? list[1][0] : list[0][0]; }
+    state.chal.you.condition = youSelect ? youSelect.value : list[0][0];
+    state.chal.rival.condition = rivSelect ? rivSelect.value : list[0][0];
+  }
+  function chalOverlap() {
+    return state.chal.you.condition === state.chal.rival.condition;
+  }
+  function renderChallenge() {
+    var machine = state.chal.machine;
+    var youP = chalProbability(machine, state.chal.you.condition);
+    var rivP = chalProbability(machine, state.chal.rival.condition);
+    var youE = youP * state.chal.you.points;
+    var rivE = rivP * state.chal.rival.points;
+    var set = function (id, text) { var node = document.getElementById(id); if (node) { node.textContent = text; } };
+    set('chalYouPts', String(state.chal.you.points));
+    set('chalRivPts', String(state.chal.rival.points));
+    var body = $('#chalTableBody');
+    if (body) {
+      body.innerHTML = '<tr><th scope="row">You</th><td class="num">' + fmt(youP) + '</td><td class="num">' + state.chal.you.points +
+        '</td><td class="num obs-mark">' + fmt(youE) + '</td></tr>' +
+        '<tr><th scope="row">Rival</th><td class="num">' + fmt(rivP) + '</td><td class="num">' + state.chal.rival.points +
+        '</td><td class="num obs-mark">' + fmt(rivE) + '</td></tr>';
+    }
+    var check = $('#chalCheck'), checkBody = $('#chalCheckBody');
+    if (checkBody) {
+      if (chalOverlap()) {
+        if (check) { check.className = 'feedback warn'; }
+        checkBody.innerHTML = '<p><strong>Both sides win on the same outcome.</strong> Then a single result scores for both, and &ldquo;expected points per turn&rdquo; no longer describes a competition between two sides &mdash; it describes one event with two prizes. Pick a different outcome for the rival, or state a no-score rule, and check again.</p>';
+      } else if (youP === 0 || rivP === 0) {
+        if (check) { check.className = 'feedback info'; }
+        checkBody.innerHTML = '<p>An outcome that cannot happen has probability 0, so that side\u2019s expected points are 0 &mdash; the calculation is fine, the game is just extremely one-sided.</p>';
+      } else if (Math.abs(youE - rivE) < 1e-9) {
+        if (check) { check.className = 'feedback ok'; }
+        checkBody.innerHTML = '<p><strong>Fair so far.</strong> ' + fmt(youP) + ' &times; ' + state.chal.you.points + ' = ' + fmt(youE) +
+          ' and ' + fmt(rivP) + ' &times; ' + state.chal.rival.points + ' = ' + fmt(rivE) + '. Equal expected points per turn. Now run the evidence below and see how a short series can still look lopsided.</p>';
+      } else {
+        var gap = Math.abs(youE - rivE);
+        if (check) { check.className = 'feedback warn'; }
+        var needed = PD.payoutForFairGame(youP, state.chal.you.points, rivP);
+        checkBody.innerHTML = '<p>Not fair yet: the gap is ' + fmt(gap) + ' expected points per turn in favour of ' + (youE > rivE ? 'you' : 'the rival') + '.</p>' +
+          '<div class="calc-line">you:   ' + fmt(youP) + ' &times; ' + state.chal.you.points + ' = ' + fmt(youE) +
+          '<br>rival: ' + fmt(rivP) + ' &times; ' + state.chal.rival.points + ' = ' + fmt(rivE) +
+          '<br>fair rival payout would be (' + fmt(youP) + ' &times; ' + state.chal.you.points + ') &divide; ' + fmt(rivP) + ' = ' + fmt(needed, 2) + '</div>' +
+          '<p>' + (needed === null ? 'The rival can never score, so no payout can balance the game.' :
+            (Math.abs(needed - Math.round(needed)) < 1e-9 ?
+              'Whole numbers work here: set the rival\u2019s points to ' + Math.round(needed) + '.' :
+              'That payout is not a whole number, so with these two outcomes no whole-number points make it exactly fair. A real designer\u2019s move: change the machine or the outcome (for example add one more winning face for the rival) and recalculate.')) + '</p>';
+      }
+    }
+    if (state.chal.result) { renderChallengeResult(); }
+  }
+  function renderChallengeResult() {
+    var host = $('#chalResult');
+    if (!host || !state.chal.result) { return; }
+    var r = state.chal.result;
+    var rows = '';
+    r.youRow.forEach(function (label, index) {
+      rows += '<tr><th scope="row">' + esc(label) + '</th><td class="num">' + r.youCounts[index] + '</td><td class="num">' + fmt(r.observedProportions[index]) +
+        '</td><td class="num">' + fmt(r.theoreticalProportions[index]) + '</td></tr>';
+    });
+    host.innerHTML = '<div class="feedback calc"><div class="fb-head"><span class="fb-icon" aria-hidden="true">&#10003;</span><span>Evidence from your own game</span></div>' +
+      '<p>Machine: <strong>' + esc(r.machineLabel) + '</strong>. ' + r.trials + ' turns played with seed <code>' + esc(r.seed) + '</code>.</p>' +
+      '<div class="table-wrap"><table><caption>How often each outcome actually happened in your game</caption><thead><tr><th scope="col">Outcome</th><th scope="col" class="num">Count</th><th scope="col" class="num">Observed proportion</th><th scope="col" class="num">Theoretical probability</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div>' +
+      '<div class="table-wrap" style="margin-top:12px"><table><caption>Points from your game</caption><thead><tr><th scope="col">Side</th><th scope="col" class="num">Total points</th><th scope="col" class="num">Average per turn</th><th scope="col" class="num">Expected per turn (arithmetic)</th><th scope="col" class="num">Difference</th></tr></thead><tbody>' +
+      '<tr><th scope="row">You</th><td class="num">' + r.youPoints + '</td><td class="num">' + fmt(r.youPoints / r.trials) + '</td><td class="num">' + fmt(r.youExpected) + '</td><td class="num">' + signed(r.youPoints / r.trials - r.youExpected) + '</td></tr>' +
+      '<tr><th scope="row">Rival</th><td class="num">' + r.rivalPoints + '</td><td class="num">' + fmt(r.rivalPoints / r.trials) + '</td><td class="num">' + fmt(r.rivalExpected) + '</td><td class="num">' + signed(r.rivalPoints / r.trials - r.rivalExpected) + '</td></tr>' +
+      '</tbody></table></div>' +
+      '<p style="margin-top:12px">' + r.verdict + '</p>' +
+      '<p class="small muted">Run it again with another seed to see a different wobble around the same two expected values.</p></div>';
+  }
+  function challengeRows() {
+    var machine = state.chal.machine;
+    if (machine === 'die') {
+      return {
+        labels: ['1', '2', '3', '4', '5', '6'],
+        values: [1, 2, 3, 4, 5, 6],
+        probabilities: [1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6],
+        machineLabel: 'fair six-sided die'
+      };
+    }
+    if (machine === 'biased') {
+      return {
+        labels: ['heads', 'tails'], values: ['heads', 'tails'], probabilities: [0.75, 0.25],
+        machineLabel: 'biased coin, P(heads) = 0.75'
+      };
+    }
+    return {
+      labels: ['heads', 'tails'], values: ['heads', 'tails'], probabilities: [0.5, 0.5],
+      machineLabel: 'fair coin'
+    };
+  }
+  function runChallenge() {
+    if (chalOverlap()) {
+      announce('Your two conditions are the same, so this game is not a competition between two sides yet.');
+      var check = $('#chalCheck');
+      if (check) { check.scrollIntoView({ block: 'center' }); }
+      return;
+    }
+    var spec = challengeRows();
+    var turns = 400;
+    var counts = new Array(spec.values.length).fill(0);
+    var youPoints = 0, rivalPoints = 0;
+    var youP = chalProbability(state.chal.machine, state.chal.you.condition);
+    var rivP = chalProbability(state.chal.machine, state.chal.rival.condition);
+    for (var i = 0; i < turns; i++) {
+      var value = state.chal.machine === 'die' ? PD.rollDie(state.rng, 6) : (state.rng.random() < (state.chal.machine === 'biased' ? 0.75 : 0.5) ? 'heads' : 'tails');
+      var index = spec.values.indexOf(value);
+      if (index >= 0) { counts[index] += 1; }
+      if (value === state.chal.you.condition) { youPoints += state.chal.you.points; }
+      if (value === state.chal.rival.condition) { rivalPoints += state.chal.rival.points; }
+    }
+    var youE = youP * state.chal.you.points;
+    var rivE = rivP * state.chal.rival.points;
+    var fair = Math.abs(youE - rivE) < 1e-9;
+    var verdict;
+    if (fair) {
+      verdict = 'Your design is fair: the two expected values are equal at ' + fmt(youE) + ' points per turn. The totals above are not equal &mdash; they rarely are over ' + turns +
+        ' turns &mdash; and that gap is not a flaw in your design. It is the wobble of a finite sample, and it is exactly why a short series must never be used as proof that a game is or is not fair.';
+    } else {
+      verdict = 'Your design is not fair yet: ' + fmt(Math.abs(youE - rivE)) + ' points per turn separate the two sides, in favour of ' + (youE > rivE ? 'you' : 'the rival') +
+        '. Finish the design before reading the simulation: get the two expected values equal in the table above, then run the evidence again.';
+    }
+    state.chal.result = {
+      trials: turns, machineLabel: spec.machineLabel, seed: state.seedText,
+      youCounts: counts, youRow: spec.labels,
+      observedProportions: counts.map(function (c) { return c / turns; }),
+      theoreticalProportions: spec.probabilities,
+      youPoints: youPoints, rivalPoints: rivalPoints, youExpected: youE, rivalExpected: rivE,
+      verdict: verdict, fair: fair
+    };
+    state.chal.ran = true;
+    addEvidence('Final challenge', 'Designed game on ' + spec.machineLabel + ': you win on "' + state.chal.you.condition + '" for ' + state.chal.you.points +
+      ' pt, rival on "' + state.chal.rival.condition + '" for ' + state.chal.rival.points + ' pt. Expected per turn: you ' + fmt(youE) +
+      ', rival ' + fmt(rivE) + ' &mdash; ' + (fair ? 'FAIR' : 'NOT FAIR') + '. 400 simulated turns: you ' + youPoints + ', rival ' + rivalPoints + '. Seed "' + state.seedText + '".');
+    renderChallengeResult();
+    if (fair) { setMilestone('game', true); }
+    announce('Your game ran for ' + turns + ' turns. ' + (fair ? 'Your design is fair by the arithmetic.' : 'Your design is still unequal.'));
+  }
+  function initChallenge() {
+    var machine = $('#chalMachine');
+    if (machine) {
+      machine.addEventListener('change', function () {
+        state.chal.machine = machine.value;
+        fillChallengeConditions(state.chal.machine);
+        state.chal.result = null;
+        $('#chalResult').innerHTML = '';
+        renderChallenge();
+      });
+    }
+    var youCond = $('#chalYouCond'), rivCond = $('#chalRivCond');
+    if (youCond) { youCond.addEventListener('change', function () { state.chal.you.condition = youCond.value; state.chal.result = null; $('#chalResult').innerHTML = ''; renderChallenge(); }); }
+    if (rivCond) { rivCond.addEventListener('change', function () { state.chal.rival.condition = rivCond.value; state.chal.result = null; $('#chalResult').innerHTML = ''; renderChallenge(); }); }
+    [['chalYouMinus', 'you', -1], ['chalYouPlus', 'you', 1], ['chalRivMinus', 'rival', -1], ['chalRivPlus', 'rival', 1]].forEach(function (entry) {
+      var button = document.getElementById(entry[0]);
+      if (!button) { return; }
+      button.addEventListener('click', function () {
+        var side = state.chal[entry[1]];
+        side.points = PD.clamp(side.points + entry[2], 1, MAX_POINTS);
+        renderChallenge();
+      });
+    });
+    $$('[data-chalturns]').forEach(function (button) {
+      button.addEventListener('click', function () { runChallenge(); });
+    });
+    var reset = $('#chalReset');
+    if (reset) {
+      reset.addEventListener('click', function () {
+        state.chal.you.points = 2; state.chal.rival.points = 1;
+        state.chal.result = null;
+        var host = $('#chalResult');
+        if (host) { host.innerHTML = ''; }
+        fillChallengeConditions(state.chal.machine);
+        renderChallenge();
+        announce('Design reset. Choose the machine, the two outcomes and the points.');
+      });
+    }
+    fillChallengeConditions(state.chal.machine);
+    renderChallenge();
+  }
+
+  /* ---------- EVIDENCE + SUMMARY ---------------------------------------- */
+  function addEvidence(area, text) {
+    state.evidence.push({ area: area, text: text, at: state.evidence.length + 1 });
+    renderEvidence();
+  }
+  function renderEvidence() {
+    var box = $('#evidenceBox'), pre = $('#evidenceText');
+    if (!box || !pre) { return; }
+    if (!state.evidence.length) { box.hidden = true; return; }
+    box.hidden = false;
+    pre.textContent = state.evidence.map(function (item) {
+      return '[' + item.at + '] ' + item.area + ' \u2014 ' + item.text;
+    }).join('\n');
+  }
+  function summaryText() {
+    var lines = [];
+    lines.push('Probability Detective \u2014 results from this visit');
+    lines.push('Seed in use: ' + state.seedText);
+    lines.push('');
+    lines.push('Coin Lab');
+    if (state.coin.trials) {
+      lines.push('  Coin: ' + coinLabel());
+      lines.push('  Prediction: ' + (state.coin.prediction ? state.coin.prediction + ' more often' : (state.coin.skipped ? 'skipped' : 'not made')));
+      lines.push('  Flips: ' + state.coin.trials + ', heads: ' + state.coin.heads + ', tails: ' + (state.coin.trials - state.coin.heads) +
+        ', observed proportion of heads: ' + fmt(state.coin.heads / state.coin.trials) + ' (theory ' + fmt(state.coin.pHeads) + ')');
+      state.coin.history.forEach(function (row) {
+        lines.push('    after ' + row.trials + ' flips: ' + fmt(row.heads / row.trials) + ' observed vs ' + fmt(row.p) + ' theory');
+      });
+    } else { lines.push('  not started'); }
+    lines.push('');
+    lines.push('Dice Lab');
+    lines.push('  One die: ' + state.die.trials + ' rolls' + (state.die.trials ? ', counts 1-6: ' + state.die.counts.slice(1).join(', ') : ''));
+    lines.push('  Two dice: ' + state.sum.trials + ' rolls' + (state.sum.trials ? ', counts 2-12: ' + state.sum.totals.slice(2).join(', ') : ''));
+    if (state.sum.trials) {
+      lines.push('  Most frequent sum so far: ' + mostFrequentSum() + ' (the arithmetic says 7, with 6 of 36 ways)');
+    }
+    lines.push('');
+    lines.push('Fair Game');
+    lines.push('  Rules: ' + configSummary(state.game));
+    var youP = PD.conditionProbability(state.game.you.condition, { sides: 6, targets: state.game.you.targets });
+    var rivP = PD.conditionProbability(state.game.rival.condition, { sides: 6, targets: state.game.rival.targets });
+    lines.push('  Expected per turn: you ' + fmt(youP * state.game.you.points) + ', rival ' + fmt(rivP * state.game.rival.points) +
+      (Math.abs(youP * state.game.you.points - rivP * state.game.rival.points) < 1e-9 ? ' (equal \u2014 fair)' : ' (not equal)'));
+    if (state.game.turns) {
+      lines.push('  Simulated ' + state.game.turns + ' turns: you ' + state.game.youPts + ' pts, rival ' + state.game.rivPts + ' pts');
+    }
+    if (state.chal.result) {
+      lines.push('  Final challenge: ' + state.chal.result.machineLabel + ', ' + (state.chal.result.fair ? 'FAIR' : 'not fair yet') +
+        ', 400 turns gave you ' + state.chal.result.youPoints + ' and the rival ' + state.chal.result.rivalPoints);
+    }
+    return lines.join('\n');
+  }
+  function renderSummary() {
+    var box = $('#summaryBox');
+    if (!box) { return; }
+    var done = completedCount();
+    var items = [
+      ['Coin Lab', state.progress.coin, state.coin.trials ? state.coin.trials + ' flips recorded, observed proportion ' + fmt(state.coin.heads / state.coin.trials) + ' against a theoretical ' + fmt(state.coin.pHeads) : 'open Case 1 and run at least 1,000 flips'],
+      ['Dice Lab', state.progress.dice, (state.die.trials || state.sum.trials) ? state.die.trials + ' single-die rolls and ' + state.sum.trials + ' two-dice rolls recorded' : 'run at least 1,000 rolls in one of the dice tabs'],
+      ['Fair Game', state.progress.game, state.progress.game ? 'you built a game with equal expected points per turn' : 'build a game whose two expected values are equal, then simulate it']
+    ];
+    var html = '<p><strong>' + done + ' of 3 case files closed.</strong> ' +
+      (done === 3 ? 'All three investigations are complete. Your summary below is written from the numbers you produced, not from a script.' :
+        'Finish the open ones and this summary will fill itself in. Nothing is timed and nothing is scored.') + '</p><ul>';
+    items.forEach(function (item) {
+      html += '<li><strong>' + (item[1] ? '\u2713 done \u2014 ' : '\u25CB open \u2014 ') + esc(item[0]) + ':</strong> ' + esc(item[2]) + '</li>';
+    });
+    html += '</ul>';
+    if (state.coin.trials) {
+      html += '<p>Coin evidence in one line: ' + state.coin.heads + ' heads in ' + state.coin.trials + ' flips, which is ' +
+        fmt(state.coin.heads / state.coin.trials) + ' against a theoretical ' + fmt(state.coin.pHeads) + '. ' +
+        (state.coin.trials >= 1000 ? 'You have seen both a short and a long run.' : 'Add more flips to see how the running proportion behaves.') + '</p>';
+    }
+    if (state.sum.trials >= 30) {
+      html += '<p>Dice evidence in one line: the most frequent sum in your run was ' + mostFrequentSum() +
+        ', and the arithmetic says 7 is the most likely sum because 6 of the 36 equally likely pairs make it &mdash; six times as many as make a 2 or a 12.</p>';
+    }
+    if (state.progress.game) {
+      html += '<p>Fairness evidence in one line: a game is fair when (probability &times; points) is the same on both sides. You reached that balance yourself, which is the whole of the arithmetic behind every &ldquo;can this game be beaten?&rdquo; question.</p>';
+    }
+    box.innerHTML = html;
+  }
+  function copyEvidence() {
+    var text = summaryText();
+    var note = $('#copyNote');
+    var done = function (message) {
+      if (note) { note.textContent = message; }
+      announce(message);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        done('Results copied to the clipboard as plain text.');
+      }, function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done) {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('aria-hidden', 'true');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    document.body.removeChild(area);
+    if (ok) { done('Results copied to the clipboard as plain text.'); }
+    else {
+      if ($('#evidenceBox')) {
+        $('#evidenceBox').hidden = false;
+        $('#evidenceBox').scrollIntoView({ block: 'start' });
+      }
+      done('Copying is blocked by this browser, so the same results are shown below as selectable text \u2014 nothing is lost and nothing was sent anywhere.');
+    }
+  }
+
+  /* ---------- global wiring --------------------------------------------- */
+  function initGlobal() {
+    loadProgress();
+    renderProgress();
+    renderTicks();
+
+    var seedInput = $('#seedInput');
+    var apply = $('#seedApply');
+    if (apply && seedInput) {
+      apply.addEventListener('click', function () {
+        applySeed(seedInput.value, false);
+        announce('Seed set to ' + state.seedText + '. Runs that follow will use it.');
+      });
+      seedInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') { event.preventDefault(); applySeed(seedInput.value, false); }
+      });
+    }
+    var seedRandom = $('#seedRandom');
+    if (seedRandom) {
+      seedRandom.addEventListener('click', function () {
+        var text = randomSeedText();
+        if (seedInput) { seedInput.value = text; }
+        applySeed(text, false);
+        announce('Random seed ' + text + ' is now in use.');
+      });
+    }
+    $$('[data-table-toggle]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var host = document.getElementById(button.getAttribute('data-table-toggle'));
+        if (!host) { return; }
+        var showing = !host.hidden;
+        host.hidden = showing;
+        button.textContent = showing ? 'Show the same values as a table' : 'Hide the table';
+        announce(showing ? 'Table hidden.' : 'Table shown; it holds exactly the values drawn in the chart.');
+      });
+    });
+    var start = $('#startBtn');
+    if (start) { start.addEventListener('click', function () { showView('coin', true); }); }
+    var copy = $('#copyEvidence');
+    if (copy) { copy.addEventListener('click', copyEvidence); }
+    var print = $('#printPage');
+    if (print) { print.addEventListener('click', function () { window.print(); }); }
+    var large = $('#largeType');
+    if (large) {
+      large.addEventListener('click', function () {
+        var on = document.body.classList.toggle('large-type');
+        large.setAttribute('aria-pressed', on ? 'true' : 'false');
+        announce(on ? 'Bigger text on.' : 'Bigger text off.');
+      });
+    }
+    var resetAll = $('#resetAll');
+    if (resetAll) {
+      resetAll.addEventListener('click', function () {
+        var sure = window.confirm('Reset everything? This clears the progress saved in this browser, empties every experiment, and starts again with a fresh seed. Nothing you did was sent anywhere, so nothing else is affected.');
+        if (!sure) { announce('Reset cancelled. Nothing was changed.'); return; }
+        if (HAS_STORAGE) { try { window.localStorage.removeItem(STORAGE_KEY); } catch (err) { /* ignore */ } }
+        state.progress = { coin: false, dice: false, game: false };
+        state.coin.trials = 0; state.coin.heads = 0; state.coin.history = []; state.coin.chartProportions = [];
+        state.coin.chartTrials = []; state.coin.lastBlock = null; state.coin.prediction = null; state.coin.skipped = false;
+        state.coin.pHeads = 0.5;
+        state.die.trials = 0; state.die.counts = [0, 0, 0, 0, 0, 0, 0]; state.die.lastBlock = null;
+        state.sum.trials = 0; state.sum.totals = new Array(13).fill(0); state.sum.lastBlock = null;
+        state.game.turns = 0; state.game.youPts = 0; state.game.rivPts = 0; state.game.rows = [];
+        state.chal.result = null;
+        state.evidence = [];
+        state.gridSum = 0;
+        var chalHost = $('#chalResult');
+        if (chalHost) { chalHost.innerHTML = ''; }
+        applySeed(randomSeedText(), true);
+        setBias(0.5, 'init');
+        highlightSum(0);
+        resetCoin(true);
+        resetGameSim();
+        renderDie(); renderSum(); renderWaysTable(); renderGame(); renderChallenge(); renderEvidence(); renderSummary();
+        renderProgress(); renderTicks();
+        var note = $('#copyNote');
+        if (note) { note.textContent = 'Everything was reset. A new seed is in place, and the page is ready for a clean run.'; }
+        announce('Everything reset. A new seed is in use and all experiments are empty.');
+      });
+    }
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      if (resizeTimer) { window.clearTimeout(resizeTimer); }
+      resizeTimer = window.setTimeout(function () {
+        renderCoinChart(); renderDie(); renderSum();
+      }, 150);
+    });
+    var homeResume = $('#homeResume');
+    if (homeResume && completedCount() > 0) {
+      homeResume.hidden = false;
+      homeResume.textContent = 'Welcome back: ' + completedCount() + ' of 3 case files already closed on this device. Your progress is stored in this browser only and you can clear it at the bottom of the last section.';
+    }
+  }
+
+  function init() {
+    applySeed(state.seedText, true);
+    initRouting();
+    initCoin();
+    initDice();
+    initGame();
+    initChallenge();
+    initGlobal();
+    renderEvidence();
+    renderSummary();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

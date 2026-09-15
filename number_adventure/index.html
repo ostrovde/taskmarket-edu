@@ -157,11 +157,11 @@ button{font:inherit;color:inherit}
 
 /* ---------- показания количества ---------- */
 .readout{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px;
 }
-.stat{background:#F6FAFF;border:3px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat{background:#F6FAFF;border:3px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
 .stat .k{font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
-.stat .v{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;word-break:break-word}
+.stat .v{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;overflow-wrap:anywhere;word-break:break-word}
 .stat.accent{background:var(--sun-bg);border-color:var(--sun)}
 .stat.accent .v{color:#6B3D00}
 .equation{
@@ -196,8 +196,9 @@ button{font:inherit;color:inherit}
 .glyph-note{font-size:.86rem;color:var(--ink-soft);margin:0}
 .eq-choices{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
 .eq-choice{
-  min-height:64px;min-width:150px;padding:10px 18px;border-radius:14px;border:3px solid var(--line-strong);
+  min-height:64px;padding:10px 16px;border-radius:14px;border:3px solid var(--line-strong);
   background:#fff;font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;
+  max-width:100%;overflow-wrap:anywhere;
 }
 .eq-choice:hover{background:#EFF6FC}
 .eq-choice[aria-pressed="true"]{background:var(--sun-bg);border-color:var(--sun)}
@@ -207,12 +208,13 @@ button{font:inherit;color:inherit}
 /* ---------- обратная связь ---------- */
 .feedback{
   border:3px solid var(--line);border-left-width:10px;border-radius:14px;padding:12px 14px;background:#F6FAFF;
-  display:flex;gap:12px;align-items:flex-start;margin-top:12px;
+  display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-top:12px;
 }
 .feedback .mark{
   flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   font-size:1.5rem;font-weight:800;background:#E7EEF7;color:var(--sky-ink);border:2px solid var(--line-strong);
 }
+.feedback > div{flex:1 1 180px;min-width:0}
 .feedback .fb-title{font-weight:800;margin:0 0 2px}
 .feedback .fb-body{margin:0;font-size:.95rem;color:var(--ink-soft)}
 .feedback[data-kind="ok"]{border-color:var(--leaf);background:var(--leaf-bg)}
@@ -252,6 +254,21 @@ summary{font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .garden{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
 .bloom{width:38px;height:38px}
+@media (max-width:520px){
+  body{font-size:19px}
+  .app{padding:10px 10px 32px}
+  .topbar{padding:10px}
+  .brand-title{font-size:1rem}
+  .avatar{width:48px;height:48px}
+  .card{padding:12px}
+  .card h1{font-size:1.35rem}
+  .btn{padding:12px 16px;flex:1 1 auto}
+  .btn-row{gap:8px}
+  .equation{font-size:1.35rem;padding:10px}
+  .glyph{width:56px;height:56px}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table-scroll table{min-width:420px}
+}
 .badge-soft{
   display:inline-block;padding:2px 10px;border-radius:999px;background:#E7EEF7;color:var(--sky-ink);
   font-size:.8rem;font-weight:800;border:2px solid var(--line-strong);
@@ -503,11 +520,13 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
           <details open>
             <summary>Такая же история словами и таблицей</summary>
             <p class="muted" id="a3TextAlt">Словами: было 7 яблок, стало 10 яблок, значит 7 + 3 = 10.</p>
-            <table id="a3Table" style="width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px">
-              <caption class="sr-only">Таблица истории: что было, что произошло, что стало</caption>
-              <thead><tr><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что было</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что произошло</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что стало</th></tr></thead>
-              <tbody id="a3TableBody"></tbody>
-            </table>
+            <div class="table-scroll">
+              <table id="a3Table" style="width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px">
+                <caption class="sr-only">Таблица истории: что было, что произошло, что стало</caption>
+                <thead><tr><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что было</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что произошло</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что стало</th></tr></thead>
+                <tbody id="a3TableBody"></tbody>
+              </table>
+            </div>
           </details>
         </div>
       </div>
@@ -1525,7 +1544,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     a3.step = 0;
     a3.marked = 0;
     a3.chosen = null;
-    a3.render();
+    a3Render();
   }
   function a3Render(){
     var p = a3.problem;
@@ -1575,7 +1594,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
         return function(){
           if (idx < a3.marked) a3.marked = idx;
           else a3.marked = idx + 1;
-          a3.render();
+          a3Render();
         };
       })(j);
       pool.appendChild(pcell);
@@ -1618,7 +1637,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     // i — индекс предмета; отмечено становится i+1 предметов (или i, если нажали на уже отмеченный последним)
     a3.marked = (i + 1 === a3.marked) ? i : (i + 1);
     a3.chosen = null;
-    a3.render();
+    a3Render();
   }
   function a3Choose(text){
     var p = a3.problem;
@@ -1626,12 +1645,12 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     var r = C.evalStory(p, a3.step, a3.marked, text);
     if (r.pending === "items"){
       setFeedback("a3Feedback", r.kind, r.title, r.body);
-      a3.render();
+      a3Render();
       return;
     }
     if (r.pending === "equation"){
       setFeedback("a3Feedback", "try", r.title, r.body);
-      a3.render();
+      a3Render();
       return;
     }
     setFeedback("a3Feedback", "ok", r.title, r.body);
@@ -1646,7 +1665,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       markDone("activity4");
       $("a3Next").textContent = "Дальше: новое задание";
     }
-    a3.render();
+    a3Render();
   }
   function a3Check(){
     var p = a3.problem;
@@ -1655,11 +1674,11 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     say(r.title + ". " + r.body);
     if (r.ok && a3.step === 0 && p.kind === "add"){
       a3.step = 1;
-      a3.render();
+      a3Render();
       setFeedback("a3Feedback", "info", "Шаг 2", "Теперь выложи всё, что стало в истории, и выбери запись.");
     } else if (r.ok && a3.step === 0){
       a3.step = 1;
-      a3.render();
+      a3Render();
       setFeedback("a3Feedback", "info", "Шаг 2", "Теперь убери то, что забрали, и выбери запись.");
     } else if (r.ok){
       if (state.storiesSolved.indexOf(p.id) === -1){
@@ -1911,7 +1930,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       saveProgress();
       a1Render("Показ", "Нажми на подсвеченное гнездо — посадим светлячков вместе.");
       a2Render();
-      a3.render();
+      a3Render();
       a4Render();
     }
     $("btnStart").onclick = function(){ state.done.welcome = true; show(1); };
@@ -1959,7 +1978,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       a2AdvanceRound();
     };
 
-    $("a3Undo").onclick = function(){ a3.marked = Math.max(0, a3.marked - 1); a3.chosen = null; a3.render(); };
+    $("a3Undo").onclick = function(){ a3.marked = Math.max(0, a3.marked - 1); a3.chosen = null; a3Render(); };
     $("a3Hint").onclick = a3Hint;
     $("a3Check").onclick = a3Check;
     $("a3Next").onclick = a3Next;

@@ -1,0 +1,3049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Meadow Lab: a field-notebook lesson where 9-year-olds build a habitat, predict what water and sunlight will change, and restore balance in a model ecosystem.">
+<meta name="color-scheme" content="light">
+<title>Meadow Lab — Build a Living Ecosystem</title>
+<style>
+/* ============================================================================
+   MEADOW LAB — single-file educational app
+   Design direction: a naturalist's field notebook. Warm parchment, hand-inked
+   botanical marks, ruled journal pages, letterpress-style serif headings.
+   All artwork is drawn in code (inline SVG / CSS gradients). No web fonts,
+   no images, no network requests.
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  /* --- surfaces ------------------------------------------------------- */
+  --paper:      #F7F2E5;
+  --paper-2:    #EFE6D0;
+  --card:       #FFFCF3;
+  --card-2:     #FBF6E7;
+  --line:       #C6B998;
+  --line-soft:  #DED3B6;
+
+  /* --- ink (all AA or better on --card / --paper) --------------------- */
+  --ink:        #17251E;   /* 14.2:1 on #FFFCF3 */
+  --ink-2:      #3C4F45;   /*  8.6:1 */
+  --ink-3:      #55665C;   /*  5.9:1 */
+
+  --green:      #1C5B3B;   /*  8.4:1 */
+  --green-2:    #2F7A52;
+  --clay:       #9C3F17;   /*  6.6:1 */
+  --sky:        #14556E;   /*  8.1:1 */
+  --gold:       #7A5A0B;   /*  6.3:1 */
+  --plum:       #5B3B8C;   /*  8.0:1 */
+
+  --ok-bg:      #E4F0E4;
+  --warn-bg:    #FBEBD8;
+  --info-bg:    #E3EDF2;
+  --bad-bg:     #F7E2DA;
+
+  --focus:      #0B4F6C;
+
+  --radius:     14px;
+  --radius-sm:  9px;
+  --shadow:     0 1px 0 #fff inset, 0 10px 22px -16px rgba(23,37,30,.55);
+
+  --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+  --font-body:    "Segoe UI", "Trebuchet MS", "Gill Sans", Verdana, system-ui, sans-serif;
+  --font-mono:    "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(47,122,82,.07), transparent 42%),
+    radial-gradient(circle at 88% 4%, rgba(156,63,23,.06), transparent 38%),
+    repeating-linear-gradient(0deg, rgba(23,37,30,.028) 0 1px, transparent 1px 4px);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.2; margin: 0 0 .4em; letter-spacing: .1px; }
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; }
+h4 { font-size: 1rem; }
+p  { margin: 0 0 .8em; }
+a  { color: var(--sky); text-underline-offset: 3px; }
+ul, ol { margin: 0 0 .8em; padding-left: 1.25em; }
+li { margin-bottom: .3em; }
+sub, sup { font-size: .75em; }
+strong { font-weight: 700; }
+
+/* --- focus ---------------------------------------------------------- */
+:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+.sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip {
+  position: absolute; left: 8px; top: -60px; z-index: 60;
+  background: var(--green); color: #fff; padding: 10px 16px; border-radius: 0 0 10px 10px;
+  font-weight: 700; text-decoration: none; transition: top .15s ease;
+}
+.skip:focus { top: 0; }
+
+/* ============================ header ================================ */
+.site-head {
+  border-bottom: 3px double var(--line);
+  background: linear-gradient(180deg, #FFFDF5, var(--paper-2));
+  padding: 12px 0 10px;
+}
+.site-head__inner {
+  max-width: 1240px; margin: 0 auto; padding: 0 16px;
+  display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand__mark { flex: 0 0 auto; width: 52px; height: 52px; }
+.brand__title { font-family: var(--font-display); font-size: 1.5rem; margin: 0; }
+.brand__sub { margin: 0; font-size: .82rem; color: var(--ink-2); letter-spacing: .04em; text-transform: uppercase; }
+
+.head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ============================ progress chips ======================== */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
+.chips li { margin: 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 6px 14px 6px 8px;
+  border: 2px solid var(--line); border-radius: 999px;
+  background: var(--card); color: var(--ink); cursor: pointer;
+  font: inherit; font-size: .9rem; text-align: left;
+}
+.chip:hover { border-color: var(--green-2); background: #fff; }
+.chip__num {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--paper-2); border: 2px solid var(--line); font-weight: 700; font-size: .82rem;
+}
+.chip__label { white-space: nowrap; }
+.chip[aria-current="true"] { border-color: var(--green); background: var(--ok-bg); box-shadow: 0 0 0 2px rgba(28,91,59,.18); }
+.chip[aria-current="true"] .chip__num { background: var(--green); border-color: var(--green); color: #fff; }
+.chip__state { font-size: .78rem; font-weight: 700; color: var(--green); }
+.chip__state::before { content: "✓ "; }
+.chip[data-done="false"] .chip__state { color: var(--ink-3); font-weight: 400; }
+.chip[data-done="false"] .chip__state::before { content: "• "; }
+
+/* ============================ layout ================================ */
+.wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 64px; }
+
+.layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+
+.panel {
+  background: var(--card); border: 2px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.panel__head {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; justify-content: space-between;
+  padding: 12px 16px; background: var(--card-2); border-bottom: 2px solid var(--line-soft);
+}
+.panel__head h2, .panel__head h3 { margin: 0; }
+.panel__hint { margin: 0; font-size: .85rem; color: var(--ink-2); }
+.panel__body { padding: 16px; }
+.panel__body > :last-child { margin-bottom: 0; }
+
+.stack > * + * { margin-top: 14px; }
+
+/* ============================ buttons =============================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 10px 18px;
+  font: inherit; font-weight: 700; font-size: .95rem;
+  border-radius: 999px; border: 2px solid var(--green); background: var(--card); color: var(--green);
+  cursor: pointer;
+}
+.btn:hover { background: var(--ok-bg); }
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--green); color: #fff; border-color: var(--green); }
+.btn--primary:hover { background: #14472e; }
+.btn--clay { border-color: var(--clay); color: var(--clay); }
+.btn--clay:hover { background: var(--bad-bg); }
+.btn--quiet { border-color: var(--line); color: var(--ink-2); font-weight: 600; }
+.btn--quiet:hover { background: var(--paper-2); }
+.btn[aria-pressed="true"] { background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--green); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn--sm { min-height: 40px; padding: 6px 14px; font-size: .88rem; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.term {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0 6px; min-height: 30px;
+  font: inherit; font-size: .92em; font-weight: 700;
+  color: var(--sky); background: var(--info-bg);
+  border: 1px dashed var(--sky); border-radius: 7px; cursor: pointer;
+  text-decoration: underline dotted;
+}
+.term::after { content: "?"; font-size: .72em; border: 1px solid currentColor; border-radius: 50%; width: 1.05em; height: 1.05em; display: inline-grid; place-items: center; }
+.term:hover { background: #d3e5ee; }
+
+/* ============================ callouts ============================== */
+.callout {
+  border: 2px solid var(--line-soft); border-left: 8px solid var(--sky);
+  background: var(--info-bg); border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.callout--warn { border-left-color: var(--clay); background: var(--warn-bg); }
+.callout--model { border-left-color: var(--gold); background: #F6EEDA; }
+.callout--ok { border-left-color: var(--green); background: var(--ok-bg); }
+.callout h3, .callout h4 { margin-top: 0; }
+.callout > :last-child { margin-bottom: 0; }
+
+/* ============================ guide ================================= */
+.guide { display: flex; gap: 12px; align-items: flex-start; }
+.guide__portrait { flex: 0 0 auto; width: 64px; height: 64px; }
+.guide__name { font-weight: 700; font-family: var(--font-display); font-size: 1.02rem; display: block; }
+.bubble {
+  position: relative; flex: 1 1 auto; min-width: 0;
+  background: var(--card-2); border: 2px solid var(--line); border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.bubble > :last-child { margin-bottom: 0; }
+
+/* ============================ controls ============================== */
+.control { border: 2px solid var(--line-soft); border-radius: var(--radius-sm); padding: 12px; background: var(--card-2); }
+.control__top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; justify-content: space-between; }
+.control__name { font-weight: 700; }
+.control__read { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; }
+.control__scale { display: flex; justify-content: space-between; font-size: .78rem; color: var(--ink-2); margin-top: 2px; }
+.control__note { font-size: .86rem; color: var(--ink-2); margin: 6px 0 0; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 34px; margin: 4px 0 0; background: transparent; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 14px; border-radius: 8px; border: 2px solid var(--ink-2);
+  background-image:
+    linear-gradient(90deg, #CFE0D2 0%, #CFE0D2 33%, #F6E9C4 33%, #F6E9C4 66%, #F3D9C6 66%, #F3D9C6 100%);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 26px; height: 26px; margin-top: -8px; border-radius: 50%;
+  background: var(--green); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--green);
+}
+input[type="range"]::-moz-range-track {
+  height: 14px; border-radius: 8px; border: 2px solid var(--ink-2); background: #CFE0D2;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--green);
+}
+input[type="range"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 8px; }
+
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.presets .btn { min-height: 38px; padding: 4px 12px; font-size: .82rem; }
+
+/* ============================ meters ================================ */
+.meter { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; margin-bottom: 10px; }
+.meter__label { font-size: .92rem; font-weight: 600; }
+.meter__value { font-family: var(--font-mono); font-size: .92rem; font-weight: 700; white-space: nowrap; }
+.meter__track {
+  grid-column: 1 / -1; height: 18px; border-radius: 6px;
+  border: 2px solid var(--ink-2); background: #EFEADC; overflow: hidden; position: relative;
+}
+.meter__fill { height: 100%; width: 0%; border-radius: 3px; transition: width .3s ease; }
+.meter__fill--water { background: repeating-linear-gradient(135deg, #2E7FA8 0 7px, #67AACE 7px 14px); }
+.meter__fill--light { background: repeating-linear-gradient(45deg, #B98410 0 7px, #E0BA55 7px 14px); }
+.meter__fill--plant { background: repeating-linear-gradient(90deg, #2F7A52 0 9px, #4E9A6E 9px 18px); }
+.meter__fill--herb  { background: repeating-linear-gradient(90deg, #9C3F17 0 5px, #C4693F 5px 10px); }
+.meter__fill--pred  { background: repeating-linear-gradient(90deg, #5B3B8C 0 4px, #8666B4 4px 8px); }
+.meter__fill--moss  { background: repeating-linear-gradient(90deg, #4A6B2A 0 6px, #6E9146 6px 12px); }
+.meter__fill--fern  { background: repeating-linear-gradient(90deg, #14556E 0 6px, #3D8299 6px 12px); }
+.meter__fill--flower{ background: repeating-linear-gradient(90deg, #9C3F17 0 6px, #C4693F 6px 12px); }
+.meter__fill--grass { background: repeating-linear-gradient(90deg, #2F7A52 0 6px, #4E9A6E 6px 12px); }
+.meter__flag { font-size: .8rem; font-weight: 700; }
+.meter__flag--low { color: var(--clay); }
+.meter__flag--ok { color: var(--green); }
+
+/* ============================ organism cards ======================== */
+.org-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.org {
+  display: grid; grid-template-columns: 46px 1fr; gap: 10px; align-items: start;
+  border: 2px solid var(--line-soft); border-radius: var(--radius-sm); background: var(--card-2);
+  padding: 10px;
+}
+.org--gone { border-style: dashed; background: #F4EFE2; }
+.org__glyph { width: 46px; height: 46px; }
+.org__name { font-weight: 700; font-family: var(--font-display); font-size: 1.02rem; }
+.org__kind { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.org__role-tag {
+  display: inline-block; font-size: .74rem; font-weight: 700; padding: 1px 7px; border-radius: 999px;
+  border: 1.5px solid currentColor; margin-left: 6px; vertical-align: 1px;
+}
+.role--producer { color: var(--green); }
+.role--herbivore { color: var(--clay); }
+.role--predator { color: var(--plum); }
+.org__stat { grid-column: 1 / -1; }
+.org__note { font-size: .86rem; color: var(--ink-2); margin: 6px 0 0; }
+.org__why { font-size: .86rem; margin: 6px 0 0; padding-left: 1.1em; }
+.org__why li { margin-bottom: .15em; }
+
+/* ============================ scene ================================= */
+.scene-wrap { background: linear-gradient(180deg, #DCEBF2 0%, #EAF3E6 55%, #DFEAC9 100%); border-radius: var(--radius-sm); border: 2px solid var(--line-soft); overflow: hidden; }
+.scene { display: block; width: 100%; height: auto; }
+.scene-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; list-style: none; margin: 10px 0 0; padding: 0; font-size: .84rem; }
+.scene-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 22px; height: 12px; border: 1.5px solid var(--ink-2); border-radius: 3px; display: inline-block; }
+.swatch--grass { background: repeating-linear-gradient(90deg, #2F7A52 0 6px, #4E9A6E 6px 12px); }
+.swatch--flower{ background: repeating-linear-gradient(90deg, #9C3F17 0 6px, #C4693F 6px 12px); }
+.swatch--fern  { background: repeating-linear-gradient(90deg, #14556E 0 6px, #3D8299 6px 12px); }
+.swatch--moss  { background: repeating-linear-gradient(90deg, #4A6B2A 0 6px, #6E9146 6px 12px); }
+.swatch--water { background: repeating-linear-gradient(135deg, #2E7FA8 0 7px, #67AACE 7px 14px); }
+.swatch--light { background: repeating-linear-gradient(45deg, #B98410 0 7px, #E0BA55 7px 14px); }
+
+/* ============================ journal =============================== */
+.journal {
+  background-color: #FFFDF6;
+  background-image: repeating-linear-gradient(180deg, transparent 0 27px, rgba(20,85,110,.16) 27px 28px);
+  border: 2px solid var(--line-soft); border-radius: var(--radius-sm);
+  padding: 6px 12px; max-height: 430px; overflow: auto;
+}
+.journal__list { list-style: none; margin: 0; padding: 0; }
+.entry {
+  padding: 8px 0; border-bottom: 1px dotted var(--line-soft);
+}
+.entry:last-child { border-bottom: 0; }
+.entry__head { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.entry__step {
+  font-family: var(--font-mono); font-size: .78rem; font-weight: 700;
+  border: 1.5px solid var(--ink-2); border-radius: 5px; padding: 0 5px; background: var(--card);
+}
+.entry__tag { font-size: .76rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.tag--plant { color: var(--green); }
+.tag--animal { color: var(--clay); }
+.tag--predator { color: var(--plum); }
+.tag--water { color: var(--sky); }
+.tag--light { color: var(--gold); }
+.tag--balance { color: var(--ink-2); }
+.entry__text { margin: 3px 0 0; font-size: .95rem; }
+.entry__why { margin: 4px 0 0; font-size: .88rem; color: var(--ink-2); background: var(--card-2); border-left: 4px solid var(--line); padding: 5px 8px; border-radius: 0 6px 6px 0; }
+.entry--alert .entry__why { border-left-color: var(--clay); background: var(--bad-bg); }
+.entry--good .entry__why { border-left-color: var(--green); background: var(--ok-bg); }
+
+/* ============================ checklist ============================= */
+.checklist { list-style: none; margin: 0; padding: 0; }
+.checklist li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; padding: 7px 0; border-bottom: 1px dotted var(--line-soft); }
+.checklist li:last-child { border-bottom: 0; }
+.check__mark { width: 26px; height: 26px; }
+.check--ok .check__text { font-weight: 600; }
+.check--no .check__text { color: var(--ink-2); }
+.check__hint { display: block; font-size: .85rem; color: var(--ink-2); }
+
+/* ============================ choices =============================== */
+fieldset { border: 2px solid var(--line-soft); border-radius: var(--radius-sm); padding: 10px 12px; margin: 0 0 12px; }
+legend { font-weight: 700; padding: 0 6px; }
+.choice { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border: 2px solid transparent; border-radius: var(--radius-sm); cursor: pointer; }
+.choice:hover { background: var(--paper-2); }
+.choice input { flex: 0 0 auto; width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--green); }
+.choice__body { min-width: 0; }
+.choice__title { font-weight: 700; display: block; }
+.choice__note { font-size: .86rem; color: var(--ink-2); }
+.choice:has(input:checked) { border-color: var(--green); background: var(--ok-bg); }
+
+.pred-summary { border: 2px dashed var(--line); border-radius: var(--radius-sm); padding: 10px 12px; background: var(--card-2); }
+.verdict { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.verdict__icon { width: 30px; height: 30px; }
+
+/* ============================ goal tracker ========================== */
+.goal { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.goal li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; }
+.streak { display: flex; gap: 6px; margin-top: 6px; }
+.streak__pip { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink-2); display: grid; place-items: center; font-size: .7rem; font-weight: 700; background: var(--card); }
+.streak__pip[data-on="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ============================ tables ================================ */
+.table-wrap { overflow-x: auto; border: 2px solid var(--line-soft); border-radius: var(--radius-sm); }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; background: var(--card); }
+caption { text-align: left; padding: 8px 10px; font-weight: 700; font-family: var(--font-display); }
+th, td { border-bottom: 1px solid var(--line-soft); padding: 6px 10px; text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: var(--paper-2); position: sticky; top: 0; }
+tbody tr:nth-child(even) { background: var(--card-2); }
+
+details { border: 2px solid var(--line-soft); border-radius: var(--radius-sm); background: var(--card-2); padding: 8px 12px; }
+details > summary { cursor: pointer; font-weight: 700; }
+details[open] > summary { margin-bottom: 8px; }
+details > :last-child { margin-bottom: 0; }
+
+/* ============================ palette (activity 1) ================== */
+.palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.pick {
+  display: grid; grid-template-columns: 46px 1fr; gap: 10px; align-items: start;
+  border: 2px solid var(--line-soft); border-radius: var(--radius-sm); background: var(--card); padding: 10px;
+}
+.pick--in { border-color: var(--green); background: var(--ok-bg); }
+.pick__glyph { width: 46px; height: 46px; }
+.pick__name { font-weight: 700; font-family: var(--font-display); font-size: 1rem; }
+.pick__meta { font-size: .82rem; color: var(--ink-2); }
+.pick__facts { grid-column: 1 / -1; font-size: .84rem; margin: 4px 0 0; }
+.pick__actions { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.count-pill { font-family: var(--font-mono); font-weight: 700; min-width: 3em; text-align: center; }
+.tally { display: flex; flex-wrap: wrap; gap: 6px 16px; list-style: none; margin: 0; padding: 0; font-size: .9rem; }
+.tally li { display: inline-flex; gap: 6px; align-items: center; }
+.tally__dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink-2); display: inline-block; }
+.tally__dot[data-ok="true"] { background: var(--green); border-color: var(--green); }
+
+/* ============================ footer / dialog ======================= */
+.site-foot { border-top: 3px double var(--line); background: var(--paper-2); padding: 14px 16px 24px; }
+.site-foot__inner { max-width: 1240px; margin: 0 auto; font-size: .86rem; color: var(--ink-2); display: grid; gap: 8px; }
+
+dialog.gloss {
+  width: min(560px, calc(100vw - 32px)); border: 3px solid var(--green); border-radius: var(--radius);
+  background: var(--card); color: var(--ink); padding: 0; box-shadow: 0 24px 50px -20px rgba(23,37,30,.6);
+}
+dialog.gloss::backdrop { background: rgba(23,37,30,.45); }
+.gloss__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; background: var(--ok-bg); border-bottom: 2px solid var(--line-soft); }
+.gloss__head h2 { margin: 0; font-size: 1.15rem; }
+.gloss__body { padding: 14px 16px; max-height: 60vh; overflow: auto; }
+.gloss__body dt { font-weight: 700; font-family: var(--font-display); margin-top: 10px; }
+.gloss__body dd { margin: 2px 0 0; }
+
+/* ============================ utility =============================== */
+.hidden { display: none !important; }
+.nowrap { white-space: nowrap; }
+.muted { color: var(--ink-2); }
+.small { font-size: .86rem; }
+.center { text-align: center; }
+.rule { border: 0; border-top: 2px dotted var(--line); margin: 14px 0; }
+.flex-between { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.badge {
+  display: inline-block; font-size: .76rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  border: 1.5px solid currentColor; border-radius: 5px; padding: 1px 6px;
+}
+.badge--model { color: var(--gold); }
+.badge--sim { color: var(--sky); }
+
+/* ============================ animations ============================ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.reveal { animation: fadeUp .3s ease both; }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(47,122,82,.5); } 70% { box-shadow: 0 0 0 12px rgba(47,122,82,0); } 100% { box-shadow: 0 0 0 0 rgba(47,122,82,0); } }
+.pulse { animation: pulseRing 1.6s ease-out 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .reveal { animation: none; }
+}
+
+/* ============================ breakpoints =========================== */
+/* 768px and up: two columns — scene + controls on the left, tasks on the right */
+@media (min-width: 768px) {
+  body { font-size: 17.5px; }
+  h1 { font-size: 2.05rem; }
+  .layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+  .layout--wide-left { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+  .panel__body { padding: 18px; }
+}
+
+/* 1024px and up */
+@media (min-width: 1024px) {
+  .layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; }
+}
+
+/* 1280px and up */
+@media (min-width: 1280px) {
+  body { font-size: 18px; }
+  h1 { font-size: 2.2rem; }
+  .wrap { padding: 26px 24px 80px; }
+  .layout { grid-template-columns: minmax(0, 720px) minmax(0, 1fr); gap: 24px; }
+  .panel__body { padding: 20px 22px; }
+  .org-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+}
+
+@media (max-width: 400px) {
+  body { font-size: 16px; }
+  .wrap { padding: 14px 10px 56px; }
+  .site-head__inner { padding: 0 10px; }
+  .panel__body { padding: 12px; }
+  .brand__mark { width: 42px; height: 42px; }
+  .brand__title { font-size: 1.28rem; }
+  .chip { font-size: .84rem; padding: 4px 10px 4px 6px; }
+}
+
+@media (forced-colors: active) {
+  .meter__fill, .swatch, .tally__dot { border: 2px solid CanvasText; }
+  .btn { border-width: 2px; }
+}
+
+@media print {
+  .site-head, .site-foot, .btn, .chip { display: none !important; }
+  .panel { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the lesson</a>
+
+<header class="site-head">
+  <div class="site-head__inner">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 64 64" role="img" aria-label="Meadow Lab leaf-and-sun emblem">
+        <circle cx="32" cy="32" r="30" fill="#FFFCF3" stroke="#1C5B3B" stroke-width="3"/>
+        <circle cx="32" cy="22" r="7" fill="#E0BA55" stroke="#7A5A0B" stroke-width="2.5"/>
+        <path d="M32 30 C32 44 32 50 32 56" fill="none" stroke="#1C5B3B" stroke-width="3" stroke-linecap="round"/>
+        <path d="M32 38 C24 36 18 40 15 47 C24 49 30 45 32 38 Z" fill="#2F7A52" stroke="#14556E" stroke-width="2"/>
+        <path d="M32 34 C40 32 46 36 49 43 C40 45 34 41 32 34 Z" fill="#4E9A6E" stroke="#14556E" stroke-width="2"/>
+      </svg>
+      <div>
+        <p class="brand__sub">Meadow Lab · a naturalist&rsquo;s field notebook</p>
+        <h1 class="brand__title">Build a Living Ecosystem</h1>
+      </div>
+    </div>
+    <div class="head-tools">
+      <nav aria-label="Lesson map">
+        <ul class="chips" id="chips">
+          <li><button type="button" class="chip" id="chip-welcome" data-screen="welcome" aria-current="true"><span class="chip__num">i</span><span class="chip__label">Start</span></button></li>
+          <li><button type="button" class="chip" id="chip-1" data-screen="activity-1" data-done="false"><span class="chip__num">1</span><span class="chip__label">Build a habitat</span> <span class="chip__state" id="state-1">not done</span></button></li>
+          <li><button type="button" class="chip" id="chip-2" data-screen="activity-2" data-done="false"><span class="chip__num">2</span><span class="chip__label">Predict &amp; test</span> <span class="chip__state" id="state-2">not done</span></button></li>
+          <li><button type="button" class="chip" id="chip-3" data-screen="activity-3" data-done="false"><span class="chip__num">3</span><span class="chip__label">Restore balance</span> <span class="chip__state" id="state-3">not done</span></button></li>
+          <li><button type="button" class="chip" id="chip-free" data-screen="free" aria-current="false"><span class="chip__num">✳</span><span class="chip__label">Free explore</span></button></li>
+        </ul>
+      </nav>
+      <button type="button" class="btn btn--sm" id="btn-summary" data-screen="summary">Lesson summary</button>
+      <button type="button" class="btn btn--sm btn--quiet" id="btn-restart-lesson">Restart lesson</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap" tabindex="-1">
+
+  <!-- ============================ WELCOME ============================ -->
+  <section class="screen" id="screen-welcome" aria-labelledby="welcome-h">
+    <div class="layout">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head">
+            <h2 id="welcome-h">Welcome to the Meadow Lab</h2>
+            <p class="panel__hint">About 10&ndash;15 minutes · ages 8&ndash;11</p>
+          </div>
+          <div class="panel__body stack">
+            <div class="guide">
+              <svg class="guide__portrait" viewBox="0 0 64 64" role="img" aria-label="Dr. Sage, a meadow naturalist with a sun hat">
+                <circle cx="32" cy="32" r="30" fill="#FBF6E7" stroke="#1C5B3B" stroke-width="2.5"/>
+                <path d="M8 30 C8 22 20 16 32 16 C44 16 56 22 56 30 Z" fill="#E0BA55" stroke="#7A5A0B" stroke-width="2.5"/>
+                <path d="M20 30 C20 18 26 12 32 12 C38 12 44 18 44 30 Z" fill="#F2D888" stroke="#7A5A0B" stroke-width="2.5"/>
+                <circle cx="32" cy="38" r="13" fill="#F1D3AE" stroke="#7A5A0B" stroke-width="2.5"/>
+                <circle cx="27" cy="37" r="1.9" fill="#17251E"/><circle cx="37" cy="37" r="1.9" fill="#17251E"/>
+                <path d="M27 44 C30 47 34 47 37 44" fill="none" stroke="#9C3F17" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M46 12 C52 14 55 20 54 26" fill="none" stroke="#2F7A52" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+              <div class="bubble">
+                <span class="guide__name">Dr. Sage</span>
+                <p>Hello! I study meadows. In this notebook you will <strong>build a habitat</strong>, <strong>test a prediction</strong> about water and sunlight, and <strong>fix a meadow that has lost its balance</strong>.</p>
+                <p>No login, no score, no timer. Nothing here is a race.</p>
+              </div>
+            </div>
+
+            <h3>What you will be able to do</h3>
+            <ul>
+              <li>Tell a <button type="button" class="term" data-term="producer">producer</button> from a <button type="button" class="term" data-term="consumer">consumer</button> in a meadow.</li>
+              <li>Explain how sunlight and water reach plants, and how plants reach animals.</li>
+              <li>Trace a simple food chain and say which way the <button type="button" class="term" data-term="energy">energy</button> moves.</li>
+              <li>Predict what happens when one condition changes &mdash; then check it in the model.</li>
+              <li>Repair a struggling habitat, and say <em>why</em> your repair worked.</li>
+            </ul>
+
+            <div class="callout callout--model">
+              <h3>Before you start: this is a model, not a real meadow</h3>
+              <p>A <button type="button" class="term" data-term="model">model</button> is a simplified copy. Real meadows have hundreds of species, weather, soil and seasons. Our meadow has a handful of species and two dials. Real ecologists make models like this too, then test them outdoors. Every number you see is a <strong>model value</strong> &mdash; an illustrative number, not a scientific measurement.</p>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-start-lesson">Start activity 1 &middot; Build a habitat</button>
+              <button type="button" class="btn" id="btn-welcome-explore">Look around first (free explore)</button>
+            </div>
+            <p class="small muted">Keyboard: <kbd>Tab</kbd> moves between controls, <kbd>Enter</kbd> or <kbd>Space</kbd> presses a button, and each button also works with a tap or a mouse click.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head"><h3>Your field kit</h3></div>
+          <div class="panel__body stack">
+            <div class="callout">
+              <h4>Activity 1 · Build a habitat</h4>
+              <p class="small">Choose at least <strong>2 producers</strong>, <strong>2 plant-eaters</strong> and <strong>1 predator</strong>. The model will show you which food links are real links.</p>
+            </div>
+            <div class="callout">
+              <h4>Activity 2 · Predict &amp; test</h4>
+              <p class="small">Pick a starting meadow, write down what you expect, change water or sunlight, then run the model and compare.</p>
+            </div>
+            <div class="callout">
+              <h4>Activity 3 · Restore balance</h4>
+              <p class="small">A meadow is in trouble. Diagnose it and repair it &mdash; including one meadow you have never seen before.</p>
+            </div>
+            <p class="small muted">Your progress is stored only in this browser (local storage) so you can close the page and come back. Use <strong>Restart lesson</strong> at any time to clear it.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h3>Set up your notebook</h3></div>
+          <div class="panel__body">
+            <p class="small">Nothing to install. If you want paper next to the screen, a plain page and a pencil is enough. Ready?</p>
+            <div class="btn-row"><button type="button" class="btn btn--primary" id="btn-start-lesson-2">Go to activity 1</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= ACTIVITY 1 ============================= -->
+  <section class="screen hidden" id="screen-activity-1" aria-labelledby="a1-h">
+    <div class="layout layout--wide-left">
+      <div class="stack"><div id="lab-slot-1"></div></div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head">
+            <h2 id="a1-h">Activity 1 · Build a habitat</h2>
+            <p class="panel__hint">Your choice changes the model</p>
+          </div>
+          <div class="panel__body stack">
+            <p>A <button type="button" class="term" data-term="habitat">habitat</button> is the place where living things find food, water and shelter. Build a meadow that can feed everybody in it.</p>
+            <div class="callout" id="a1-rules">
+              <h4>Your building rules</h4>
+              <ul class="tally" id="a1-tally">
+                <li><span class="tally__dot" id="tally-p" data-ok="false"></span> <span id="tally-p-text">0 of 2 producers</span></li>
+                <li><span class="tally__dot" id="tally-h" data-ok="false"></span> <span id="tally-h-text">0 of 2 plant-eaters</span></li>
+                <li><span class="tally__dot" id="tally-x" data-ok="false"></span> <span id="tally-x-text">0 of 1 predator</span></li>
+              </ul>
+              <p class="small" id="a1-tally-note">Add plants first &mdash; animals need something to eat.</p>
+            </div>
+
+            <h3>Species you can place</h3>
+            <p class="small muted">Use the <strong>Add</strong> and <strong>Remove</strong> buttons (no dragging needed). Add removes nothing else: your meadow keeps what you put there.</p>
+            <div class="palette" id="palette"></div>
+
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-a1-check">Check my food links</button>
+              <button type="button" class="btn" id="btn-a1-start">Put it in the meadow</button>
+            </div>
+
+            <div id="a1-feedback" class="stack" aria-live="polite"></div>
+
+            <details>
+              <summary>Hint: what does &ldquo;viable&rdquo; mean here?</summary>
+              <p>A habitat is <strong>viable</strong> in this model when every animal you placed has at least one food that is also in the meadow. If an animal has no food at all, it will lose energy every step and its numbers will fall.</p>
+            </details>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head"><h3>Food links in your meadow</h3></div>
+          <div class="panel__body" id="a1-links"><p class="small muted">Add some species, then press <strong>Check my food links</strong>.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= ACTIVITY 2 ============================= -->
+  <section class="screen hidden" id="screen-activity-2" aria-labelledby="a2-h">
+    <div class="layout layout--wide-left">
+      <div class="stack"><div id="lab-slot-2"></div></div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head">
+            <h2 id="a2-h">Activity 2 · Predict, then test</h2>
+            <p class="panel__hint">Scientists guess first, then measure</p>
+          </div>
+          <div class="panel__body stack">
+            <h3>Step 1 · Choose a starting meadow</h3>
+            <fieldset>
+              <legend>Starting scenarios</legend>
+              <div id="a2-scenarios"></div>
+            </fieldset>
+
+            <h3>Step 2 · Choose the one condition you will change</h3>
+            <fieldset>
+              <legend>What will you change?</legend>
+              <div class="choice">
+                <input type="radio" name="a2-focus" id="a2-focus-water" value="water" checked>
+                <label class="choice__body" for="a2-focus-water">
+                  <span class="choice__title">Water supply</span>
+                  <span class="choice__note">How much water reaches the soil each step.</span>
+                </label>
+              </div>
+              <div class="choice">
+                <input type="radio" name="a2-focus" id="a2-focus-light" value="light">
+                <label class="choice__body" for="a2-focus-light">
+                  <span class="choice__title">Sunlight</span>
+                  <span class="choice__note">How much light the leaves receive.</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <h3>Step 3 · Make your prediction</h3>
+            <fieldset>
+              <legend>Which way will you move it?</legend>
+              <div class="choice">
+                <input type="radio" name="a2-direction" id="a2-direction-down" value="down" checked>
+                <label class="choice__body" for="a2-direction-down"><span class="choice__title">Lower it</span><span class="choice__note">Less water, or less light, than the starting meadow.</span></label>
+              </div>
+              <div class="choice">
+                <input type="radio" name="a2-direction" id="a2-direction-up" value="up">
+                <label class="choice__body" for="a2-direction-up"><span class="choice__title">Raise it</span><span class="choice__note">More water, or more light, than the starting meadow.</span></label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend id="a2-predict-legend">I predict that if I lower <span id="a2-focus-name">water supply</span>, then&hellip;</legend>
+              <div id="a2-predictions"></div>
+            </fieldset>
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-a2-predict">Record my prediction</button>
+              <button type="button" class="btn btn--quiet" id="btn-a2-new">New experiment</button>
+            </div>
+            <div id="a2-pred-summary" class="pred-summary">No prediction recorded yet. Choose a meadow, choose one condition, choose what you expect &mdash; then press <strong>Record my prediction</strong>.</div>
+
+            <h3>Step 4 · Run the test</h3>
+            <p class="small">Lower the slider for <span id="a2-focus-name-2">water supply</span> in the <em>Conditions you control</em> panel, then move the model forward. Use <strong>Step forward</strong> to watch one step at a time, or <strong>Run 6 steps</strong> to see the whole change.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-a2-run">Run 6 steps</button>
+              <button type="button" class="btn btn--quiet" id="btn-a2-run1">Run 1 step</button>
+            </div>
+            <div id="a2-result" class="stack" aria-live="polite"></div>
+
+            <details>
+              <summary>Hint: how do I make a fair test?</summary>
+              <p>Change <strong>one</strong> condition and leave the other alone. If you change water <em>and</em> sunlight together, you cannot tell which one caused what you see. That is why the notebook asks you to choose one.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= ACTIVITY 3 ============================= -->
+  <section class="screen hidden" id="screen-activity-3" aria-labelledby="a3-h">
+    <div class="layout layout--wide-left">
+      <div class="stack"><div id="lab-slot-3"></div></div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head">
+            <h2 id="a3-h">Activity 3 · Restore balance</h2>
+            <p class="panel__hint">Diagnose, repair, retry as often as you like</p>
+          </div>
+          <div class="panel__body stack">
+            <p>Something has gone wrong in a meadow. Read the indicators, find the cause, and set the conditions so the meadow recovers.</p>
+            <fieldset>
+              <legend>Choose a rescue job</legend>
+              <div id="a3-challenges"></div>
+            </fieldset>
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-a3-load">Load this meadow</button>
+              <button type="button" class="btn btn--quiet" id="btn-a3-hint">Give me a hint</button>
+            </div>
+            <div id="a3-hint-text" class="callout callout--warn hidden"></div>
+            <div id="a3-status" class="stack" aria-live="polite"></div>
+
+            <h3>Rescue goal</h3>
+            <ul class="goal" id="a3-goal"></ul>
+            <p class="small" id="a3-streak-label">Steps in a row that meet the goal:</p>
+            <div class="streak" id="a3-streak" role="img" aria-label="Progress towards the rescue goal"></div>
+
+            <details id="a3-restock-wrap">
+              <summary>Replace a species that has disappeared</summary>
+              <p class="small">In this model a species that reaches zero does not return on its own. If you want it back, put it back &mdash; a real conservation project would do the same. Adding a species counts as an organism choice, not as a change of conditions.</p>
+              <div class="palette" id="a3-restock"></div>
+            </details>
+
+            <div class="callout callout--ok hidden" id="a3-done">
+              <h4>Balance restored</h4>
+              <p id="a3-done-text"></p>
+            </div>
+
+            <details>
+              <summary>Hint: where should I look first?</summary>
+              <p>Look at the two resource bars. If <strong>soil water</strong> is low, plants cannot grow no matter how much light they get. If <strong>sunlight</strong> is too high, the soil dries out faster and shade plants struggle. Then check which animal has lost its food.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= FREE EXPLORE =========================== -->
+  <section class="screen hidden" id="screen-free" aria-labelledby="free-h">
+    <div class="layout layout--wide-left">
+      <div class="stack"><div id="lab-slot-4"></div></div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head"><h2 id="free-h">Free explore</h2><p class="panel__hint">No rules, no goal</p></div>
+          <div class="panel__body stack">
+            <p>Now you can play with the meadow. Change anything, at any time, and watch what happens step by step.</p>
+            <ul>
+              <li>Try full sun with almost no water.</li>
+              <li>Try deep shade with plenty of water &mdash; which plant still grows?</li>
+              <li>Take away every plant-eater and see what the predator does.</li>
+            </ul>
+            <div class="callout callout--model">
+              <h4>Reminder</h4>
+              <p>The meadow never shows animals being caught. The model counts how many animals lose energy and how many survive to the next step. Real hunting is not shown, and real meadows are far more complicated than this one.</p>
+            </div>
+            <div class="btn-row">
+              <button type="button" class="btn" id="btn-free-scenarios">Show me the three lesson meadows</button>
+            </div>
+            <div id="free-list" class="stack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= SUMMARY ================================ -->
+  <section class="screen hidden" id="screen-summary" aria-labelledby="sum-h">
+    <div class="layout">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head"><h2 id="sum-h">Your lesson summary</h2></div>
+          <div class="panel__body stack" id="summary-body"></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel__head"><h3>Next practice</h3></div>
+          <div class="panel__body stack">
+            <p><strong>Take it outside.</strong> Find a patch of grass, or a plant pot. Write down three living things you can see in five minutes and guess which is a producer and which is a consumer. Look for one food link you can actually observe &mdash; a chewed leaf counts.</p>
+            <p>Then ask: what would change here if it stopped raining for two weeks? You have already tested that question in the model.</p>
+            <div class="btn-row">
+              <button type="button" class="btn btn--primary" id="btn-summary-explore">Keep exploring</button>
+              <button type="button" class="btn btn--quiet" id="btn-summary-restart">Restart the lesson</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h3>Where your progress is kept</h3></div>
+          <div class="panel__body">
+            <p class="small">Progress is saved in <strong>this browser only</strong>, under the key <code>meadowlab.progress.v1</code>. It holds which activities you finished and your last prediction. Nothing is sent anywhere: this page makes no network requests, has no analytics and no accounts. <strong>Restart lesson</strong> deletes it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== SHARED LAB (moved into the active activity) = -->
+  <div id="lab" class="stack hidden">
+
+    <section class="panel" aria-labelledby="scene-h">
+      <div class="panel__head">
+        <h2 id="scene-h">Your meadow right now</h2>
+        <p class="panel__hint">Step <span id="step-counter">0</span> · <span id="scene-status">ready</span></p>
+      </div>
+      <div class="panel__body">
+        <div class="scene-wrap">
+          <svg id="scene" class="scene" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="scene-title scene-desc">
+            <title id="scene-title">Meadow picture</title>
+            <desc id="scene-desc">A drawing of the model meadow.</desc>
+          </svg>
+        </div>
+        <ul class="scene-legend">
+          <li><span class="swatch swatch--grass" aria-hidden="true"></span> Meadow Grass cover</li>
+          <li><span class="swatch swatch--flower" aria-hidden="true"></span> Wildflowers cover</li>
+          <li><span class="swatch swatch--fern" aria-hidden="true"></span> Shade Fern cover</li>
+          <li><span class="swatch swatch--moss" aria-hidden="true"></span> Cushion Moss cover</li>
+          <li><span class="swatch swatch--water" aria-hidden="true"></span> Soil water</li>
+          <li><span class="swatch swatch--light" aria-hidden="true"></span> Sunlight</li>
+        </ul>
+        <details>
+          <summary>Text description of the meadow</summary>
+          <p id="scene-text" class="small">The meadow is empty.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="cond-h">
+      <div class="panel__head">
+        <h2 id="cond-h">Conditions you control</h2>
+        <p class="panel__hint">Two dials, nothing else</p>
+      </div>
+      <div class="panel__body stack">
+        <div class="control">
+          <div class="control__top">
+            <span class="control__name">Sunlight</span>
+            <span class="control__read" id="light-read">55 · dappled sun</span>
+          </div>
+          <input type="range" id="light" min="0" max="100" step="5" value="55" aria-describedby="light-note" aria-label="Sunlight level, 0 to 100">
+          <div class="control__scale"><span>0 · deep shade</span><span>50 · dappled</span><span>100 · full sun</span></div>
+          <div class="presets" role="group" aria-label="Sunlight presets">
+            <button type="button" class="btn btn--sm btn--quiet" data-light="10">Deep shade (10)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-light="35">Shady (35)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-light="55">Dappled (55)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-light="80">Bright (80)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-light="100">Full sun (100)</button>
+          </div>
+          <p class="control__note" id="light-note">Light is the energy that leaves capture. In this model it also warms the ground, so strong sun dries the soil.</p>
+        </div>
+
+        <div class="control">
+          <div class="control__top">
+            <span class="control__name">Water supply</span>
+            <span class="control__read" id="water-read">75 · steady rain</span>
+          </div>
+          <input type="range" id="water" min="0" max="100" step="5" value="75" aria-describedby="water-note" aria-label="Water supply level, 0 to 100">
+          <div class="control__scale"><span>0 · drought</span><span>50 · light watering</span><span>100 · very wet</span></div>
+          <div class="presets" role="group" aria-label="Water supply presets">
+            <button type="button" class="btn btn--sm btn--quiet" data-water="0">Drought (0)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-water="25">Dry (25)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-water="50">Light (50)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-water="75">Steady (75)</button>
+            <button type="button" class="btn btn--sm btn--quiet" data-water="100">Very wet (100)</button>
+          </div>
+          <p class="control__note" id="water-note">Water reaches the soil, then plants drink it. Moss holds some of it in place.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="run-h">
+      <div class="panel__head">
+        <h2 id="run-h">Run the model</h2>
+        <p class="panel__hint">Same start + same actions = same result</p>
+      </div>
+      <div class="panel__body">
+        <div class="btn-row">
+          <button type="button" class="btn btn--primary" id="btn-step">Step forward &middot; 1 step</button>
+          <button type="button" class="btn" id="btn-play" aria-pressed="false">Play</button>
+          <button type="button" class="btn btn--quiet" id="btn-reset-scenario">Reset this meadow</button>
+        </div>
+        <p class="small muted">One step is one turn of the model. It is an illustrative time unit &mdash; not a real day, week or season.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="ind-h">
+      <div class="panel__head">
+        <h2 id="ind-h">Living things &amp; resources</h2>
+        <p class="panel__hint">Each bar has a number and a word</p>
+      </div>
+      <div class="panel__body">
+        <div class="org-grid" id="org-grid"></div>
+        <hr class="rule">
+        <div id="resource-meters"></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="jrn-h">
+      <div class="panel__head">
+        <h2 id="jrn-h">Step journal &mdash; what changed, and why</h2>
+        <p class="panel__hint">Newest first</p>
+      </div>
+      <div class="panel__body">
+        <div class="journal" id="journal" role="region" aria-label="Step journal" tabindex="0">
+          <ol class="journal__list" id="journal-list"></ol>
+        </div>
+        <p class="sr-only" id="live" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="chart-h">
+      <div class="panel__head">
+        <h2 id="chart-h">How the meadow changed</h2>
+        <p class="panel__hint">Lines, dashes and dots &mdash; not colour alone</p>
+      </div>
+      <div class="panel__body">
+        <div class="scene-wrap">
+          <svg id="chart" class="scene" viewBox="0 0 640 250" role="img" aria-labelledby="chart-title chart-desc">
+            <title id="chart-title">Chart of plant cover and animal numbers over time</title>
+            <desc id="chart-desc">The chart is empty until the model has run at least one step.</desc>
+          </svg>
+        </div>
+        <ul class="scene-legend" id="chart-legend"></ul>
+        <div id="chart-table-wrap"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<dialog class="gloss" id="gloss-dialog" aria-labelledby="gloss-title">
+  <div class="gloss__head">
+    <h2 id="gloss-title">Word list</h2>
+    <button type="button" class="btn btn--sm btn--quiet" id="gloss-close">Close</button>
+  </div>
+  <div class="gloss__body" id="gloss-body"></div>
+</dialog>
+
+<footer class="site-foot">
+  <div class="site-foot__inner">
+    <p><strong>Meadow Lab</strong> &mdash; a single-file, offline teaching model for ages 8&ndash;11. Original code and original SVG artwork, released under the MIT Licence. No accounts, no tracking, no ads, no network requests.</p>
+    <p>Learning objectives, model assumptions, session plan and references for grown-ups are in <code>EDUCATOR_GUIDE.md</code>. Model checks are in <code>TEST_REPORT.md</code> and can be re-run with <code>node tests/tests.js</code>.</p>
+  </div>
+</footer>
+<script>
+/* ===========================================================================
+   MEADOW LAB — LEARNING CONTENT (kept apart from the model and from the UI)
+   ========================================================================= */
+
+var GLOSSARY = {
+  producer: {
+    title: 'Producer', short: 'A living thing that makes its own food from sunlight.',
+    body: 'Producers use light to build their own food. In this meadow the producers are Meadow Grass, Wildflowers, Shade Fern and Cushion Moss. Producers are the entrance door for energy into the whole habitat.'
+  },
+  consumer: {
+    title: 'Consumer', short: 'A living thing that eats other living things to get energy.',
+    body: 'Consumers cannot make their own food. Plant-eaters (herbivores) eat plants; predators (carnivores) eat other animals. A Meadow Rabbit is a consumer, and so is a Red Fox.'
+  },
+  herbivore: {
+    title: 'Plant-eater (herbivore)', short: 'An animal that eats plants.',
+    body: 'A Meadow Rabbit eats grass and fern. A Meadow Butterfly feeds on wildflowers. A Meadow Grasshopper eats grass and flowers. Each one depends on the plants that are actually growing in the meadow.'
+  },
+  predator: {
+    title: 'Predator', short: 'An animal that hunts and eats other animals.',
+    body: 'In this model the Red Fox hunts rabbits, and the Meadow Songbird hunts butterflies and grasshoppers. Predators do not eat plants or sunlight. The model counts how much food a predator finds; it never shows an animal being caught.'
+  },
+  habitat: {
+    title: 'Habitat', short: 'The place where a living thing finds food, water and shelter.',
+    body: 'A meadow is a habitat. The plants and animals in it must all find what they need in the same place, at the same time, or they cannot stay there.'
+  },
+  energy: {
+    title: 'Energy', short: 'What living things need to grow, move and stay alive.',
+    body: 'Energy arrives from the sun. Producers capture it. When an animal eats a plant, some of that energy moves into the animal. That is why arrows in a food web point from the food to the eater.'
+  },
+  'food-chain': {
+    title: 'Food chain', short: 'A line that shows who eats whom.',
+    body: 'Example: Meadow Grass \u2192 Meadow Rabbit \u2192 Red Fox. Read it as "energy flows from the grass into the rabbit, and from the rabbit into the fox".'
+  },
+  model: {
+    title: 'Model', short: 'A simplified copy of something real, made to test ideas.',
+    body: 'This meadow is a model. It has nine species and two dials. Real meadows have hundreds of species plus weather, soil and seasons. A model is useful because you can change one thing and watch the result \u2014 but the answer is only about the model.'
+  },
+  cover: {
+    title: 'Cover', short: 'The model\u2019s way of measuring how much of the meadow a plant fills.',
+    body: 'Cover runs from 0 (none of this plant) to 100 (the whole meadow filled with it). It is a model value, not a measurement you would take outdoors.'
+  },
+  population: {
+    title: 'Population', short: 'The number of animals of one species.',
+    body: 'The model counts whole animals, with one decimal place for very small numbers. If a population falls below a third of an animal, the model treats the species as gone from this meadow.'
+  },
+  'soil-water': {
+    title: 'Soil water', short: 'Water held in the ground, where roots can reach it.',
+    body: 'Soil water is not the same as rainfall. Rain adds water, the sun and the plants take it away, and moss slows it down. Two meadows with the same rainfall can hold different amounts of soil water.'
+  },
+  tolerance: {
+    title: 'Tolerance band', short: 'The range of a condition where a species can live.',
+    body: 'Each plant has a light band and a water band: below the minimum, or above the maximum, it cannot grow at all. In between there is a best range where it grows fastest. Different species have different bands \u2014 that is why one meadow can suit one plant and kill another.'
+  },
+  drought: {
+    title: 'Drought', short: 'A long stretch with far too little water.',
+    body: 'In the model a drought means the water dial is low for several steps. Soil water falls step by step, and plants with high water needs are hit first.'
+  },
+  balance: {
+    title: 'Balance', short: 'When the meadow\u2019s plants and animals can keep going.',
+    body: 'Balance does not mean "nothing changes". It means no species runs out of food for long enough to disappear. If plant-eaters become too many, they eat the plants down, and then their own numbers fall.'
+  },
+  extinct: {
+    title: 'Gone from this meadow', short: 'A species that has reached zero in the model.',
+    body: 'In this model a species that reaches zero does not come back on its own, because seeds in the soil and animals moving in from outside are not modelled. A real meadow often recovers differently \u2014 this is a place where the model is simpler than nature.'
+  },
+  prediction: {
+    title: 'Prediction', short: 'What you think will happen, written down before you test it.',
+    body: 'A prediction is a guess you can check. Writing it down first is what turns playing into an experiment.'
+  },
+  'fair-test': {
+    title: 'Fair test', short: 'Changing one thing at a time.',
+    body: 'If you change water and sunlight together, you cannot tell which one caused the result. Change one dial, keep the other still, then compare.'
+  }
+};
+
+/* Prediction choices. `correct: true` marks the answer the model actually
+   supports; the options are deliberately placed in different positions so the
+   answer cannot be guessed from where it sits. Every option gets a specific
+   explanation after the run. */
+var PREDICTIONS = {
+  'water:down': [
+    { id: 'w-d-1', text: 'Plants will grow faster, because dry soil is easier to grow in.', correct: false },
+    { id: 'w-d-2', text: 'Plant cover will fall, and plant-eaters will run short of food.', correct: true },
+    { id: 'w-d-3', text: 'Nothing will change: water is only needed by animals.', correct: false },
+    { id: 'w-d-4', text: 'Only the predators will be affected.', correct: false }
+  ],
+  'water:up': [
+    { id: 'w-u-1', text: 'Plants will lose cover, because wet soil is bad for every plant.', correct: false },
+    { id: 'w-u-2', text: 'Only the animals will change; plants ignore water.', correct: false },
+    { id: 'w-u-3', text: 'Plants with high water needs will recover and grow; plant-eaters then find more food.', correct: true },
+    { id: 'w-u-4', text: 'Nothing will change.', correct: false }
+  ],
+  'light:down': [
+    { id: 'l-d-1', text: 'Shade plants will keep growing, sun-loving plants will lose cover, and the soil will dry more slowly.', correct: true },
+    { id: 'l-d-2', text: 'Every plant will grow better, because shade is restful.', correct: false },
+    { id: 'l-d-3', text: 'Light only matters to animals, not to plants.', correct: false },
+    { id: 'l-d-4', text: 'Nothing will change.', correct: false }
+  ],
+  'light:up': [
+    { id: 'l-u-1', text: 'Every plant will grow better and the soil will get wetter.', correct: false },
+    { id: 'l-u-2', text: 'Nothing will change.', correct: false },
+    { id: 'l-u-3', text: 'Only the predators will change.', correct: false },
+    { id: 'l-u-4', text: 'Sun-loving plants will do better, shade plants will be scorched, and stronger sun will dry the soil.', correct: true }
+  ]
+};
+
+var EXPLAIN_WRONG = {
+  'w-d-1': 'Drier soil does not help plants. Water is one of the two things a leaf needs, so less soil water means a lower water factor and slower growth.',
+  'w-d-3': 'Plants need water too. In this model every plant has a water tolerance band; below its minimum it cannot grow at all.',
+  'w-d-4': 'Predators are at the far end of the food chain, so a water change reaches them last, not first. The plants change first.',
+  'w-u-1': 'Wet soil is not bad for every plant, but plants have different water tolerance bands: grass likes more water than wildflowers do.',
+  'w-u-2': 'In this model plants respond to water directly. The water factor multiplies every plant\u2019s growth rate.',
+  'w-u-4': 'Soil water is one of the two dials, so changing it always changes the model.',
+  'l-d-2': 'Shade does not help sun-loving plants. Meadow Grass and Wildflowers have a minimum light level, and below it they cannot grow.',
+  'l-d-3': 'Plants capture light energy directly \u2014 it is the first link in every food chain here.',
+  'l-d-4': 'Light is a dial of the model, and every plant\u2019s growth depends on it.',
+  'l-u-1': 'More light helps sun-loving plants, but it also dries the soil faster, so water-loving plants can suffer. "Better for everything" is almost never true in ecology.',
+  'l-u-2': 'Light is a dial of the model, and every plant\u2019s growth depends on it.',
+  'l-u-3': 'Predators change only when their prey changes. Light acts on the plants first.'
+};
+
+var EXPLAIN_CORRECT = {
+  'w-d-2': 'Lowering water lowers soil water over the next steps, so every plant\u2019s water factor drops and cover falls. Plant-eaters then find less food.',
+  'w-u-3': 'More water raises soil water toward the plants\u2019 best range, so cover recovers and the plant-eaters find more food \u2014 with a delay, because the soil takes a few steps to change.',
+  'l-d-1': 'Less sun lowers the light factor for sun-lovers, but it also slows evaporation, so soil water rises. Shade plants gain, sun-lovers lose.',
+  'l-u-4': 'More light raises the light factor for sun-loving plants but pushes shade plants past their maximum. It also dries the soil, which is a second effect of the same change.'
+};
+
+/* Where the learner can start in activity 1. */
+var PALETTE_HINT = 'Add plants first. Then add animals and check that each one has food waiting for it.';
+
+/*__M_MODEL__*/
+/* ===========================================================================
+   MEADOW LAB — DOMAIN MODEL  (no DOM access anywhere below this line)
+   Extracted verbatim by tests/tests.js, so the shipped model and the tested
+   model are the same code.
+   =========================================================================== */
+/*__MODEL_START__*/
+'use strict';
+
+var MODEL_VERSION = '1.0.0';
+var MAX_STEPS = 600;          /* hard stop: the model can never loop forever   */
+var HISTORY_LIMIT = 60;       /* newest N snapshots are kept                   */
+var EXTINCT_PRODUCER = 0.5;   /* cover below this = the species is gone        */
+var EXTINCT_ANIMAL = 0.3;     /* fewer than this many animals = the species is gone */
+
+/* --- helpers -------------------------------------------------------------- */
+function clamp(v, lo, hi) {
+  if (!isFinite(v)) { return lo; }          /* NaN / Infinity can never escape */
+  return v < lo ? lo : (v > hi ? hi : v);
+}
+function round3(v) { return Math.round(v * 1000) / 1000; }
+
+/**
+ * How well a value sits inside a species' tolerance band.
+ * band = [min, bestLow, bestHigh, max] -> 0 outside, 1 inside the best range,
+ * linear ramp in between. Never returns NaN.
+ */
+function bandFactor(value, band) {
+  var min = band[0], low = band[1], high = band[2], max = band[3];
+  var v = clamp(value, 0, 100);
+  if (v <= min || v >= max) { return 0; }
+  if (v >= low && v <= high) { return 1; }
+  if (v < low) { return clamp((v - min) / (low - min), 0, 1); }
+  return clamp((max - v) / (max - high), 0, 1);
+}
+
+/* =========================================================================
+   SPECIES TABLE
+   Every number here is an ILLUSTRATIVE MODEL VALUE, chosen so the lesson
+   runs in a few steps. It is not a scientific measurement.
+   band = [min, bestLow, bestHigh, max] over 0..100.
+   growth / dieoff = per-step rates.  bite = plant cover eaten per animal
+   per step. need = food units a predator wants per step. capacity = the
+   most individuals the model allows for that species.
+   ========================================================================= */
+var SPECIES = {
+  grass: {
+    id: 'grass', name: 'Meadow Grass', role: 'producer', art: 'grass',
+    light: [22, 45, 100, 100], water: [8, 30, 78, 100],
+    growth: 0.50, dieoff: 0.08,
+    note: 'The main food plant. It needs a lot of light and steady soil water.',
+    outdoor: 'In a real meadow, grasses regrow from the base and from seed in the soil.'
+  },
+  flowers: {
+    id: 'flowers', name: 'Wildflowers', role: 'producer', art: 'flowers',
+    light: [40, 60, 100, 100], water: [6, 20, 60, 100],
+    growth: 0.55, dieoff: 0.08,
+    note: 'Nectar and pollen for insects. Copes with drier soil than grass.',
+    outdoor: 'Real wildflowers often survive dry spells as seeds, not only as plants.'
+  },
+  fern: {
+    id: 'fern', name: 'Shade Fern', role: 'producer', art: 'fern',
+    light: [3, 10, 32, 58], water: [22, 40, 90, 100],
+    growth: 0.36, dieoff: 0.06,
+    note: 'A shade plant. Too much sun scorches it, but it likes damp soil.',
+    outdoor: 'Ferns are common in real woodland, where the canopy keeps light low.'
+  },
+  moss: {
+    id: 'moss', name: 'Cushion Moss', role: 'producer', art: 'moss',
+    light: [0, 4, 32, 60], water: [20, 42, 100, 100],
+    growth: 0.30, dieoff: 0.05, holdsWater: true,
+    note: 'Low and shady. Moss soaks up water and slows down how fast the soil dries.',
+    outdoor: 'Real mosses hold water like a sponge; they cannot stand full sun.'
+  },
+  rabbit: {
+    id: 'rabbit', name: 'Meadow Rabbit', role: 'herbivore', art: 'rabbit',
+    diet: { grass: 0.8, fern: 0.2 }, bite: 0.35, rmax: 0.35, capacity: 14,
+    note: 'Eats grass first, and browses ferns when grass runs short.',
+    outdoor: 'Real rabbits eat a wide mix of low plants, not just grass.'
+  },
+  butterfly: {
+    id: 'butterfly', name: 'Meadow Butterfly', role: 'herbivore', art: 'butterfly',
+    diet: { flowers: 1.0 }, bite: 0.15, rmax: 0.45, capacity: 24,
+    note: 'Feeds on wildflowers only. No flowers means no food at all.',
+    outdoor: 'Butterflies feed on nectar; their caterpillars need particular host plants.'
+  },
+  grasshopper: {
+    id: 'grasshopper', name: 'Meadow Grasshopper', role: 'herbivore', art: 'grasshopper',
+    diet: { grass: 0.5, flowers: 0.5 }, bite: 0.20, rmax: 0.50, capacity: 20,
+    note: 'Chews both grass and flowers, so it keeps growing when one plant dips.',
+    outdoor: 'Grasshoppers are generalist plant-eaters with many predators.'
+  },
+  fox: {
+    id: 'fox', name: 'Red Fox', role: 'predator', art: 'fox',
+    prey: { rabbit: 1 }, need: 0.3, rmax: 0.25, capacity: 4,
+    note: 'Hunts rabbits. If the rabbits disappear, the foxes lose energy step by step.',
+    outdoor: 'Real foxes also eat insects, fruit and carrion; this model keeps one prey.'
+  },
+  songbird: {
+    id: 'songbird', name: 'Meadow Songbird', role: 'predator', art: 'songbird',
+    prey: { butterfly: 1, grasshopper: 1 }, need: 0.25, rmax: 0.30, capacity: 5,
+    note: 'Hunts butterflies and grasshoppers. It does not eat plants or rabbits.',
+    outdoor: 'Many real songbirds switch to seeds and berries outside the nesting season.'
+  }
+};
+var SPECIES_IDS = ['grass', 'flowers', 'fern', 'moss', 'rabbit', 'butterfly', 'grasshopper', 'fox', 'songbird'];
+var PRODUCER_IDS = ['grass', 'flowers', 'fern', 'moss'];
+var HERBIVORE_IDS = ['rabbit', 'butterfly', 'grasshopper'];
+var PREDATOR_IDS = ['fox', 'songbird'];
+var ROLE_LABEL = { producer: 'producer', herbivore: 'plant-eater', predator: 'predator' };
+var MAX_AMOUNT = {};
+SPECIES_IDS.forEach(function (id) { MAX_AMOUNT[id] = SPECIES[id].role === 'producer' ? 100 : SPECIES[id].capacity; });
+function maxAmountOf(id) { return MAX_AMOUNT[id]; }
+
+/* =========================================================================
+   STARTING SCENARIOS  (three lesson meadows + two rescue meadows)
+   ========================================================================= */
+var SCENARIOS = {
+  balanced: {
+    id: 'balanced', name: 'Balanced Meadow', tagline: 'The healthy example',
+    about: 'Dappled sunlight, steady rain, grass, flowers and a full set of animals. This is the meadow the lesson starts from.',
+    light: 60, waterSupply: 80,
+    organisms: { grass: 55, flowers: 45, rabbit: 6, butterfly: 8, grasshopper: 5, fox: 2, songbird: 2 },
+    kind: 'lesson'
+  },
+  drySummer: {
+    id: 'drySummer', name: 'Long Dry Summer', tagline: 'Little rain, strong sun',
+    about: 'The rain has almost stopped and the sun is fierce. The soil is drying out step by step.',
+    light: 80, waterSupply: 30,
+    organisms: { grass: 40, flowers: 35, rabbit: 6, butterfly: 8, grasshopper: 5, fox: 2, songbird: 2 },
+    kind: 'lesson'
+  },
+  shadyGrove: {
+    id: 'shadyGrove', name: 'Shady Grove', tagline: 'Deep shade, wet soil',
+    about: 'Trees keep the light out and the soil stays damp. Shade plants do well here; sun-lovers do not.',
+    light: 18, waterSupply: 75,
+    organisms: { grass: 35, flowers: 20, fern: 55, moss: 50, rabbit: 6, butterfly: 5, grasshopper: 3, fox: 2, songbird: 2 },
+    kind: 'lesson'
+  },
+  rescueDry: {
+    id: 'rescueDry', name: 'Rescue job A · The parched pasture', tagline: 'Too little water, too many mouths',
+    about: 'A hot, dry pasture with more plant-eaters than the plants can feed. Diagnose it and repair it.',
+    light: 85, waterSupply: 30,
+    organisms: { grass: 22, flowers: 25, rabbit: 12, butterfly: 6, grasshopper: 12, fox: 4, songbird: 4 },
+    kind: 'rescue'
+  },
+  rescueHollow: {
+    id: 'rescueHollow', name: 'Rescue job B · The unfamiliar hollow', tagline: 'A meadow you have not seen',
+    about: 'A wooded hollow where the light comes through in patches. Ferns, moss and songbirds live here, the soil has dried out, and the ferns and moss are thin.',
+    light: 45, waterSupply: 30,
+    organisms: { grass: 12, flowers: 8, fern: 26, moss: 22, rabbit: 6, butterfly: 2, grasshopper: 10, fox: 3, songbird: 3 },
+    kind: 'rescue'
+  }
+};
+var LESSON_SCENARIO_IDS = ['balanced', 'drySummer', 'shadyGrove'];
+var RESCUE_IDS = ['rescueDry', 'rescueHollow'];
+
+var GOALS = {
+  rescueDry: {
+    blurb: 'Get the parched pasture back to a working meadow, and hold it there.',
+    streak: 3,
+    thresholds: { grass: 45, flowers: 40, rabbit: 6, butterfly: 6, grasshopper: 4, fox: 2 },
+    hint: 'Soil water is the bottleneck: the sun is strong and the rain is weak, so the water dial is far too low. Grass cannot grow below about 20 soil water. Raise the water supply, and consider softening the sun so the soil stops baking.'
+  },
+  rescueHollow: {
+    blurb: 'In this wooded hollow the plants are short of water, not short of sun.',
+    streak: 3,
+    thresholds: { fern: 45, moss: 45, grass: 40, grasshopper: 6, rabbit: 6, songbird: 2 },
+    hint: 'The two shade plants \u2014 fern and moss \u2014 are far below where they should be, and the water dial is the reason: below about 22 soil water they cannot grow at all. Raise the water supply. Full sun is not the answer here, because it would push the ferns past the top of their light tolerance.'
+  }
+};
+
+/* =========================================================================
+   SIMULATION  — fully deterministic, bounded, no randomness anywhere
+   ========================================================================= */
+function emptyOrg() {
+  var o = {};
+  SPECIES_IDS.forEach(function (id) { o[id] = 0; });
+  return o;
+}
+function producerCoverOf(state) {
+  var t = 0;
+  PRODUCER_IDS.forEach(function (id) { t += state.org[id] || 0; });
+  return t;
+}
+function mossCoverOf(state) { return clamp((state.org.moss || 0) / 100, 0, 1); }
+
+/** Soil water moves toward a target set by the water dial, the sun and the moss. */
+function waterTargetOf(light, waterSupply, mossCover, producerCover) {
+  var dryness = 0.20 + 0.65 * (clamp(light, 0, 100) / 100);
+  var base = clamp(waterSupply, 0, 100) * (1 - dryness) * 1.45 * (1 + 0.30 * clamp(mossCover, 0, 1));
+  var uptake = clamp(producerCover, 0, 400) * 0.02;
+  return clamp(round3(base - uptake), 0, 100);
+}
+
+function createState(scenarioId, overrides) {
+  var sc = SCENARIOS[scenarioId] || SCENARIOS.balanced;
+  var org = emptyOrg();
+  Object.keys(sc.organisms).forEach(function (id) {
+    if (SPECIES[id]) { org[id] = clamp(sc.organisms[id], 0, maxAmountOf(id)); }
+  });
+  if (overrides) {
+    Object.keys(overrides).forEach(function (id) {
+      if (SPECIES[id]) { org[id] = clamp(overrides[id], 0, maxAmountOf(id)); }
+    });
+  }
+  var state = {
+    modelVersion: MODEL_VERSION,
+    scenarioId: sc.id,
+    step: 0,
+    light: clamp(sc.light, 0, 100),
+    waterSupply: clamp(sc.waterSupply, 0, 100),
+    water: 0,
+    org: org,
+    log: [],
+    history: []
+  };
+  state.water = waterTargetOf(state.light, state.waterSupply, mossCoverOf(state), producerCoverOf(state));
+  state.history.push(snapshot(state));
+  return state;
+}
+
+function snapshot(state) {
+  var s = { step: state.step, light: round3(state.light), water: round3(state.water) };
+  SPECIES_IDS.forEach(function (id) { s[id] = round3(state.org[id] || 0); });
+  return s;
+}
+
+function cloneState(state) {
+  var copy = {
+    modelVersion: state.modelVersion,
+    scenarioId: state.scenarioId,
+    step: state.step,
+    light: state.light,
+    waterSupply: state.waterSupply,
+    water: state.water,
+    org: {},
+    log: state.log.slice(),
+    history: state.history.slice()
+  };
+  SPECIES_IDS.forEach(function (id) { copy.org[id] = state.org[id] || 0; });
+  return copy;
+}
+
+function setOrg(state, id, value) {
+  if (!SPECIES[id]) { return state; }
+  state.org[id] = clamp(round3(value), 0, maxAmountOf(id));
+  return state;
+}
+
+/* --- text helpers used to explain every step ------------------------------ */
+function pct(x) { return Math.round(x * 100) + '%'; }
+function fmtNum(x) {
+  var r = round3(x);
+  if (Math.abs(r - Math.round(r)) < 0.05) { return String(Math.round(r)); }
+  return r.toFixed(1);
+}
+function arrow(a, b) { return fmtNum(a) + ' \u2192 ' + fmtNum(b); }
+function signed(x) { var d = round3(x); return (d > 0 ? '+' : '') + fmtNum(d); }
+function describeBand(band) { return band[1] + '\u2013' + band[2]; }
+function bandWord(f) {
+  if (f >= 0.999) { return 'in its best range'; }
+  if (f <= 0.001) { return 'outside what it can tolerate'; }
+  if (f < 0.4) { return 'poor'; }
+  if (f < 0.7) { return 'only just enough'; }
+  return 'good';
+}
+function ratioWord(f) {
+  if (f <= 0.001) { return 'none'; }
+  if (f < 0.35) { return 'much too little'; }
+  if (f < 0.95) { return 'not quite enough'; }
+  return 'enough';
+}
+
+/* --- one simulation step -------------------------------------------------- */
+function stepSimulation(state) {
+  /* Hard stop: past the step limit the model returns itself, so it can never
+     run for ever no matter how it is driven. */
+  if (state.step >= MAX_STEPS) { return cloneState(state); }
+  var next = cloneState(state);
+  var entries = [];
+  next.step = state.step + 1;
+
+  /* 1. SOIL WATER ---------------------------------------------------------- */
+  var prevWater = next.water;
+  var target = waterTargetOf(next.light, next.waterSupply, mossCoverOf(next), producerCoverOf(next));
+  next.water = clamp(round3(next.water + (target - next.water) * 0.35), 0, 100);
+  var dWater = round3(next.water - prevWater);
+  if (Math.abs(dWater) >= 0.4) {
+    entries.push({
+      tag: 'water', kind: 'water',
+      head: 'Soil water ' + arrow(prevWater, next.water),
+      why: 'Water supply is set to ' + fmtNum(next.waterSupply) + ' and sunlight to ' + fmtNum(next.light) +
+           '. Those two set a target of ' + fmtNum(target) + ' for soil water, and the soil moves about a third of ' +
+           'the way there each step. Moss holding ' + fmtNum((next.org.moss || 0)) + ' cover slows the drying' +
+           (SPEED_NOTE(dWater))
+    });
+  }
+
+  /* 2. PLANTS -------------------------------------------------------------- */
+  PRODUCER_IDS.forEach(function (id) {
+    var sp = SPECIES[id];
+    var amount = next.org[id] || 0;
+    if (amount <= 0) { return; }
+    var fL = bandFactor(next.light, sp.light);
+    var fW = bandFactor(next.water, sp.water);
+    var g = round3(sp.growth * fL * fW);
+    var change = amount * (g * (1 - amount / 100) - sp.dieoff);
+    var v = clamp(amount + change, 0, 100);
+    if (v < EXTINCT_PRODUCER) { v = 0; }
+    v = round3(v);
+    next.org[id] = v;
+    if (Math.abs(v - amount) >= 1.2 || (amount > 0 && v === 0)) {
+      entries.push({
+        tag: 'plant', kind: 'plant',
+        head: sp.name + ' cover ' + arrow(amount, v),
+        why: 'Sunlight ' + fmtNum(next.light) + ' gives a light factor of ' + fmtNum(fL) + ' (' + bandWord(fL) + '; ' +
+             sp.name + ' likes light ' + describeBand(sp.light) + '). Soil water ' + fmtNum(next.water) +
+             ' gives a water factor of ' + fmtNum(fW) + ' (' + bandWord(fW) + '; it likes ' + describeBand(sp.water) + '). ' +
+             'Growth rate ' + fmtNum(g) + ' per step against natural die-off ' + fmtNum(sp.dieoff) + '.' +
+             (v === 0 ? ' The last of this species is gone: in this model a lost plant species does not come back on its own.' : '')
+      });
+    }
+  });
+
+  /* 3. PLANT-EATERS (grazing) ---------------------------------------------- */
+  HERBIVORE_IDS.forEach(function (id) {
+    var sp = SPECIES[id];
+    var pop = next.org[id] || 0;
+    if (pop <= 0) { return; }
+    var potential = pop * sp.bite;
+    var available = 0;
+    Object.keys(sp.diet).forEach(function (f) { available += sp.diet[f] * (next.org[f] || 0); });
+    var intake = Math.min(potential, available * 0.6);
+    var sat = potential > 0 ? clamp(intake / potential, 0, 1) : 0;
+    if (available > 0 && intake > 0) {
+      Object.keys(sp.diet).forEach(function (f) {
+        var share = (sp.diet[f] * (next.org[f] || 0)) / available;
+        var left = clamp((next.org[f] || 0) - intake * share, 0, 100);
+        if (left < EXTINCT_PRODUCER) { left = 0; }
+        next.org[f] = round3(left);
+      });
+    }
+    var r = sp.rmax * 2 * (sat - 0.5);
+    var change = r >= 0 ? pop * r * (1 - pop / sp.capacity) : pop * r;
+    var v = clamp(pop + change, 0, sp.capacity);
+    if (v < EXTINCT_ANIMAL) { v = 0; }
+    v = round3(v);
+    next.org[id] = v;
+    var foodNames = Object.keys(sp.diet).map(function (f) { return SPECIES[f].name; }).join(' and ');
+    if (Math.abs(v - pop) >= 0.25 || (pop > 0 && v === 0) || sat <= 0.05) {
+      entries.push({
+        tag: 'animal', kind: 'animal',
+        head: sp.name + ' ' + arrow(pop, v),
+        why: 'Food link checked: ' + foodNames + ' \u2192 ' + sp.name + '. It found ' + fmtNum(intake) + ' of the ' +
+             fmtNum(potential) + ' food it wanted (' + pct(sat) + ', ' + ratioWord(sat) + '). ' +
+             'With more than half of what it needs, numbers rise; with less than half they fall. ' +
+             (sat <= 0.05 ? 'It found no food at all this step.' : '')
+      });
+    }
+  });
+
+  /* 4. PREDATORS ----------------------------------------------------------- */
+  PREDATOR_IDS.forEach(function (id) {
+    var sp = SPECIES[id];
+    var pop = next.org[id] || 0;
+    if (pop <= 0) { return; }
+    var need = pop * sp.need;
+    var available = 0;
+    Object.keys(sp.prey).forEach(function (p) { available += (next.org[p] || 0); });
+    var wanted = Math.min(need, available * 0.5);
+    var plan = [];
+    var removed = 0;
+    Object.keys(sp.prey).forEach(function (p) {
+      var share = available > 0 ? (next.org[p] || 0) / available : 0;
+      var take = Math.min(wanted * share, 0.4 * (next.org[p] || 0));  /* prey refuge */
+      plan.push([p, take]);
+      removed += take;
+    });
+    plan.forEach(function (pair) {
+      var p = pair[0], take = pair[1];
+      var left = clamp((next.org[p] || 0) - take, 0, maxAmountOf(p));
+      if (left < EXTINCT_ANIMAL) { left = 0; }
+      next.org[p] = round3(left);
+    });
+    var sat = need > 0 ? clamp(removed / need, 0, 1) : 0;
+    var r = sp.rmax * 2 * (sat - 0.5);
+    var change = r >= 0 ? pop * r * (1 - pop / sp.capacity) : pop * r;
+    var v = clamp(pop + change, 0, sp.capacity);
+    if (v < EXTINCT_ANIMAL) { v = 0; }
+    v = round3(v);
+    next.org[id] = v;
+    var preyNames = Object.keys(sp.prey).map(function (p) { return SPECIES[p].name; }).join(' and ');
+    if (Math.abs(v - pop) >= 0.25 || (pop > 0 && v === 0) || sat <= 0.05) {
+      entries.push({
+        tag: 'predator', kind: 'predator',
+        head: sp.name + ' ' + arrow(pop, v),
+        why: 'Food link checked: ' + preyNames + ' \u2192 ' + sp.name + '. It found ' + fmtNum(removed) + ' of the ' +
+             fmtNum(need) + ' food it wanted (' + pct(sat) + '). The model never shows animals being caught; it only ' +
+             'counts how many have enough energy to stay. No more than 40% of a prey species can be taken in one step.'
+      });
+    }
+  });
+
+  /* 5. RECORD -------------------------------------------------------------- */
+  if (!entries.length) {
+    entries.push({ tag: 'balance', kind: 'balance', head: 'Nothing much changed', why: 'Every species stayed inside its tolerance ranges this step, so the meadow is close to steady.' });
+  }
+  if (next.step > MAX_STEPS) { entries.push({ tag: 'balance', kind: 'balance', head: 'Step limit reached', why: 'This model stops at ' + MAX_STEPS + ' steps so it can never run forever. Reset the meadow to start again.' }); }
+  next.log = [{ step: next.step, entries: entries }].concat(state.log).slice(0, 40);
+  next.history = state.history.concat([snapshot(next)]).slice(-HISTORY_LIMIT);
+  if (next.step >= MAX_STEPS) { next.locked = true; }
+  return next;
+}
+
+function SPEED_NOTE(dWater) {
+  if (dWater < -0.4) { return ' Faster drying than replacement means the soil is losing water.'; }
+  if (dWater > 0.4) { return ' Water is arriving faster than it drains away, so the soil is getting wetter.'; }
+  return '';
+}
+
+function simulate(state, n) {
+  var s = state;
+  for (var i = 0; i < n; i++) {
+    if (s.step >= MAX_STEPS) { break; }
+    s = stepSimulation(s);
+  }
+  return s;
+}
+
+/* --- checks used by the tests and by activity 3 --------------------------- */
+function allFinite(state) {
+  var ok = true;
+  if (!isFinite(state.water) || !isFinite(state.light) || !isFinite(state.waterSupply)) { ok = false; }
+  SPECIES_IDS.forEach(function (id) {
+    var v = state.org[id];
+    if (!isFinite(v) || v < 0 || v > maxAmountOf(id)) { ok = false; }
+  });
+  if (state.water < 0 || state.water > 100) { ok = false; }
+  return ok;
+}
+
+/** Habitat report for activity 1: what eats what, and what is missing. */
+function habitatReport(counts) {
+  var present = SPECIES_IDS.filter(function (id) { return (counts[id] || 0) > 0; });
+  var producers = present.filter(function (id) { return SPECIES[id].role === 'producer'; });
+  var herbivores = present.filter(function (id) { return SPECIES[id].role === 'herbivore'; });
+  var predators = present.filter(function (id) { return SPECIES[id].role === 'predator'; });
+  var links = [];
+  var orphans = [];
+  present.forEach(function (id) {
+    var sp = SPECIES[id];
+    var diet = sp.diet || sp.prey;
+    if (!diet) { return; }
+    var fed = false;
+    Object.keys(diet).forEach(function (food) {
+      var here = present.indexOf(food) >= 0;
+      if (here) { fed = true; }
+      links.push({ from: food, to: id, share: diet[food], here: here });
+    });
+    if (!fed) { orphans.push(id); }
+  });
+  var uneaten = producers.filter(function (id) {
+    return !present.some(function (c) {
+      var d = SPECIES[c].diet || SPECIES[c].prey || {};
+      return (d[id] || 0) > 0;
+    });
+  });
+  var checks = [
+    { ok: producers.length >= 2, text: 'At least 2 producers', hint: 'Plants make their own food from sunlight. Two different plants give the meadow a better chance.' },
+    { ok: herbivores.length >= 2, text: 'At least 2 plant-eaters', hint: 'Plant-eaters move energy from plants to animals.' },
+    { ok: predators.length >= 1, text: 'At least 1 predator', hint: 'A predator keeps plant-eater numbers from running away.' },
+    { ok: orphans.length === 0, text: 'Every animal has food', hint: orphans.length ? ('No food here for: ' + orphans.map(function (id) { return SPECIES[id].name; }).join(', ') + '.') : 'All placed animals can find at least one of their foods.' }
+  ];
+  return {
+    present: present, producers: producers, herbivores: herbivores, predators: predators,
+    links: links, orphans: orphans, uneaten: uneaten, checks: checks,
+    viable: checks.every(function (c) { return c.ok; })
+  };
+}
+
+/** Food chains found in a habitat report, expressed as "A -> B -> C". */
+function foodChains(counts) {
+  var rep = habitatReport(counts);
+  var chains = [];
+  rep.predators.forEach(function (pred) {
+    Object.keys(SPECIES[pred].prey).forEach(function (herb) {
+      if (rep.present.indexOf(herb) < 0) { return; }
+      var plants = Object.keys(SPECIES[herb].diet).filter(function (p) { return rep.present.indexOf(p) >= 0; });
+      if (!plants.length) { chains.push([SPECIES[herb].name + ' (no plant food)', SPECIES[pred].name]); return; }
+      plants.forEach(function (p) {
+        chains.push([SPECIES[p].name, SPECIES[herb].name, SPECIES[pred].name]);
+      });
+    });
+  });
+  return chains;
+}
+
+/** Goal check used by activity 3. Returns per-species status + completeness. */
+function goalStatus(state, goal) {
+  var rows = [];
+  var allOk = true;
+  Object.keys(goal.thresholds).forEach(function (id) {
+    var sp = SPECIES[id];
+    var min = goal.thresholds[id];
+    var value = state.org[id] || 0;
+    var ok = value >= min;
+    if (!ok) { allOk = false; }
+    rows.push({
+      id: id, name: sp.name, role: sp.role, value: value, min: min, ok: ok,
+      text: sp.name + ': ' + fmtNum(value) + ' of ' + min + ' needed'
+    });
+  });
+  return { rows: rows, allOk: allOk };
+}
+/*__MODEL_END__*/
+/* ===========================================================================
+   MEADOW LAB — INTERFACE
+   Everything below only reads from the model above; it never changes a rule.
+   ========================================================================= */
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'meadowlab.progress.v1';
+  var SCREENS = ['welcome', 'activity-1', 'activity-2', 'activity-3', 'free', 'summary'];
+  var SLOT = { 'activity-1': 'lab-slot-1', 'activity-2': 'lab-slot-2', 'activity-3': 'lab-slot-3', 'free': 'lab-slot-4' };
+  var BUILD_STEP = { producer: 20, animal: 2 };
+  var INK = '#17251E', CARD = '#FFFCF3', GREEN = '#1C5B3B', CLAY = '#9C3F17', SKY = '#14556E', PLUM = '#5B3B8C', GOLD = '#7A5A0B';
+  var SERIES = [
+    { id: 'grass', label: 'Meadow Grass', colour: '#2F7A52', dash: '', width: 3.4, marker: 'circle' },
+    { id: 'flowers', label: 'Wildflowers', colour: '#9C3F17', dash: '10 5', width: 3, marker: 'square' },
+    { id: 'fern', label: 'Shade Fern', colour: '#14556E', dash: '2 4', width: 3, marker: 'triangle' },
+    { id: 'moss', label: 'Cushion Moss', colour: '#4A6B2A', dash: '12 3 2 3', width: 3, marker: 'diamond' },
+    { id: 'rabbit', label: 'Meadow Rabbit', colour: '#7A4A12', dash: '', width: 2.2, marker: 'circle' },
+    { id: 'butterfly', label: 'Meadow Butterfly', colour: '#8A3A78', dash: '10 5', width: 2.2, marker: 'triangle' },
+    { id: 'grasshopper', label: 'Meadow Grasshopper', colour: '#4F6B12', dash: '2 4', width: 2.2, marker: 'square' },
+    { id: 'fox', label: 'Red Fox', colour: '#A8410F', dash: '6 3', width: 2.2, marker: 'diamond' },
+    { id: 'songbird', label: 'Meadow Songbird', colour: '#2A4C7A', dash: '3 3 8 3', width: 2.2, marker: 'cross' }
+  ];
+
+  /* ---------------------------------------------------------------- helpers */
+  function $(id) { return document.getElementById(id); }
+  function mk(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) { n.className = cls; }
+    if (text !== undefined && text !== null) { n.textContent = String(text); }
+    return n;
+  }
+  function clear(node) { while (node.firstChild) { node.removeChild(node.firstChild); } }
+  function on(node, ev, fn) { if (node) { node.addEventListener(ev, fn); } }
+  function num(v) { return fmtNum(v); }
+  function pctInt(x) { return Math.round(clamp(x, 0, 1) * 100) + '%'; }
+
+  /* ================================================================ ART === */
+  function glyph(id, cls) {
+    var open = '<svg class="' + (cls || '') + '" viewBox="0 0 48 48" role="img" aria-hidden="true" focusable="false">';
+    var g = {
+      grass: '<path d="M8 44 C14 32 16 24 17 12" fill="none" stroke="#1C5B3B" stroke-width="3" stroke-linecap="round"/>' +
+             '<path d="M20 44 C22 32 22 22 20 14" fill="none" stroke="#2F7A52" stroke-width="3" stroke-linecap="round"/>' +
+             '<path d="M32 44 C34 34 38 26 43 20" fill="none" stroke="#4E9A6E" stroke-width="3" stroke-linecap="round"/>' +
+             '<path d="M6 44 H44" stroke="#7A5A0B" stroke-width="2.5" stroke-linecap="round"/>',
+      flowers: '<path d="M24 44 V22" stroke="#2F7A52" stroke-width="3" stroke-linecap="round"/>' +
+               '<circle cx="24" cy="14" r="6" fill="#C4693F" stroke="#7A5A0B" stroke-width="2.5"/>' +
+               '<circle cx="14" cy="24" r="5" fill="#D98A62" stroke="#7A5A0B" stroke-width="2.5"/>' +
+               '<circle cx="34" cy="24" r="5" fill="#D98A62" stroke="#7A5A0B" stroke-width="2.5"/>' +
+               '<circle cx="24" cy="14" r="2.2" fill="#7A5A0B"/>',
+      fern: '<path d="M24 46 C24 32 24 20 24 6" fill="none" stroke="#14556E" stroke-width="2.6" stroke-linecap="round"/>' +
+            '<path d="M24 12 C18 12 14 15 12 20" fill="none" stroke="#3D8299" stroke-width="2.6" stroke-linecap="round"/>' +
+            '<path d="M24 12 C30 12 34 15 36 20" fill="none" stroke="#3D8299" stroke-width="2.6" stroke-linecap="round"/>' +
+            '<path d="M24 22 C17 22 13 26 11 32" fill="none" stroke="#3D8299" stroke-width="2.6" stroke-linecap="round"/>' +
+            '<path d="M24 22 C31 22 35 26 37 32" fill="none" stroke="#3D8299" stroke-width="2.6" stroke-linecap="round"/>',
+      moss: '<ellipse cx="24" cy="36" rx="18" ry="9" fill="#6E9146" stroke="#3E5A1E" stroke-width="2.5"/>' +
+            '<ellipse cx="15" cy="30" rx="7" ry="5" fill="#4A6B2A" stroke="#3E5A1E" stroke-width="2"/>' +
+            '<ellipse cx="30" cy="28" rx="8" ry="6" fill="#4A6B2A" stroke="#3E5A1E" stroke-width="2"/>' +
+            '<circle cx="18" cy="26" r="1.6" fill="#DCEBC0"/><circle cx="33" cy="24" r="1.6" fill="#DCEBC0"/>',
+      rabbit: '<ellipse cx="25" cy="32" rx="12" ry="9" fill="#C9A273" stroke="#5B3F1E" stroke-width="2.5"/>' +
+              '<circle cx="16" cy="22" r="7" fill="#D8B48A" stroke="#5B3F1E" stroke-width="2.5"/>' +
+              '<ellipse cx="13" cy="10" rx="3" ry="7" fill="#D8B48A" stroke="#5B3F1E" stroke-width="2.5"/>' +
+              '<ellipse cx="20" cy="10" rx="3" ry="7" fill="#D8B48A" stroke="#5B3F1E" stroke-width="2.5"/>' +
+              '<circle cx="14" cy="21" r="1.5" fill="#17251E"/>' +
+              '<path d="M36 34 C42 34 44 30 44 26" fill="none" stroke="#5B3F1E" stroke-width="2.5" stroke-linecap="round"/>',
+      butterfly: '<path d="M24 24 C10 6 2 16 8 26 C12 33 20 32 24 24 Z" fill="#C4693F" stroke="#7A5A0B" stroke-width="2.5"/>' +
+                 '<path d="M24 24 C38 6 46 16 40 26 C36 33 28 32 24 24 Z" fill="#D98A62" stroke="#7A5A0B" stroke-width="2.5"/>' +
+                 '<path d="M24 16 V38" stroke="#17251E" stroke-width="2.6" stroke-linecap="round"/>' +
+                 '<path d="M24 16 C22 10 20 8 17 7" fill="none" stroke="#17251E" stroke-width="2" stroke-linecap="round"/>' +
+                 '<path d="M24 16 C26 10 28 8 31 7" fill="none" stroke="#17251E" stroke-width="2" stroke-linecap="round"/>',
+      grasshopper: '<ellipse cx="22" cy="30" rx="15" ry="6.5" fill="#7F9B33" stroke="#3E5210" stroke-width="2.5"/>' +
+                   '<circle cx="9" cy="25" r="6" fill="#9DB54C" stroke="#3E5210" stroke-width="2.5"/>' +
+                   '<path d="M6 22 C2 18 4 14 8 14" fill="none" stroke="#3E5210" stroke-width="2" stroke-linecap="round"/>' +
+                   '<path d="M20 36 C22 42 28 44 34 42" fill="none" stroke="#3E5210" stroke-width="2.5" stroke-linecap="round"/>' +
+                   '<path d="M4 28 C2 34 6 38 10 36" fill="none" stroke="#3E5210" stroke-width="2" stroke-linecap="round"/>' +
+                   '<circle cx="8" cy="24" r="1.4" fill="#17251E"/>',
+      fox: '<path d="M12 18 L6 6 L20 12 Z" fill="#C4693F" stroke="#7A3A0B" stroke-width="2.5"/>' +
+           '<path d="M36 18 L42 6 L28 12 Z" fill="#C4693F" stroke="#7A3A0B" stroke-width="2.5"/>' +
+           '<path d="M24 10 C34 10 40 18 40 27 C40 37 32 44 24 44 C16 44 8 37 8 27 C8 18 14 10 24 10 Z" fill="#D98A62" stroke="#7A3A0B" stroke-width="2.5"/>' +
+           '<circle cx="17" cy="25" r="2" fill="#17251E"/><circle cx="31" cy="25" r="2" fill="#17251E"/>' +
+           '<path d="M24 33 L21 37 H27 Z" fill="#17251E"/>',
+      songbird: '<ellipse cx="20" cy="28" rx="13" ry="10" fill="#5B84B5" stroke="#1F3A5E" stroke-width="2.5"/>' +
+                '<circle cx="33" cy="20" r="7.5" fill="#7FA6D0" stroke="#1F3A5E" stroke-width="2.5"/>' +
+                '<path d="M40 20 L47 22 L40 25 Z" fill="#E0BA55" stroke="#7A5A0B" stroke-width="2"/>' +
+                '<circle cx="34" cy="18" r="1.6" fill="#17251E"/>' +
+                '<path d="M14 26 C8 22 4 26 8 30 C12 33 16 31 18 28" fill="#7FA6D0" stroke="#1F3A5E" stroke-width="2.5"/>'
+    };
+    return open + (g[id] || '') + '</svg>';
+  }
+
+  /* --- scene pieces ------------------------------------------------------- */
+  function tuft(x, y, h, c1, c2, w) {
+    return '<path d="M' + x + ' ' + y + ' C' + (x - w) + ' ' + (y - h * 0.6) + ' ' + (x - w) + ' ' + (y - h) + ' ' + (x - w * 0.6) + ' ' + (y - h * 1.1) + '" fill="none" stroke="' + c1 + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M' + x + ' ' + y + ' C' + x + ' ' + (y - h * 0.7) + ' ' + x + ' ' + (y - h) + ' ' + x + ' ' + (y - h * 1.15) + '" fill="none" stroke="' + c2 + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M' + x + ' ' + y + ' C' + (x + w) + ' ' + (y - h * 0.6) + ' ' + (x + w) + ' ' + (y - h) + ' ' + (x + w * 0.6) + ' ' + (y - h * 1.1) + '" fill="none" stroke="' + c1 + '" stroke-width="2.6" stroke-linecap="round"/>';
+  }
+  function flowerArt(x, y, h) {
+    var ty = y - h;
+    return '<path d="M' + x + ' ' + y + ' V' + ty + '" stroke="#2F7A52" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<circle cx="' + x + '" cy="' + (ty - 2) + '" r="5.5" fill="#D98A62" stroke="#7A5A0B" stroke-width="2"/>' +
+      '<circle cx="' + (x - 6) + '" cy="' + (ty + 5) + '" r="4" fill="#D98A62" stroke="#7A5A0B" stroke-width="2"/>' +
+      '<circle cx="' + (x + 6) + '" cy="' + (ty + 5) + '" r="4" fill="#D98A62" stroke="#7A5A0B" stroke-width="2"/>';
+  }
+  function fernArt(x, y, h) {
+    var ty = y - h;
+    return '<path d="M' + x + ' ' + y + ' C' + x + ' ' + (y - h * 0.5) + ' ' + x + ' ' + (ty + h * 0.3) + ' ' + x + ' ' + ty + '" fill="none" stroke="#14556E" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M' + x + ' ' + (ty + 6) + ' C' + (x - 9) + ' ' + (ty + 6) + ' ' + (x - 12) + ' ' + (ty + 12) + ' ' + (x - 13) + ' ' + (ty + 18) + '" fill="none" stroke="#3D8299" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M' + x + ' ' + (ty + 6) + ' C' + (x + 9) + ' ' + (ty + 6) + ' ' + (x + 12) + ' ' + (ty + 12) + ' ' + (x + 13) + ' ' + (ty + 18) + '" fill="none" stroke="#3D8299" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M' + x + ' ' + (ty + 18) + ' C' + (x - 8) + ' ' + (ty + 18) + ' ' + (x - 11) + ' ' + (ty + 24) + ' ' + (x - 12) + ' ' + (ty + 30) + '" fill="none" stroke="#3D8299" stroke-width="2.4" stroke-linecap="round"/>';
+  }
+  function mossArt(x, y, r) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 0.5) + '" fill="#6E9146" stroke="#3E5A1E" stroke-width="2"/>' +
+      '<circle cx="' + (x - r * 0.4) + '" cy="' + (y - r * 0.25) + '" r="1.5" fill="#DCEBC0"/>' +
+      '<circle cx="' + (x + r * 0.4) + '" cy="' + (y - r * 0.1) + '" r="1.5" fill="#DCEBC0"/>';
+  }
+  function rabbitArt(x, y, s) {
+    var k = s;
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')">' +
+      '<ellipse cx="0" cy="0" rx="15" ry="11" fill="#D8B48A" stroke="#5B3F1E" stroke-width="2.4"/>' +
+      '<circle cx="-11" cy="-10" r="8" fill="#E4C6A2" stroke="#5B3F1E" stroke-width="2.4"/>' +
+      '<ellipse cx="-15" cy="-24" rx="3.4" ry="9" fill="#E4C6A2" stroke="#5B3F1E" stroke-width="2.4"/>' +
+      '<ellipse cx="-8" cy="-24" rx="3.4" ry="9" fill="#E4C6A2" stroke="#5B3F1E" stroke-width="2.4"/>' +
+      '<circle cx="-13" cy="-11" r="1.6" fill="#17251E"/>' +
+      '<circle cx="13" cy="-4" r="5" fill="#FFFCF3" stroke="#5B3F1E" stroke-width="2"/>' +
+      '</g>';
+  }
+  function butterflyArt(x, y, s) {
+    var k = s;
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')">' +
+      '<path d="M0 0 C-12 -12 -20 -4 -14 3 C-10 8 -4 6 0 0 Z" fill="#D98A62" stroke="#7A5A0B" stroke-width="2"/>' +
+      '<path d="M0 0 C12 -12 20 -4 14 3 C10 8 4 6 0 0 Z" fill="#C4693F" stroke="#7A5A0B" stroke-width="2"/>' +
+      '<path d="M0 -3 V6" stroke="#17251E" stroke-width="2" stroke-linecap="round"/>' +
+      '</g>';
+  }
+  function hopperArt(x, y, s) {
+    var k = s;
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')">' +
+      '<ellipse cx="0" cy="0" rx="12" ry="5.5" fill="#9DB54C" stroke="#3E5210" stroke-width="2"/>' +
+      '<circle cx="-10" cy="-4" r="5" fill="#B0C766" stroke="#3E5210" stroke-width="2"/>' +
+      '<circle cx="-11" cy="-5" r="1.3" fill="#17251E"/>' +
+      '<path d="M4 5 C6 10 12 11 16 8" fill="none" stroke="#3E5210" stroke-width="2" stroke-linecap="round"/>' +
+      '</g>';
+  }
+  function foxArt(x, y, s) {
+    var k = s;
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')">' +
+      '<ellipse cx="-4" cy="2" rx="20" ry="11" fill="#D98A62" stroke="#7A3A0B" stroke-width="2.4"/>' +
+      '<path d="M18 4 C30 -2 36 2 34 8 C32 12 24 12 18 8 Z" fill="#E8A882" stroke="#7A3A0B" stroke-width="2.2"/>' +
+      '<circle cx="-22" cy="-4" r="10" fill="#E8A882" stroke="#7A3A0B" stroke-width="2.4"/>' +
+      '<path d="M-30 -12 L-33 -22 L-24 -17 Z" fill="#C4693F" stroke="#7A3A0B" stroke-width="2.2"/>' +
+      '<path d="M-16 -13 L-13 -23 L-8 -15 Z" fill="#C4693F" stroke="#7A3A0B" stroke-width="2.2"/>' +
+      '<circle cx="-26" cy="-5" r="1.7" fill="#17251E"/>' +
+      '</g>';
+  }
+  function birdArt(x, y, s) {
+    var k = s;
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')">' +
+      '<ellipse cx="0" cy="0" rx="12" ry="8" fill="#7FA6D0" stroke="#1F3A5E" stroke-width="2.2"/>' +
+      '<circle cx="10" cy="-6" r="6" fill="#A7C4E2" stroke="#1F3A5E" stroke-width="2.2"/>' +
+      '<path d="M16 -6 L23 -4 L16 -2 Z" fill="#E0BA55" stroke="#7A5A0B" stroke-width="1.8"/>' +
+      '<circle cx="11" cy="-7" r="1.4" fill="#17251E"/>' +
+      '<path d="M-6 -6 C-14 -12 -20 -8 -16 -2 C-12 2 -8 0 -6 -4" fill="#A7C4E2" stroke="#1F3A5E" stroke-width="2.2"/>' +
+      '</g>';
+  }
+  function svgLabel(x, y, text, anchor, colour) {
+    return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || 'start') + '" font-family="Segoe UI, Trebuchet MS, Verdana, sans-serif" ' +
+      'font-size="13" font-weight="700" fill="' + (colour || INK) + '" stroke="' + CARD + '" stroke-width="3.4" paint-order="stroke" ' +
+      'stroke-linejoin="round">' + text + '</text>';
+  }
+
+  /* --- the meadow picture ------------------------------------------------- */
+  function renderScene(state) {
+    var light = state.light, water = state.water;
+    var skyTop = light > 70 ? '#BFE0F0' : (light > 40 ? '#D4E7EF' : '#C9D6DC');
+    var skyBot = light > 70 ? '#EAF6E3' : (light > 40 ? '#E7F0E2' : '#DFE4DE');
+    var sunR = 16 + light * 0.16;
+    var sunOp = 0.35 + light / 160;
+    var s = '';
+    s += '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + skyTop + '"/><stop offset="1" stop-color="' + skyBot + '"/></linearGradient>' +
+      '<linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9AF83"/><stop offset="1" stop-color="#A98F63"/></linearGradient>' +
+      '<pattern id="wet" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">' +
+      '<rect width="12" height="12" fill="#5D93B5"/><rect width="6" height="12" fill="#8FBBD4"/></pattern></defs>';
+    s += '<rect x="0" y="0" width="640" height="214" fill="url(#sky)"/>';
+    s += '<circle cx="556" cy="52" r="' + round3(sunR) + '" fill="#E8C24A" fill-opacity="' + round3(clamp(sunOp, 0, 1)) + '" stroke="#7A5A0B" stroke-width="2.5"/>';
+    for (var i = 0; i < 8; i++) {
+      var a = (i / 8) * Math.PI * 2;
+      var r1 = sunR + 6, r2 = sunR + 13;
+      if (light >= 15) {
+        s += '<line x1="' + round3(556 + Math.cos(a) * r1) + '" y1="' + round3(52 + Math.sin(a) * r1) + '" x2="' + round3(556 + Math.cos(a) * r2) + '" y2="' + round3(52 + Math.sin(a) * r2) + '" stroke="#B98410" stroke-width="2.6" stroke-linecap="round"/>';
+      }
+    }
+    s += '<rect x="0" y="196" width="640" height="144" fill="url(#soil)"/>';
+    s += '<path d="M0 200 C120 188 240 208 360 196 C470 186 560 202 640 194 L640 214 L0 214 Z" fill="#DDE9C7" stroke="#7C8A56" stroke-width="2"/>';
+    /* soil-water band */
+    var wh = Math.round(clamp(water, 0, 100) * 0.46);
+    if (wh > 0) {
+      s += '<rect x="0" y="' + (340 - wh) + '" width="640" height="' + wh + '" fill="url(#wet)" opacity="0.92"/>';
+    }
+    s += '<line x1="0" y1="' + (340 - wh) + '" x2="640" y2="' + (340 - wh) + '" stroke="#14556E" stroke-width="2.5" stroke-dasharray="8 4"/>';
+    s += svgLabel(12, 330 - wh, 'SOIL WATER ' + num(water) + ' of 100', 'start', SKY);
+    s += svgLabel(12, 24, 'SUNLIGHT ' + num(light) + ' of 100', 'start', GOLD);
+
+    /* producers */
+    var ground = 300;
+    var gCover = state.org.grass, fCover = state.org.flowers, fernCover = state.org.fern, mCover = state.org.moss;
+    var i2 = 0;
+    for (i2 = 0; i2 < Math.ceil(mCover / 25); i2++) {
+      s += mossArt(60 + ((i2 * 151) % 520), ground + 26 - (i2 % 2) * 8, 20 + mCover * 0.12);
+    }
+    for (i2 = 0; i2 < Math.ceil(fernCover / 18); i2++) {
+      s += fernArt(80 + ((i2 * 137) % 480), ground + 4, 46 + fernCover * 0.5);
+    }
+    for (i2 = 0; i2 < Math.ceil(gCover / 11); i2++) {
+      s += tuft(36 + ((i2 * 61) % 580), ground + 12 - (i2 % 3) * 6, 26 + gCover * 0.34, '#2F7A52', '#4E9A6E', 11);
+    }
+    for (i2 = 0; i2 < Math.ceil(fCover / 13); i2++) {
+      s += flowerArt(50 + ((i2 * 89) % 560), ground + 20 - (i2 % 2) * 10, 30 + fCover * 0.42);
+    }
+    /* animals */
+    var rabbit = state.org.rabbit, butterfly = state.org.butterfly, hopper = state.org.grasshopper, fox = state.org.fox, bird = state.org.songbird;
+    for (i2 = 0; i2 < Math.min(5, Math.ceil(rabbit / 3)); i2++) {
+      s += rabbitArt(70 + ((i2 * 133) % 480), ground + 16 - (i2 % 2) * 10, 0.85);
+    }
+    for (i2 = 0; i2 < Math.min(5, Math.ceil(butterfly / 6)); i2++) {
+      s += butterflyArt(90 + ((i2 * 111) % 460), 110 + ((i2 * 37) % 60), 0.95);
+    }
+    for (i2 = 0; i2 < Math.min(5, Math.ceil(hopper / 5)); i2++) {
+      s += hopperArt(60 + ((i2 * 173) % 520), ground + 4 - (i2 % 2) * 14, 0.9);
+    }
+    for (i2 = 0; i2 < Math.min(2, Math.ceil(fox / 2)); i2++) {
+      s += foxArt(230 + ((i2 * 190) % 260), ground - 4, 0.95);
+    }
+    for (i2 = 0; i2 < Math.min(3, Math.ceil(bird / 2)); i2++) {
+      s += birdArt(150 + ((i2 * 210) % 340), 74 + ((i2 * 27) % 34), 0.95);
+    }
+    /* number chips */
+    var chips = [];
+    if (gCover > 0) { chips.push('Grass ' + num(gCover)); }
+    if (fCover > 0) { chips.push('Flowers ' + num(fCover)); }
+    if (fernCover > 0) { chips.push('Fern ' + num(fernCover)); }
+    if (mCover > 0) { chips.push('Moss ' + num(mCover)); }
+    if (rabbit > 0) { chips.push('Rabbits ' + num(rabbit)); }
+    if (butterfly > 0) { chips.push('Butterflies ' + num(butterfly)); }
+    if (hopper > 0) { chips.push('Grasshoppers ' + num(hopper)); }
+    if (fox > 0) { chips.push('Foxes ' + num(fox)); }
+    if (bird > 0) { chips.push('Songbirds ' + num(bird)); }
+    s += '<rect x="8" y="236" width="624" height="26" rx="8" fill="#FFFCF3" stroke="#C6B998" stroke-width="2" opacity="0.94"/>';
+    s += svgLabel(18, 254, chips.length ? chips.join('  ·  ') : 'Nothing has been placed in this meadow yet', 'start', INK);
+    return s;
+  }
+
+  function sceneText(state) {
+    var parts = [];
+    parts.push('Model meadow at step ' + state.step + '.');
+    parts.push('Sunlight ' + num(state.light) + ' of 100, soil water ' + num(state.water) + ' of 100.');
+    var any = false;
+    SPECIES_IDS.forEach(function (id) {
+      var v = state.org[id] || 0;
+      if (v > 0) {
+        any = true;
+        parts.push(SPECIES[id].name + ': ' + num(v) + (SPECIES[id].role === 'producer' ? ' cover' : ' animals') + '.');
+      }
+    });
+    if (!any) { parts.push('No species have been placed yet.'); }
+    return parts.join(' ');
+  }
+
+  /* --- chart + data table ------------------------------------------------- */
+  function seriesValue(step, id) {
+    var sp = SPECIES[id];
+    return sp.role === 'producer' ? step[id] : (step[id] / sp.capacity) * 100;
+  }
+  function marker(x, y, kind, colour) {
+    var m = {
+      circle: '<circle cx="' + x + '" cy="' + y + '" r="3.4" fill="' + CARD + '" stroke="' + colour + '" stroke-width="2.4"/>',
+      square: '<rect x="' + (x - 3.2) + '" y="' + (y - 3.2) + '" width="6.4" height="6.4" fill="' + CARD + '" stroke="' + colour + '" stroke-width="2.2"/>',
+      triangle: '<path d="M' + x + ' ' + (y - 4) + ' L' + (x + 4) + ' ' + (y + 3) + ' L' + (x - 4) + ' ' + (y + 3) + ' Z" fill="' + CARD + '" stroke="' + colour + '" stroke-width="2.2"/>',
+      diamond: '<path d="M' + x + ' ' + (y - 4.4) + ' L' + (x + 4.4) + ' ' + y + ' L' + x + ' ' + (y + 4.4) + ' L' + (x - 4.4) + ' ' + y + ' Z" fill="' + CARD + '" stroke="' + colour + '" stroke-width="2.2"/>',
+      cross: '<path d="M' + (x - 3.6) + ' ' + (y - 3.6) + ' L' + (x + 3.6) + ' ' + (y + 3.6) + ' M' + (x + 3.6) + ' ' + (y - 3.6) + ' L' + (x - 3.6) + ' ' + (y + 3.6) + '" stroke="' + colour + '" stroke-width="2.4" stroke-linecap="round"/>'
+    };
+    return m[kind] || m.circle;
+  }
+  function renderChart(state) {
+    var hist = state.history;
+    var W = 640, H = 250, L = 46, R = 628, T = 16, B = 214;
+    var s = '';
+    var active = SERIES.filter(function (ser) {
+      return hist.some(function (h) { return h[ser.id] > 0; });
+    });
+    for (var g = 0; g <= 4; g++) {
+      var y = B - (B - T) * (g / 4);
+      s += '<line x1="' + L + '" y1="' + y + '" x2="' + R + '" y2="' + y + '" stroke="#DED3B6" stroke-width="1.5" ' + (g === 0 || g === 4 ? '' : 'stroke-dasharray="4 4"') + '/>';
+      s += svgLabel(L - 8, y + 4, String(g * 25), 'end', '#3C4F45');
+    }
+    s += '<line x1="' + L + '" y1="' + T + '" x2="' + L + '" y2="' + B + '" stroke="#3C4F45" stroke-width="2"/>';
+    s += svgLabel(L, T - 4, '% of cover (plants) or of maximum numbers (animals)', 'start', '#3C4F45');
+    var n = hist.length;
+    var xOf = function (i) { return n <= 1 ? L : L + (R - L) * (i / (n - 1)); };
+    var yOf = function (v) { return B - (B - T) * (clamp(v, 0, 100) / 100); };
+    if (n <= 1) {
+      s += svgLabel(320, 120, 'Run at least one step to draw the chart', 'middle', '#3C4F45');
+    } else {
+      active.forEach(function (ser) {
+        var d = '';
+        hist.forEach(function (h, i) {
+          d += (i ? ' L' : 'M') + round3(xOf(i)) + ' ' + round3(yOf(seriesValue(h, ser.id)));
+        });
+        s += '<path d="' + d + '" fill="none" stroke="' + ser.colour + '" stroke-width="' + ser.width + '" ' +
+          (ser.dash ? 'stroke-dasharray="' + ser.dash + '" ' : '') + 'stroke-linejoin="round" stroke-linecap="round"/>';
+      });
+      active.forEach(function (ser) {
+        hist.forEach(function (h, i) {
+          if (i % Math.max(1, Math.ceil((n - 1) / 8)) === 0 || i === n - 1) {
+            s += marker(round3(xOf(i)), round3(yOf(seriesValue(h, ser.id))), ser.marker, ser.colour);
+          }
+        });
+      });
+      s += svgLabel(L, B + 20, 'step 0', 'start', '#3C4F45');
+      s += svgLabel(R, B + 20, 'step ' + (n - 1), 'end', '#3C4F45');
+      s += svgLabel(320, B + 20, 'each step is one turn of the model', 'middle', '#3C4F45');
+    }
+    var legendY = 236;
+    s += svgLabel(L, legendY, 'Lines: plants = cover · animals = share of their own maximum (rabbit 14, butterfly 24, grasshopper 20, fox 4, songbird 5)', 'start', '#3C4F45');
+    return s;
+  }
+
+  function renderChartLegend(state) {
+    var wrap = $('chart-legend');
+    clear(wrap);
+    SERIES.forEach(function (ser) {
+      var li = mk('li');
+      var svg = '<svg width="34" height="14" viewBox="0 0 34 14" aria-hidden="true" focusable="false">' +
+        '<line x1="1" y1="7" x2="33" y2="7" stroke="' + ser.colour + '" stroke-width="3" ' + (ser.dash ? 'stroke-dasharray="' + ser.dash + '"' : '') + '/>' +
+        marker(17, 7, ser.marker, ser.colour) + '</svg>';
+      li.innerHTML = svg;
+      li.appendChild(mk('span', 'small', ser.label + ': ' + num(state.org[ser.id] || 0)));
+      wrap.appendChild(li);
+    });
+  }
+
+  function renderChartTable(state) {
+    var wrap = $('chart-table-wrap');
+    clear(wrap);
+    var hist = state.history;
+    var cols = ['grass', 'flowers', 'fern', 'moss', 'rabbit', 'butterfly', 'grasshopper', 'fox', 'songbird'].filter(function (id) {
+      return hist.some(function (h) { return h[id] > 0; });
+    });
+    var table = mk('table');
+    var cap = mk('caption', null, 'The same chart as numbers. Every value is a model value.');
+    table.appendChild(cap);
+    var thead = mk('thead'), tr = mk('tr');
+    ['Step', 'Sunlight', 'Soil water'].concat(cols.map(function (id) { return SPECIES[id].name; })).forEach(function (h) { tr.appendChild(mk('th', null, h)); });
+    thead.appendChild(tr); table.appendChild(thead);
+    var tb = mk('tbody');
+    hist.slice().reverse().forEach(function (h) {
+      var row = mk('tr');
+      [String(h.step), num(h.light), num(h.water)].concat(cols.map(function (id) { return num(h[id]); })).forEach(function (v) { row.appendChild(mk('td', null, v)); });
+      tb.appendChild(row);
+    });
+    table.appendChild(tb);
+    var details = mk('details');
+    details.appendChild(mk('summary', null, 'Read the chart as a table'));
+    var box = mk('div', 'table-wrap');
+    box.appendChild(table);
+    details.appendChild(box);
+    wrap.appendChild(details);
+  }
+
+  /* ============================================================== STATE === */
+  var ui = {
+    screen: 'welcome',
+    state: null,
+    build: {},
+    prediction: null,
+    streak: 0,
+    done: { 'activity-1': false, 'activity-2': false, 'activity-3': false },
+    verdict: null,
+    timer: null,
+    started: false
+  };
+
+  function save() {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        done: ui.done,
+        prediction: ui.prediction ? { scenarioId: ui.prediction.scenarioId, label: ui.prediction.label, correct: ui.prediction.correct } : null,
+        screen: ui.screen
+      }));
+    } catch (e) { /* storage can be blocked; the lesson still works without it */ }
+  }
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) { return; }
+      var data = JSON.parse(raw);
+      if (data && data.done) {
+        Object.keys(ui.done).forEach(function (k) { ui.done[k] = !!data.done[k]; });
+      }
+    } catch (e) { /* ignore unreadable progress */ }
+  }
+  function clearProgress() {
+    try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) { }
+  }
+
+  function announce(text) { $('live').textContent = text; }
+
+  /* ============================================================ RENDERING = */
+  function buildCounts() {
+    var o = {};
+    SPECIES_IDS.forEach(function (id) { o[id] = ui.build[id] || 0; });
+    return o;
+  }
+
+  function statusWord(id, value) {
+    var sp = SPECIES[id];
+    if (value <= 0) { return 'gone from this meadow'; }
+    if (sp.role === 'producer') {
+      if (value >= 65) { return 'plenty'; }
+      if (value >= 35) { return 'some'; }
+      if (value >= 12) { return 'thin'; }
+      return 'very thin';
+    }
+    var share = value / sp.capacity;
+    if (share >= 0.75) { return 'many'; }
+    if (share >= 0.4) { return 'steady'; }
+    if (share >= 0.15) { return 'few'; }
+    return 'very few';
+  }
+
+  function trendWord(state, id) {
+    var hist = state.history;
+    if (hist.length < 2) { return 'no change measured yet'; }
+    var now = hist[hist.length - 1][id], before = hist[hist.length - 2][id];
+    var d = now - before;
+    var th = SPECIES[id].role === 'producer' ? 0.4 : 0.15;
+    if (d > th) { return 'rising this step'; }
+    if (d < -th) { return 'falling this step'; }
+    return 'steady this step';
+  }
+
+  function fillClass(id) {
+    var sp = SPECIES[id];
+    if (id === 'grass') { return 'meter__fill--grass'; }
+    if (id === 'flowers') { return 'meter__fill--flower'; }
+    if (id === 'fern') { return 'meter__fill--fern'; }
+    if (id === 'moss') { return 'meter__fill--moss'; }
+    if (sp.role === 'herbivore') { return 'meter__fill--herb'; }
+    return 'meter__fill--pred';
+  }
+
+  function renderOrgGrid(state, countsOverride) {
+    var grid = $('org-grid');
+    clear(grid);
+    var counts = countsOverride || state.org;
+    var shown = 0;
+    SPECIES_IDS.forEach(function (id) {
+      var value = counts[id] || 0;
+      if (value <= 0) { return; }
+      shown++;
+      var sp = SPECIES[id];
+      var max = maxAmountOf(id);
+      var card = mk('div', 'org' + (value <= 0 ? ' org--gone' : ''));
+      var g = mk('div');
+      g.innerHTML = glyph(id, 'org__glyph');
+      card.appendChild(g);
+      var head = mk('div');
+      var nm = mk('div', 'org__name', sp.name);
+      nm.appendChild(mk('span', 'org__role-tag role--' + sp.role, ROLE_LABEL[sp.role]));
+      head.appendChild(nm);
+      var stat = mk('div', 'org__stat');
+      var meter = mk('div', 'meter');
+      var lab = mk('div', 'meter__label', sp.role === 'producer' ? 'Cover of the meadow floor' : 'Number of animals');
+      var val = mk('div', 'meter__value', num(value) + ' / ' + max + ' · ' + statusWord(id, value));
+      var track = mk('div', 'meter__track');
+      var fill = mk('div', 'meter__fill ' + fillClass(id));
+      fill.style.width = Math.round(clamp(value / max, 0, 1) * 100) + '%';
+      track.appendChild(fill);
+      meter.appendChild(lab); meter.appendChild(val); meter.appendChild(track);
+      stat.appendChild(meter);
+      stat.appendChild(mk('p', 'org__note', sp.note));
+      if (state.step > 0) { stat.appendChild(mk('p', 'org__note', 'Trend: ' + trendWord(state, id) + '.')); }
+      if (sp.role === 'producer') {
+        var ul = mk('ul', 'org__why');
+        var fL = bandFactor(state.light, sp.light), fW = bandFactor(state.water, sp.water);
+        ul.appendChild(mk('li', null, 'Light factor ' + num(fL) + ' (' + bandWord(fL) + '; likes ' + describeBand(sp.light) + ')'));
+        ul.appendChild(mk('li', null, 'Water factor ' + num(fW) + ' (' + bandWord(fW) + '; likes ' + describeBand(sp.water) + ')'));
+        stat.appendChild(ul);
+      } else {
+        var diet = sp.diet || sp.prey;
+        var ul2 = mk('ul', 'org__why');
+        var names = Object.keys(diet).map(function (k) { return SPECIES[k].name + ' (' + pctInt(diet[k]) + ')'; }).join(', ');
+        ul2.appendChild(mk('li', null, 'Food links: ' + names));
+        var missing = Object.keys(diet).filter(function (k) { return (counts[k] || 0) <= 0; });
+        if (missing.length === Object.keys(diet).length) {
+          ul2.appendChild(mk('li', null, 'No food at all is present, so it loses energy every step.'));
+        } else if (missing.length) {
+          ul2.appendChild(mk('li', null, 'Missing food: ' + missing.map(function (k) { return SPECIES[k].name; }).join(', ') + '.'));
+        }
+        stat.appendChild(ul2);
+      }
+      card.appendChild(stat);
+      grid.appendChild(card);
+    });
+    if (!shown) {
+      var p = mk('p', 'small', 'No species have been placed yet. Use the species list to put plants and animals into this meadow.');
+      grid.appendChild(p);
+    }
+  }
+
+  function meterRow(label, value, max, cls, word) {
+    var wrap = mk('div', 'meter');
+    wrap.appendChild(mk('div', 'meter__label', label));
+    wrap.appendChild(mk('div', 'meter__value', num(value) + ' / ' + max + ' · ' + word));
+    var track = mk('div', 'meter__track');
+    var fill = mk('div', 'meter__fill ' + cls);
+    fill.style.width = Math.round(clamp(value / max, 0, 1) * 100) + '%';
+    track.appendChild(fill);
+    wrap.appendChild(track);
+    return wrap;
+  }
+  function renderResources(state) {
+    var box = $('resource-meters');
+    clear(box);
+    box.appendChild(meterRow('Soil water', state.water, 100, 'meter__fill--water', wordWater(state.water)));
+    box.appendChild(meterRow('Sunlight', state.light, 100, 'meter__fill--light', wordLight(state.light)));
+    var cover = producerCoverOf(state);
+    box.appendChild(meterRow('Total plant cover', cover, 400, 'meter__fill--plant', cover === 0 ? 'no plants at all' : (cover < 40 ? 'very little food for animals' : (cover < 120 ? 'a thin meadow' : 'a full meadow'))));
+    var nextTarget = waterTargetOf(state.light, state.waterSupply, mossCoverOf(state), producerCoverOf(state));
+    box.appendChild(mk('p', 'small muted', 'With the current dials, soil water is heading toward ' + num(nextTarget) +
+      ' of 100 and is moving about a third of the way there each step.'));
+  }
+  function wordWater(w) {
+    if (w <= 5) { return 'bone dry'; }
+    if (w <= 20) { return 'dry'; }
+    if (w <= 45) { return 'damp'; }
+    if (w <= 75) { return 'moist'; }
+    return 'soaked';
+  }
+  function wordLight(l) {
+    if (l <= 15) { return 'deep shade'; }
+    if (l <= 40) { return 'shady'; }
+    if (l <= 70) { return 'dappled sun'; }
+    if (l <= 90) { return 'bright sun'; }
+    return 'full sun'; }
+  function wordSupply(w) {
+    if (w <= 5) { return 'no rain'; }
+    if (w <= 30) { return 'dry spell'; }
+    if (w <= 55) { return 'light watering'; }
+    if (w <= 85) { return 'steady rain'; }
+    return 'very wet'; }
+
+  function renderJournal(state) {
+    var list = $('journal-list');
+    clear(list);
+    if (!state.log.length) {
+      var li0 = mk('li', 'entry');
+      li0.appendChild(mk('p', 'entry__text', 'The meadow is set up and nothing has happened yet. Press Step forward to run the first step.'));
+      list.appendChild(li0);
+      return;
+    }
+    state.log.forEach(function (block) {
+      block.entries.forEach(function (e) {
+        var li = mk('li', 'entry' + (e.tag === 'plant' || e.kind === 'plant' ? ' entry--good' : '') + (e.kind === 'balance' ? '' : ''));
+        var head = mk('div', 'entry__head');
+        head.appendChild(mk('span', 'entry__step', 'step ' + block.step));
+        head.appendChild(mk('span', 'entry__tag tag--' + e.tag, e.tag));
+        head.appendChild(mk('strong', 'entry__text', e.head));
+        li.appendChild(head);
+        li.appendChild(mk('p', 'entry__why', e.why));
+        list.appendChild(li);
+      });
+    });
+  }
+
+  function renderAll() {
+    var state = ui.state;
+    if (!state) { return; }
+    $('step-counter').textContent = String(state.step);
+    var goal = GOALS[state.scenarioId];
+    $('scene-status').textContent = goal
+      ? (ui.streak >= goal.streak ? 'balanced' : 'recovering')
+      : (SCENARIOS[state.scenarioId] ? SCENARIOS[state.scenarioId].name.toLowerCase() : 'ready');
+    $('scene').innerHTML = '<title id="scene-title">Meadow picture</title><desc id="scene-desc">' + sceneText(state) + '</desc>' + renderScene(state);
+    $('scene-text').textContent = sceneText(state);
+    if ($('light').value !== String(state.light)) { $('light').value = String(state.light); }
+    if ($('water').value !== String(state.waterSupply)) { $('water').value = String(state.waterSupply); }
+    $('light-read').textContent = num(state.light) + ' · ' + wordLight(state.light);
+    $('water-read').textContent = num(state.waterSupply) + ' · ' + wordSupply(state.waterSupply);
+    renderOrgGrid(state);
+    renderResources(state);
+    renderJournal(state);
+    $('chart').innerHTML = '<title id="chart-title">Chart of plant cover and animal numbers over time</title><desc id="chart-desc">' +
+      (state.history.length <= 1 ? 'The chart is empty until the model has run at least one step.' : 'Each line starts at step 0 and ends at step ' + (state.history.length - 1) + '.') + '</desc>' + renderChart(state);
+    renderChartLegend(state);
+    renderChartTable(state);
+    $('btn-play').setAttribute('aria-pressed', ui.timer ? 'true' : 'false');
+    $('btn-play').textContent = ui.timer ? 'Pause' : 'Play';
+    if (ui.screen === 'activity-3') { renderGoal(); }
+    if (ui.screen === 'activity-1') { renderLinks(); }
+  }
+
+  /* ============================================================== ROUTER == */
+  function routeFromHash() {
+    var h = (window.location.hash || '').replace(/^#/, '');
+    return SCREENS.indexOf(h) >= 0 ? h : 'welcome';
+  }
+  function showScreen(name, opts) {
+    opts = opts || {};
+    if (SCREENS.indexOf(name) < 0) { name = 'welcome'; }
+    stopPlay();
+    ui.screen = name;
+    SCREENS.forEach(function (n) {
+      var sec = $('screen-' + n);
+      if (sec) { sec.classList.toggle('hidden', n !== name); }
+    });
+    var lab = $('lab');
+    var slot = SLOT[name];
+    if (slot) {
+      $(slot).appendChild(lab);
+      lab.classList.remove('hidden');
+      if (!opts.silent) {
+        lab.classList.remove('reveal');
+        void lab.offsetWidth;
+        lab.classList.add('reveal');
+      }
+      ensureStateFor(name);
+    } else {
+      lab.classList.add('hidden');
+    }
+    ['welcome', 'activity-1', 'activity-2', 'activity-3', 'free', 'summary'].forEach(function (n) {
+      var chip = $('chip-' + (n === 'welcome' ? 'welcome' : n.replace('activity-', '')));
+      if (chip) { chip.setAttribute('aria-current', n === name ? 'true' : 'false'); }
+    });
+    if (!opts.noHash) {
+      var target = '#' + name;
+      if (window.location.hash !== target) {
+        try { window.location.hash = target; } catch (e) { }
+      }
+    }
+    if (name === 'summary') { renderSummary(); }
+    if (name === 'activity-1') { renderPalette(); renderTally(); renderLinks(); }
+    if (name === 'activity-3') { renderGoal(); renderRestock(); }
+    if (!opts.silent) {
+      var sec2 = $('screen-' + name);
+      var h = sec2 ? sec2.querySelector('h2') : null;
+      if (h) {
+        h.setAttribute('tabindex', '-1');
+        try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); }
+      }
+      try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+    }
+    if (ui.state) { renderAll(); }
+    save();
+  }
+
+  function ensureStateFor(name) {
+    if (name === 'activity-1') {
+      if (!ui.state || ui.state.scenarioId !== 'build') {
+        ui.state = createState('balanced', emptyBuild());
+        ui.state.scenarioId = 'build';
+        ui.state.light = 60; ui.state.waterSupply = 80;
+        ui.state.water = waterTargetOf(60, 80, 0, 0);
+      }
+    } else if (name === 'activity-2') {
+      if (!ui.state || LESSON_SCENARIO_IDS.indexOf(ui.state.scenarioId) < 0) {
+        ui.state = createState('balanced');
+        ui.prediction = null;
+        ui.verdict = null;
+      }
+    } else if (name === 'activity-3') {
+      if (!ui.state || RESCUE_IDS.indexOf(ui.state.scenarioId) < 0) {
+        ui.state = createState($('a3-challenges').querySelector('input:checked').value);
+        ui.streak = 0;
+      }
+    } else if (name === 'free') {
+      if (!ui.state) { ui.state = createState('balanced'); }
+    }
+    ui.started = true;
+  }
+  function emptyBuild() {
+    var o = {};
+    SPECIES_IDS.forEach(function (id) { o[id] = 0; });
+    return o;
+  }
+
+  /* ========================================================== SIM CONTROL = */
+  function stepOnce() {
+    if (!ui.state) { return; }
+    if (ui.state.step >= MAX_STEPS) { announce('The model has reached its step limit. Reset the meadow to keep going.'); stopPlay(); return; }
+    ui.state = stepSimulation(ui.state);
+    afterStep();
+  }
+  function afterStep() {
+    var s = ui.state;
+    var heads = s.log[0] ? s.log[0].entries.slice(0, 2).map(function (e) { return e.head; }).join('. ') : '';
+    announce('Step ' + s.step + '. ' + heads);
+    if (ui.screen === 'activity-3') { checkGoal(); }
+    if (ui.prediction && !ui.prediction.stale) { comparePrediction(); }
+    renderAll();
+    save();
+  }
+  function startPlay() {
+    if (ui.timer) { return; }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ui.timer = window.setInterval(stepOnce, reduce ? 1500 : 950);
+    $('btn-play').setAttribute('aria-pressed', 'true');
+    $('btn-play').textContent = 'Pause';
+    announce('Running. Press Pause to stop.');
+  }
+  function stopPlay() {
+    if (ui.timer) { window.clearInterval(ui.timer); ui.timer = null; }
+    var b = $('btn-play');
+    if (b) { b.setAttribute('aria-pressed', 'false'); b.textContent = 'Play'; }
+  }
+  function resetScenario() {
+    var id = ui.state ? ui.state.scenarioId : 'balanced';
+    if (id === 'build') {
+      ui.state = createState('balanced', Object.assign(emptyBuild(), ui.build));
+      ui.state.scenarioId = 'build';
+      ui.state.light = 60; ui.state.waterSupply = 80;
+      ui.state.water = waterTargetOf(60, 80, mossCoverOf(ui.state), producerCoverOf(ui.state));
+    } else {
+      ui.state = createState(id);
+    }
+    ui.prediction = null;
+    ui.verdict = null;
+    ui.streak = 0;
+    renderPredictionForm();
+    $('a2-result') && clear($('a2-result'));
+    $('a2-pred-summary').textContent = 'No prediction recorded yet. Choose a meadow, choose one condition, choose what you expect \u2014 then press Record my prediction.';
+    hide($('a3-done'));
+    stopPlay();
+    renderAll();
+    announce('The meadow has been reset to its starting scenario. Organisms, controls, predictions and indicators all went back to the start.');
+    save();
+  }
+
+  function setCondition(which, value) {
+    value = clamp(Math.round(value), 0, 100);
+    if (!ui.state) { ui.state = createState('balanced'); }
+    if (which === 'light') { ui.state.light = value; } else { ui.state.waterSupply = value; }
+    /* A condition change is applied to the very next step, so nothing
+       happens to the meadow until the learner advances the model. */
+    $('light-read').textContent = num(ui.state.light) + ' · ' + wordLight(ui.state.light);
+    $('water-read').textContent = num(ui.state.waterSupply) + ' · ' + wordSupply(ui.state.waterSupply);
+    renderResources(ui.state);
+    if (ui.prediction) { updatePredictionHint(); }
+  }
+
+  /* ========================================================== ACTIVITY 1 = */
+  function renderPalette() {
+    var box = $('palette');
+    clear(box);
+    SPECIES_IDS.forEach(function (id) {
+      var sp = SPECIES[id];
+      var card = mk('div', 'pick' + ((ui.build[id] || 0) > 0 ? ' pick--in' : ''));
+      card.setAttribute('data-pick', id);
+      var g = mk('div'); g.innerHTML = glyph(id, 'pick__glyph');
+      card.appendChild(g);
+      var head = mk('div');
+      var nm = mk('div', 'pick__name', sp.name);
+      nm.appendChild(mk('span', 'org__role-tag role--' + sp.role, ROLE_LABEL[sp.role]));
+      head.appendChild(nm);
+      head.appendChild(mk('div', 'pick__meta', sp.role === 'producer' ? 'Producer (plant)' : (sp.role === 'herbivore' ? 'Herbivore (plant-eater)' : 'Predator (animal-eater)')));
+      card.appendChild(head);
+      var facts = mk('ul', 'pick__facts');
+      if (sp.role === 'producer') {
+        facts.appendChild(mk('li', null, 'Best light ' + describeBand(sp.light) + ', best soil water ' + describeBand(sp.water)));
+      } else {
+        var diet = sp.diet || sp.prey;
+        facts.appendChild(mk('li', null, (sp.role === 'predator' ? 'Hunts: ' : 'Eats: ') + Object.keys(diet).map(function (k) { return SPECIES[k].name; }).join(', ')));
+      }
+      facts.appendChild(mk('li', null, sp.note));
+      card.appendChild(facts);
+      var actions = mk('div', 'pick__actions');
+      var minus = mk('button', 'btn btn--sm btn--quiet', '− Remove');
+      minus.type = 'button';
+      minus.setAttribute('aria-label', 'Remove 20 cover of ' + sp.name);
+      minus.disabled = !(ui.build[id] > 0);
+      on(minus, 'click', function () { changeBuild(id, -1); });
+      var pill = mk('span', 'count-pill', num(ui.build[id] || 0));
+      pill.setAttribute('data-count', id);
+      var plus = mk('button', 'btn btn--sm', 'Add +');
+      plus.type = 'button';
+      plus.setAttribute('aria-label', 'Add ' + (sp.role === 'producer' ? '20 cover of ' : '2 ') + sp.name);
+      on(plus, 'click', function () { changeBuild(id, 1); });
+      actions.appendChild(minus); actions.appendChild(pill); actions.appendChild(plus);
+      card.appendChild(actions);
+      box.appendChild(card);
+    });
+  }
+  function changeBuild(id, dir) {
+    var sp = SPECIES[id];
+    var stepSize = BUILD_STEP[sp.role];
+    var cur = ui.build[id] || 0;
+    var next = clamp(round3(cur + dir * stepSize), 0, maxAmountOf(id));
+    ui.build[id] = next;
+    ui.state = createState('balanced', Object.assign(emptyBuild(), ui.build));
+    ui.state.scenarioId = 'build';
+    ui.state.light = clamp(round3(ui.state.light), 0, 100);
+    ui.state.water = waterTargetOf(ui.state.light, ui.state.waterSupply, mossCoverOf(ui.state), producerCoverOf(ui.state));
+    renderPalette(); renderTally(); renderLinks(); renderAll();
+    var btn = document.querySelector('[data-pick="' + id + '"] .count-pill');
+    if (btn) { btn.setAttribute('tabindex', '-1'); btn.focus({ preventScroll: true }); }
+    announce(SPECIES[id].name + ' is now ' + num(next) + ' in your habitat.');
+  }
+  function renderTally() {
+    var rep = habitatReport(buildCounts());
+    $('tally-p').setAttribute('data-ok', rep.producers.length >= 2 ? 'true' : 'false');
+    $('tally-p-text').textContent = rep.producers.length + ' of 2 producers';
+    $('tally-h').setAttribute('data-ok', rep.herbivores.length >= 2 ? 'true' : 'false');
+    $('tally-h-text').textContent = rep.herbivores.length + ' of 2 plant-eaters';
+    $('tally-x').setAttribute('data-ok', rep.predators.length >= 1 ? 'true' : 'false');
+    $('tally-x-text').textContent = rep.predators.length + ' of 1 predator';
+    var note = $('a1-tally-note');
+    if (!rep.producers.length) { note.textContent = 'Start with plants: producers are the only way energy gets into this meadow.'; }
+    else if (rep.producers.length < 2) { note.textContent = 'One more producer would make this habitat more stable.'; }
+    else if (!rep.herbivores.length) { note.textContent = 'Plants are ready. Now add animals that eat plants.'; }
+    else if (rep.herbivores.length < 2) { note.textContent = 'One more plant-eater, and every animal needs food waiting for it.'; }
+    else if (!rep.predators.length) { note.textContent = 'Add one predator to keep the plant-eaters from eating everything.'; }
+    else { note.textContent = 'Your habitat has the three things a meadow needs. Check the food links.'; }
+  }
+  function renderLinks() {
+    var box = $('a1-links');
+    if (!box) { return; }
+    clear(box);
+    var counts = buildCounts();
+    var rep = habitatReport(counts);
+    if (!rep.present.length) {
+      box.appendChild(mk('p', 'small muted', 'Nothing placed yet. Add species, then press Check my food links.'));
+      return;
+    }
+    var ul = mk('ul', 'org__why');
+    var anyLink = false;
+    rep.links.forEach(function (l) {
+      anyLink = true;
+      var li = mk('li');
+      li.textContent = SPECIES[l.from].name + ' \u2192 ' + SPECIES[l.to].name +
+        ' (energy flows from the food into the eater; ' + pctInt(l.share) + ' of that animal\u2019s diet)' +
+        (l.here ? '' : ' \u2014 NOT in your meadow');
+      if (!l.here) { li.className = 'muted'; }
+      ul.appendChild(li);
+    });
+    if (anyLink) { box.appendChild(ul); }
+    if (rep.orphans.length) {
+      var warn = mk('div', 'callout callout--warn');
+      warn.appendChild(mk('h4', null, 'These animals have no food here'));
+      warn.appendChild(mk('p', null, rep.orphans.map(function (id) { return SPECIES[id].name; }).join(', ') +
+        '. In the model an animal with no food loses energy every step and its numbers fall to zero.'));
+      box.appendChild(warn);
+    }
+    if (rep.uneaten.length) {
+      box.appendChild(mk('p', 'small muted', 'Nobody in this habitat eats ' +
+        rep.uneaten.map(function (id) { return SPECIES[id].name; }).join(', ') +
+        '. Real meadows have slugs, grubs and other plant-eaters that this model does not include.'));
+    }
+    var chains = foodChains(counts);
+    if (chains.length) {
+      box.appendChild(mk('h4', null, 'Food chains in your habitat'));
+      var ol = mk('ul', 'org__why');
+      chains.slice(0, 8).forEach(function (c) { ol.appendChild(mk('li', null, c.join(' \u2192 '))); });
+      box.appendChild(ol);
+    }
+  }
+  function checkHabitat() {
+    var rep = habitatReport(buildCounts());
+    var box = $('a1-feedback');
+    clear(box);
+    var card = mk('div', 'callout ' + (rep.viable ? 'callout--ok' : 'callout--warn'));
+    card.appendChild(mk('h4', null, rep.viable ? 'This habitat can work' : 'This habitat needs one more thing'));
+    var ul = mk('ul', 'checklist');
+    rep.checks.forEach(function (c) {
+      var li = mk('li', c.ok ? 'check--ok' : 'check--no');
+      var mark = mk('span', 'check__mark');
+      mark.innerHTML = c.ok
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E4F0E4" stroke="#1C5B3B" stroke-width="2"/><path d="M6 12.5 L10 16.5 L18 7.5" fill="none" stroke="#1C5B3B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#F7E2DA" stroke="#9C3F17" stroke-width="2"/><path d="M8 8 L16 16 M16 8 L8 16" fill="none" stroke="#9C3F17" stroke-width="2.6" stroke-linecap="round"/></svg>';
+      var body = mk('span', 'check__text');
+      body.appendChild(document.createTextNode(c.text));
+      body.appendChild(mk('span', 'check__hint', c.ok ? 'Ready.' : c.hint));
+      li.appendChild(mark); li.appendChild(body);
+      ul.appendChild(li);
+    });
+    card.appendChild(ul);
+    box.appendChild(card);
+    if (rep.viable) {
+      var okBtn = mk('button', 'btn btn--primary', 'Put it in the meadow and run it');
+      okBtn.type = 'button';
+      on(okBtn, 'click', function () { applyHabitat(); });
+      var row = mk('div', 'btn-row');
+      row.appendChild(okBtn);
+      box.appendChild(row);
+      ui.done['activity-1'] = true;
+      updateChips();
+      save();
+    }
+    announce(rep.viable ? 'Your habitat passes all checks.' : 'Your habitat still has a problem: ' + rep.checks.filter(function (c) { return !c.ok; }).map(function (c) { return c.text; }).join('. '));
+  }
+  function applyHabitat() {
+    var counts = buildCounts();
+    ui.state = createState('balanced', Object.assign(emptyBuild(), counts));
+    ui.state.scenarioId = 'build';
+    renderAll();
+    announce('Your habitat is now in the meadow. Press Step forward to run it and watch what happens.');
+    var first = $('btn-step');
+    if (first) { first.focus({ preventScroll: true }); first.classList.add('pulse'); window.setTimeout(function () { first.classList.remove('pulse'); }, 3500); }
+  }
+
+  /* ========================================================== ACTIVITY 2 = */
+  function renderScenarios() {
+    var box = $('a2-scenarios');
+    clear(box);
+    LESSON_SCENARIO_IDS.forEach(function (id, i) {
+      var sc = SCENARIOS[id];
+      var wrap = mk('div', 'choice');
+      var input = mk('input');
+      input.type = 'radio'; input.name = 'a2-scenario'; input.id = 'a2-sc-' + id; input.value = id;
+      input.checked = i === 0;
+      on(input, 'change', function () { loadScenario(id); });
+      var lab = mk('label', 'choice__body');
+      lab.setAttribute('for', 'a2-sc-' + id);
+      lab.appendChild(mk('span', 'choice__title', sc.name + ' · ' + sc.tagline));
+      lab.appendChild(mk('span', 'choice__note', sc.about + ' Sunlight ' + sc.light + ', water supply ' + sc.waterSupply + '.'));
+      wrap.appendChild(input); wrap.appendChild(lab);
+      box.appendChild(wrap);
+    });
+  }
+  function loadScenario(id) {
+    ui.state = createState(id);
+    ui.prediction = null;
+    ui.verdict = null;
+    $('a2-pred-summary').textContent = 'No prediction recorded yet. Choose a meadow, choose one condition, choose what you expect \u2014 then press Record my prediction.';
+    clear($('a2-result'));
+    renderAll();
+    announce(SCENARIOS[id].name + ' loaded.');
+  }
+  function focusPair() {
+    var focus = document.querySelector('input[name="a2-focus"]:checked').value;
+    var dir = document.querySelector('input[name="a2-direction"]:checked').value;
+    return focus + ':' + dir;
+  }
+  function renderPredictionForm() {
+    var key = focusPair();
+    var focus = key.split(':')[0];
+    $('a2-focus-name').textContent = focus === 'water' ? 'water supply' : 'sunlight';
+    $('a2-focus-name-2').textContent = focus === 'water' ? 'water supply' : 'sunlight';
+    var legend = $('a2-predict-legend');
+    if (legend) { legend.textContent = 'I predict that if I ' + (key.split(':')[1] === 'down' ? 'lower ' : 'raise ') + (focus === 'water' ? 'water supply' : 'sunlight') + ', then…'; }
+    var box = $('a2-predictions');
+    clear(box);
+    PREDICTIONS[key].forEach(function (opt, i) {
+      var wrap = mk('div', 'choice');
+      var input = mk('input');
+      input.type = 'radio'; input.name = 'a2-option'; input.id = 'a2-opt-' + opt.id; input.value = opt.id;
+      if (i === 0) { input.checked = true; }
+      var lab = mk('label', 'choice__body');
+      lab.setAttribute('for', 'a2-opt-' + opt.id);
+      lab.appendChild(mk('span', 'choice__title', opt.text));
+      wrap.appendChild(input); wrap.appendChild(lab);
+      box.appendChild(wrap);
+    });
+  }
+  function recordPrediction() {
+    var key = focusPair();
+    var focus = key.split(':')[0], dir = key.split(':')[1];
+    var chosen = document.querySelector('input[name="a2-option"]:checked');
+    if (!chosen) { announce('Choose one prediction first.'); return; }
+    var opt = PREDICTIONS[key].filter(function (o) { return o.id === chosen.value; })[0];
+    ui.prediction = {
+      scenarioId: ui.state.scenarioId,
+      focus: focus, direction: dir, optionId: opt.id, correct: opt.correct, text: opt.text,
+      waterAtRecord: ui.state.waterSupply, lightAtRecord: ui.state.light, stepAtRecord: ui.state.step,
+      label: SCENARIOS[ui.state.scenarioId].name + ' · change ' + focus + ' ' + dir
+    };
+    var sum = $('a2-pred-summary');
+    clear(sum);
+    sum.appendChild(mk('strong', null, 'Recorded: '));
+    sum.appendChild(document.createTextNode('\u201c' + opt.text + '\u201d'));
+    sum.appendChild(mk('p', 'small', 'Now change the ' + (focus === 'water' ? 'water supply' : 'sunlight') +
+      ' slider so it moves ' + (dir === 'down' ? 'down' : 'up') + ', then press Step forward or Run 6 steps. ' +
+      'The notebook will compare your prediction with what the model did.'));
+    updatePredictionHint();
+    announce('Prediction recorded.');
+    clear($('a2-result'));
+  }
+  function updatePredictionHint() {
+    if (!ui.prediction) { return; }
+    var p = ui.prediction;
+    var moved = p.focus === 'water' ? (ui.state.waterSupply - p.waterAtRecord) : (ui.state.light - p.lightAtRecord);
+    var want = p.direction === 'down' ? -1 : 1;
+    var box = $('a2-result');
+    if (box && box.dataset.mode !== 'verdict') {
+      clear(box);
+      var c = mk('div', 'callout ' + (moved * want > 0 ? 'callout--ok' : ''));
+      c.appendChild(mk('h4', null, moved === 0 ? 'Now move the dial' : (moved * want > 0 ? 'The dial matches your prediction' : 'The dial is moving the other way')));
+      c.appendChild(mk('p', null, moved === 0
+        ? 'You have not changed ' + (p.focus === 'water' ? 'the water supply' : 'the sunlight') + ' yet.'
+        : (moved * want > 0
+          ? 'Your test is fair: you changed one condition, in the direction you predicted. Press Step forward to see the result.'
+          : 'You predicted ' + (p.direction === 'down' ? 'lower' : 'higher') + ' ' + p.focus + ', but the dial is now ' +
+            (moved > 0 ? 'higher' : 'lower') + ' than when you recorded the prediction. Move it back, or record a new prediction, so that the test matches the guess.')));
+      box.dataset.mode = 'hint';
+      box.appendChild(c);
+    }
+  }
+  function comparePrediction() {
+    var p = ui.prediction;
+    if (!p) { return; }
+    if (p.scenarioId !== ui.state.scenarioId) { return; }
+    var moved = p.focus === 'water' ? (ui.state.waterSupply - p.waterAtRecord) : (ui.state.light - p.lightAtRecord);
+    var want = p.direction === 'down' ? -1 : 1;
+    if (moved === 0 || moved * want <= 0) { updatePredictionHint(); return; }
+    var base = null;
+    ui.state.history.forEach(function (h) { if (h.step === p.stepAtRecord) { base = h; } });
+    if (!base) { base = ui.state.history[0]; }
+    var now = ui.state.history[ui.state.history.length - 1];
+    var box = $('a2-result');
+    clear(box);
+    box.dataset.mode = 'verdict';
+    var head = mk('div', 'callout ' + (p.correct ? 'callout--ok' : 'callout--warn'));
+    head.appendChild(mk('h4', null, p.correct ? 'Your prediction matched the model' : 'The model did something else'));
+    head.appendChild(mk('p', null, 'You predicted: “' + p.text + '”'));
+    head.appendChild(mk('p', null, p.correct
+      ? (EXPLAIN_CORRECT[p.optionId] || 'Your prediction matched what the model did.')
+      : ('What actually happened: ' + describeActual(p, base, now) + ' ' + (EXPLAIN_WRONG[p.optionId] || ''))));
+    box.appendChild(head);
+    var table = mk('table');
+    table.appendChild(mk('caption', null, 'Your meadow, step ' + base.step + ' compared with step ' + now.step));
+    var thead = mk('thead'), tr = mk('tr');
+    ['Measure', 'Step ' + base.step, 'Step ' + now.step, 'Change'].forEach(function (h) { tr.appendChild(mk('th', null, h)); });
+    thead.appendChild(tr); table.appendChild(thead);
+    var tb = mk('tbody');
+    var rows = [['Soil water', base.water, now.water], ['Sunlight', base.light, now.light]];
+    SPECIES_IDS.forEach(function (id) {
+      if (base[id] > 0 || now[id] > 0) { rows.push([SPECIES[id].name, base[id], now[id]]); }
+    });
+    rows.forEach(function (r) {
+      var row = mk('tr');
+      row.appendChild(mk('th', null, r[0]));
+      row.appendChild(mk('td', null, num(r[1])));
+      row.appendChild(mk('td', null, num(r[2])));
+      var d = round3(r[2] - r[1]);
+      row.appendChild(mk('td', null, (d > 0 ? '+' : '') + num(d)));
+      tb.appendChild(row);
+    });
+    table.appendChild(tb);
+    var det = mk('details');
+    det.appendChild(mk('summary', null, 'See the numbers behind this comparison'));
+    var box2 = mk('div', 'table-wrap');
+    box2.appendChild(table);
+    det.appendChild(box2);
+    box.appendChild(det);
+    var again = mk('div', 'btn-row');
+    var b2 = mk('button', 'btn', 'Test the other condition too');
+    b2.type = 'button';
+    on(b2, 'click', function () {
+      var other = p.focus === 'water' ? 'light' : 'water';
+      document.getElementById('a2-focus-' + other).checked = true;
+      ui.prediction = null;
+      renderPredictionForm();
+      clear($('a2-result'));
+      $('a2-pred-summary').textContent = 'Record a new prediction for ' + other + '.';
+      announce('Now choose a prediction for ' + other + '.');
+    });
+    again.appendChild(b2);
+    box.appendChild(again);
+    if (!ui.done['activity-2']) {
+      ui.done['activity-2'] = true;
+      updateChips();
+      save();
+    }
+    var sum = mk('div', 'callout callout--ok');
+    sum.appendChild(mk('h4', null, 'Activity 2 complete'));
+    sum.appendChild(mk('p', null, 'You made a prediction, changed exactly one condition, ran the model and compared the result. That is how a field experiment works. You can run it as many times as you like.'));
+    box.appendChild(sum);
+  }
+  function describeActual(p, base, now) {
+    var parts = [];
+    var dWater = round3(now.water - base.water);
+    if (Math.abs(dWater) >= 0.4) { parts.push('soil water ' + arrow(base.water, now.water)); }
+    var changed = null;
+    PRODUCER_IDS.forEach(function (id) {
+      var d = round3(now[id] - base[id]);
+      if (Math.abs(d) >= 1 && (!changed || Math.abs(d) > Math.abs(changed[1]))) { changed = [id, d]; }
+    });
+    var animal = null;
+    HERBIVORE_IDS.concat(PREDATOR_IDS).forEach(function (id) {
+      var d = round3(now[id] - base[id]);
+      if (Math.abs(d) >= 0.3 && (!animal || Math.abs(d) > Math.abs(animal[1]))) { animal = [id, d]; }
+    });
+    if (changed) { parts.push(SPECIES[changed[0]].name + ' cover ' + arrow(base[changed[0]], now[changed[0]])); }
+    if (animal) { parts.push(SPECIES[animal[0]].name + ' ' + arrow(base[animal[0]], now[animal[0]])); }
+    return parts.length ? ('The model changed ' + parts.join(', ') + '.') : 'Almost nothing changed in those steps.';
+  }
+  function runSteps(n) {
+    if (!ui.state) { return; }
+    for (var i = 0; i < n; i++) {
+      if (ui.state.step >= MAX_STEPS) { break; }
+      ui.state = stepSimulation(ui.state);
+    }
+    afterStep();
+  }
+
+  /* ========================================================== ACTIVITY 3 = */
+  function renderChallenges() {
+    var box = $('a3-challenges');
+    clear(box);
+    RESCUE_IDS.forEach(function (id, i) {
+      var sc = SCENARIOS[id];
+      var wrap = mk('div', 'choice');
+      var input = mk('input');
+      input.type = 'radio'; input.name = 'a3-challenge'; input.id = 'a3-ch-' + id; input.value = id;
+      input.checked = i === 0;
+      var lab = mk('label', 'choice__body');
+      lab.setAttribute('for', 'a3-ch-' + id);
+      lab.appendChild(mk('span', 'choice__title', sc.name + ' · ' + sc.tagline));
+      lab.appendChild(mk('span', 'choice__note', sc.about));
+      wrap.appendChild(input); wrap.appendChild(lab);
+      box.appendChild(wrap);
+    });
+  }
+  function loadChallenge() {
+    var id = document.querySelector('input[name="a3-challenge"]:checked').value;
+    ui.state = createState(id);
+    ui.streak = 0;
+    hide($('a3-done'));
+    hide($('a3-hint-text'));
+    renderAll();
+    renderRestock();
+    announce(SCENARIOS[id].name + ' loaded. Diagnose the problem, then change the conditions.');
+  }
+  function checkGoal() {
+    var goal = GOALS[ui.state.scenarioId];
+    if (!goal) { return; }
+    var st = goalStatus(ui.state, goal);
+    if (st.allOk) { ui.streak += 1; } else { ui.streak = 0; }
+    if (ui.streak >= goal.streak) {
+      if (!ui.done['activity-3']) {
+        ui.done['activity-3'] = true;
+        updateChips();
+        save();
+      }
+      show($('a3-done'));
+      $('a3-done-text').textContent = 'The meadow has met every goal for ' + goal.streak + ' steps in a row. ' +
+        'What you changed: ' + changedText() + '. Soil water is now ' + num(ui.state.water) + ', sunlight ' + num(ui.state.light) +
+        '. In a real meadow the same repair would also depend on weather, soil life and species this model leaves out, so one change would not guarantee the same result outdoors.';
+      announce('Rescue complete. ' + goal.blurb);
+    }
+  }
+  function changedText() {
+    var sc = SCENARIOS[ui.state.scenarioId];
+    if (!sc) { return 'your own habitat'; }
+    var parts = [];
+    if (round3(ui.state.light) !== round3(sc.light)) { parts.push('sunlight ' + sc.light + ' \u2192 ' + num(ui.state.light)); }
+    if (round3(ui.state.waterSupply) !== round3(sc.waterSupply)) { parts.push('water supply ' + sc.waterSupply + ' \u2192 ' + num(ui.state.waterSupply)); }
+    return parts.length ? parts.join(', ') : 'you changed no condition and let the meadow run';
+  }
+  function renderGoal() {
+    var box = $('a3-goal');
+    if (!box) { return; }
+    clear(box);
+    var goal = GOALS[ui.state.scenarioId];
+    if (!goal) {
+      box.appendChild(mk('li', null, 'Load a rescue job to see its goal.'));
+      return;
+    }
+    var st = goalStatus(ui.state, goal);
+    st.rows.forEach(function (r) {
+      var li = mk('li', r.ok ? 'check--ok' : 'check--no');
+      var mark = mk('span', 'check__mark');
+      mark.innerHTML = r.ok
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E4F0E4" stroke="#1C5B3B" stroke-width="2"/><path d="M6 12.5 L10 16.5 L18 7.5" fill="none" stroke="#1C5B3B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#F7E2DA" stroke="#9C3F17" stroke-width="2"/><path d="M8 12 H16" fill="none" stroke="#9C3F17" stroke-width="2.6" stroke-linecap="round"/></svg>';
+      var body = mk('span', 'check__text', r.text);
+      li.appendChild(mark); li.appendChild(body);
+      box.appendChild(li);
+    });
+    var streak = $('a3-streak');
+    clear(streak);
+    for (var i = 0; i < goal.streak; i++) {
+      var pip = mk('span', 'streak__pip', String(i + 1));
+      pip.setAttribute('data-on', i < ui.streak ? 'true' : 'false');
+      streak.appendChild(pip);
+    }
+    streak.setAttribute('aria-label', 'Goal met for ' + ui.streak + ' of ' + goal.streak + ' steps in a row');
+    var status = $('a3-status');
+    clear(status);
+    var failing = st.rows.filter(function (r) { return !r.ok; });
+    if (ui.state.step === 0) {
+      status.appendChild(mk('p', 'small', 'Press Step forward to run the meadow and watch what goes wrong first.'));
+    } else if (failing.length) {
+      status.appendChild(mk('p', 'small', 'Still short: ' + failing.map(function (r) { return r.name.toLowerCase(); }).join(', ') + '. ' +
+        'Think about which dial the model reacts to first: plants respond to light and water before animals do.'));
+    } else {
+      status.appendChild(mk('p', 'small', 'Everything on the list is met this step. Keep it there for ' + goal.streak + ' steps in a row to finish.'));
+    }
+  }
+  function renderRestock() {
+    var box = $('a3-restock');
+    if (!box) { return; }
+    clear(box);
+    if (!ui.state) { return; }
+    SPECIES_IDS.forEach(function (id) {
+      var sp = SPECIES[id];
+      var card = mk('div', 'pick');
+      var g = mk('div'); g.innerHTML = glyph(id, 'pick__glyph');
+      card.appendChild(g);
+      var head = mk('div');
+      head.appendChild(mk('div', 'pick__name', sp.name));
+      head.appendChild(mk('div', 'pick__meta', ROLE_LABEL[sp.role] + ' · currently ' + num(ui.state.org[id] || 0)));
+      card.appendChild(head);
+      var actions = mk('div', 'pick__actions');
+      var plus = mk('button', 'btn btn--sm', 'Add ' + BUILD_STEP[sp.role]);
+      plus.type = 'button';
+      on(plus, 'click', function () {
+        setOrg(ui.state, id, (ui.state.org[id] || 0) + BUILD_STEP[sp.role]);
+        renderAll(); renderRestock();
+        announce(sp.name + ' put back into the meadow.');
+      });
+      actions.appendChild(plus);
+      card.appendChild(actions);
+      box.appendChild(card);
+    });
+  }
+
+  /* ============================================================== SUMMARY */
+  function renderSummary() {
+    var box = $('summary-body');
+    clear(box);
+    var doneCount = Object.keys(ui.done).filter(function (k) { return ui.done[k]; }).length;
+    box.appendChild(mk('p', null, doneCount === 3
+      ? 'You finished all three activities. Here is what you practised.'
+      : 'You have finished ' + doneCount + ' of the 3 activities so far. You can go back to any of them from the lesson map at the top.'));
+    var ul = mk('ul');
+    ul.appendChild(mk('li', null, (ui.done['activity-1'] ? '✓ ' : '– ') + 'Built a habitat with producers, plant-eaters and a predator, and checked the food links between them.'));
+    ul.appendChild(mk('li', null, (ui.done['activity-2'] ? '✓ ' : '– ') + 'Predicted the effect of one condition, changed only that condition, and compared the model with the prediction.'));
+    ul.appendChild(mk('li', null, (ui.done['activity-3'] ? '✓ ' : '– ') + 'Diagnosed a struggling meadow, repaired it with conditions or organism choices, and held the balance for three steps.'));
+    box.appendChild(ul);
+    var callout = mk('div', 'callout callout--model');
+    callout.appendChild(mk('h3', null, 'The three ideas worth keeping'));
+    var ol = mk('ol');
+    ol.appendChild(mk('li', null, 'Energy enters a habitat through producers, which capture sunlight.'));
+    ol.appendChild(mk('li', null, 'Every consumer depends on a particular food being there, not on food in general.'));
+    ol.appendChild(mk('li', null, 'Change one condition and the effect travels along the food links \u2014 usually with a delay.'));
+    callout.appendChild(ol);
+    box.appendChild(callout);
+    if (!ui.done['activity-1'] || !ui.done['activity-2'] || !ui.done['activity-3']) {
+      var row = mk('div', 'btn-row');
+      ['activity-1', 'activity-2', 'activity-3'].forEach(function (n) {
+        if (ui.done[n]) { return; }
+        var b = mk('button', 'btn', 'Go to activity ' + n.replace('activity-', ''));
+        b.type = 'button';
+        on(b, 'click', function () { showScreen(n); });
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+    }
+  }
+
+  function updateChips() {
+    [['activity-1', 'state-1'], ['activity-2', 'state-2'], ['activity-3', 'state-3']].forEach(function (pair) {
+      var chip = $('chip-' + pair[0].replace('activity-', ''));
+      var label = $(pair[1]);
+      var done = ui.done[pair[0]];
+      if (chip) { chip.setAttribute('data-done', done ? 'true' : 'false'); }
+      if (label) { label.textContent = done ? 'done' : 'not done'; }
+    });
+  }
+
+  function show(node) { if (node) { node.classList.remove('hidden'); } }
+  function hide(node) { if (node) { node.classList.add('hidden'); } }
+
+  /* ============================================================= GLOSSARY */
+  function openGloss(termId) {
+    var dlg = $('gloss-dialog');
+    var body = $('gloss-body');
+    clear(body);
+    var dl = mk('dl');
+    Object.keys(GLOSSARY).forEach(function (key) {
+      var g = GLOSSARY[key];
+      var dt = mk('dt', null, g.title);
+      dt.id = 'term-' + key;
+      var dd = mk('dd');
+      dd.appendChild(mk('p', null, g.body));
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    body.appendChild(dl);
+    if (typeof dlg.showModal === 'function') {
+      dlg.showModal();
+    } else {
+      dlg.setAttribute('open', 'open');
+    }
+    var target = termId ? $('term-' + termId) : null;
+    if (target) { target.scrollIntoView({ block: 'start' }); }
+    $('gloss-close').focus();
+  }
+
+  /* ================================================================= INIT */
+  function init() {
+    load();
+    renderScenarios();
+    renderChallenges();
+    renderPalette();
+    renderTally();
+    renderPredictionForm();
+    renderRestock();
+    updateChips();
+
+    on($('btn-start-lesson'), 'click', function () { showScreen('activity-1'); });
+    on($('btn-start-lesson-2'), 'click', function () { showScreen('activity-1'); });
+    on($('btn-welcome-explore'), 'click', function () { showScreen('free'); });
+    on($('btn-summary-explore'), 'click', function () { showScreen('free'); });
+    on($('btn-summary-restart'), 'click', function () { restartLesson(); });
+    on($('btn-summary'), 'click', function () { showScreen('summary'); });
+    on($('btn-restart-lesson'), 'click', function () { restartLesson(); });
+    on($('btn-free-scenarios'), 'click', function () {
+      var box = $('free-list');
+      clear(box);
+      LESSON_SCENARIO_IDS.forEach(function (id) {
+        var b = mk('button', 'btn btn--sm', SCENARIOS[id].name);
+        b.type = 'button';
+        on(b, 'click', function () { loadScenario(id); showScreen('free'); announce(SCENARIOS[id].name + ' loaded into the meadow.'); });
+        box.appendChild(b);
+      });
+      box.appendChild(mk('p', 'small muted', 'Loading one of these replaces the meadow in the panel on the left and sets the dials back to that scenario.'));
+    });
+
+    document.querySelectorAll('.chip').forEach(function (chip) {
+      on(chip, 'click', function () { showScreen(chip.getAttribute('data-screen')); });
+    });
+
+    on($('light'), 'input', function (e) { setCondition('light', e.target.value); });
+    on($('water'), 'input', function (e) { setCondition('water', e.target.value); });
+    document.querySelectorAll('[data-light]').forEach(function (b) {
+      on(b, 'click', function () { setCondition('light', b.getAttribute('data-light')); $('light').value = String(clamp(Number(b.getAttribute('data-light')), 0, 100)); });
+    });
+    document.querySelectorAll('[data-water]').forEach(function (b) {
+      on(b, 'click', function () { setCondition('water', b.getAttribute('data-water')); $('water').value = String(clamp(Number(b.getAttribute('data-water')), 0, 100)); });
+    });
+
+    on($('btn-step'), 'click', function () { stopPlay(); stepOnce(); });
+    on($('btn-play'), 'click', function () { if (ui.timer) { stopPlay(); announce('Paused.'); } else { startPlay(); } });
+    on($('btn-reset-scenario'), 'click', function () { resetScenario(); });
+
+    on($('btn-a1-check'), 'click', function () { checkHabitat(); });
+    on($('btn-a1-start'), 'click', function () {
+      var rep = habitatReport(buildCounts());
+      if (!rep.present.length) { announce('Add at least one plant before putting the habitat into the meadow.'); return; }
+      applyHabitat();
+    });
+
+    document.querySelectorAll('input[name="a2-focus"]').forEach(function (r) { on(r, 'change', function () { renderPredictionForm(); }); });
+    document.querySelectorAll('input[name="a2-direction"]').forEach(function (r) { on(r, 'change', function () { renderPredictionForm(); }); });
+    on($('btn-a2-predict'), 'click', function () { recordPrediction(); });
+    on($('btn-a2-run'), 'click', function () { runSteps(6); });
+    on($('btn-a2-run1'), 'click', function () { runSteps(1); });
+    on($('btn-a2-new'), 'click', function () {
+      ui.prediction = null;
+      clear($('a2-result'));
+      $('a2-pred-summary').textContent = 'New experiment. Choose a meadow and a condition, then record your prediction.';
+      announce('New experiment started.');
+    });
+
+    on($('btn-a3-load'), 'click', function () { loadChallenge(); });
+    on($('btn-a3-hint'), 'click', function () {
+      var goal = GOALS[ui.state.scenarioId];
+      var box = $('a3-hint-text');
+      clear(box);
+      box.appendChild(mk('h4', null, 'Hint'));
+      box.appendChild(mk('p', null, goal ? goal.hint : 'Load a rescue job first.'));
+      show(box);
+    });
+
+    on($('gloss-close'), 'click', function () { $('gloss-dialog').close(); });
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target.closest('.term') : null;
+      if (t) { openGloss(t.getAttribute('data-term')); }
+    });
+
+    on(window, 'hashchange', function () {
+      var target = routeFromHash();
+      if (target === ui.screen) { return; }   /* ignore echo of our own hash writes */
+      showScreen(target, { noHash: true });
+    });
+    on(document, 'visibilitychange', function () { if (document.hidden) { stopPlay(); } });
+    on(window, 'keydown', function (e) {
+      if (e.key === 'Escape') { stopPlay(); }
+    });
+
+    var start = routeFromHash();
+    showScreen(start, { silent: true, noHash: true });
+    if (start === 'welcome' && !window.location.hash) {
+      try { window.history.replaceState(null, '', '#welcome'); } catch (e2) { }
+    }
+    document.documentElement.setAttribute('data-ready', 'true');
+  }
+
+  function restartLesson() {
+    clearProgress();
+    ui.done = { 'activity-1': false, 'activity-2': false, 'activity-3': false };
+    ui.build = {};
+    ui.prediction = null;
+    ui.streak = 0;
+    ui.state = createState('balanced');
+    renderPalette(); renderTally(); renderLinks(); renderPredictionForm(); renderRestock(); updateChips();
+    clear($('a1-feedback')); clear($('a2-result'));
+    $('a2-pred-summary').textContent = 'No prediction recorded yet. Choose a meadow, choose one condition, choose what you expect \u2014 then press Record my prediction.';
+    hide($('a3-done')); hide($('a3-hint-text'));
+    showScreen('welcome');
+    announce('The lesson has been restarted. All saved progress was cleared.');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
