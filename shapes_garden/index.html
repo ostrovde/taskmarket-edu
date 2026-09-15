@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сад форм, цвета и порядка — занятие для трёх лет</title>
+<meta name="description" content="Короткое занятие для ребёнка 3 лет: подбери такую же форму, разложи фигуры по полянкам, посчитай игрушки до трёх. Работает без сети, без регистрации и без звука.">
+</head>
+<body>
+<div id="app-root"></div>
+<style>
+/* ===========================================================================
+ * Сад форм, цвета и порядка — оформление.
+ * Часть 1: токены, сброс, каркас, доступность, адаптив.
+ * Никаких внешних шрифтов, картинок и сетевых запросов: вся графика — SVG.
+ * =========================================================================== */
+:root{
+  --ink:#152B36;
+  --ink-soft:#3D5566;
+  --sky:#E9F1F7;
+  --sky-deep:#D3E4F0;
+  --card:#FFFFFF;
+  --cream:#FFF8EE;
+  --line:#C7D9E5;
+  --focus:#0B4C8C;
+
+  --dot:#C8382B;
+  --dot-ink:#8C1F16;
+  --dot-tint:#F6DFDB;
+  --stripe:#1B5FA8;
+  --stripe-ink:#12406F;
+  --stripe-tint:#DBE6F3;
+  --cross:#A87D00;
+  --cross-ink:#6A5000;
+  --cross-tint:#F8EDD0;
+  --neutral:#8FA08C;
+  --neutral-ink:#3B4638;
+
+  --good:#146B3A;
+  --good-tint:#DBF0DF;
+  --care:#8A5312;
+  --care-tint:#FBEBD3;
+
+  --r-lg:28px;
+  --r-md:20px;
+  --r-sm:14px;
+  --shadow:0 4px 0 rgba(18,48,64,.18), 0 10px 24px rgba(18,48,64,.10);
+  --shadow-soft:0 2px 0 rgba(18,48,64,.12), 0 6px 16px rgba(18,48,64,.08);
+  --tap:96px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  font-family:"Segoe UI",Verdana,Geneva,Tahoma,"Trebuchet MS",sans-serif;
+  font-size:19px;
+  line-height:1.55;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 380px at 12% -8%, #FFF6E6 0%, rgba(255,246,230,0) 62%),
+    radial-gradient(900px 420px at 96% 4%, #E2F1E6 0%, rgba(226,241,230,0) 58%),
+    var(--sky);
+  background-attachment:fixed;
+  min-height:100%;
+  overflow-x:hidden;
+}
+
+h1,h2,h3{line-height:1.2;margin:0 0 .4em}
+h1{font-size:1.7rem;letter-spacing:.2px}
+h2{font-size:1.35rem}
+h3{font-size:1.1rem}
+p{margin:0 0 .9em}
+a{color:#0B4C8C}
+
+/* Только для скринридеров, но не «display:none» */
+.sr-only{
+  position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+.skip-link{
+  position:absolute;left:12px;top:-120px;z-index:60;
+  background:#FFFFFF;color:var(--ink);padding:14px 20px;border-radius:var(--r-sm);
+  border:3px solid var(--focus);font-weight:700;text-decoration:none;
+  transition:top .15s ease;
+}
+.skip-link:focus{top:12px}
+
+/* Видимый фокус у всего, что можно нажать */
+:focus{outline:none}
+:focus-visible{
+  outline:5px solid var(--focus);
+  outline-offset:3px;
+  border-radius:10px;
+}
+.btn:focus-visible,.tile:focus-visible,.choice:focus-visible,.bin:focus-visible,
+.arrow-btn:focus-visible,.num-btn:focus-visible,.icon-btn:focus-visible{
+  outline:5px solid var(--focus);
+  outline-offset:4px;
+}
+
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+.stack>*+*{margin-top:14px}
+
+/* ---------------------------------------------------------------- шапка --- */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(6px);
+  border-bottom:2px solid var(--line);
+}
+.topbar-in{
+  max-width:1140px;margin:0 auto;padding:10px 16px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;margin-right:auto}
+.brand-mark{width:40px;height:40px;flex:0 0 40px}
+.brand-sub{display:block;font-weight:600;font-size:.82rem;color:var(--ink-soft);line-height:1.2}
+
+.icon-btn{
+  min-height:56px;min-width:56px;padding:8px 16px;
+  display:inline-flex;align-items:center;gap:9px;justify-content:center;
+  font:inherit;font-weight:700;color:var(--ink);
+  background:var(--cream);border:3px solid var(--ink);border-radius:var(--r-md);
+  cursor:pointer;
+}
+.icon-btn:hover{background:#FFF1D8}
+.icon-btn[aria-pressed="true"]{background:var(--sky-deep)}
+
+/* ---------------------------------------------------------------- кнопки --- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:var(--tap);padding:16px 26px;
+  font:inherit;font-size:1.1rem;font-weight:800;letter-spacing:.2px;
+  color:#FFFFFF;background:var(--stripe);
+  border:3px solid var(--ink);border-radius:var(--r-md);
+  box-shadow:var(--shadow);cursor:pointer;text-align:center;
+  text-decoration:none;
+}
+.btn:hover{background:#155099}
+.btn:active{transform:translateY(2px);box-shadow:var(--shadow-soft)}
+.btn.btn-plain{background:var(--card);color:var(--ink)}
+.btn.btn-plain:hover{background:#F1F7FB}
+.btn.btn-warm{background:var(--dot)}
+.btn.btn-warm:hover{background:#A82C21}
+.btn.btn-leaf{background:var(--good)}
+.btn.btn-leaf:hover{background:#0F5530}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.6;cursor:default;box-shadow:none}
+.btn-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+
+/* ------------------------------------------------------------- карточки --- */
+.card{
+  background:var(--card);border:3px solid var(--ink);border-radius:var(--r-lg);
+  padding:20px;box-shadow:var(--shadow);
+}
+.card-soft{
+  background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);
+  padding:20px;box-shadow:var(--shadow-soft);
+}
+
+/* ------------------------------------------------------------- статусы --- */
+.status{
+  border:3px solid var(--line);border-left-width:12px;border-radius:var(--r-md);
+  background:var(--card);padding:14px 18px;font-weight:700;font-size:1.1rem;
+  min-height:74px;display:flex;align-items:center;gap:12px;
+}
+.status.is-idle{border-left-color:var(--line)}
+.status.is-good{border-left-color:var(--good);background:var(--good-tint)}
+.status.is-care{border-left-color:var(--care);background:var(--care-tint)}
+.status .status-icon{flex:0 0 auto;width:44px;height:44px}
+
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--sky-deep);border:2px solid var(--ink);border-radius:999px;
+  padding:6px 14px;font-weight:700;font-size:.95rem;
+}
+
+/* Служебная плашка «что делать» — крупная, но не давящая */
+.coach{
+  display:flex;gap:12px;align-items:flex-start;
+  background:#FFF6E0;border:2px dashed var(--cross-ink);border-radius:var(--r-md);
+  padding:12px 16px;font-size:1rem;
+}
+.coach strong{color:#5A4300}
+
+/* ------------------------------------------------------------ футер/язык --- */
+.foot-note{color:var(--ink-soft);font-size:.95rem}
+
+/* --------------------------------------------------------- анимации (UX) --- */
+@keyframes pop-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes gentle-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes halo{0%,100%{opacity:.55}50%{opacity:1}}
+.pop-in{animation:pop-in .28s ease-out both}
+.bounce-once{animation:gentle-bounce .6s ease-in-out 1}
+
+/* Полное уважение к prefers-reduced-motion: ни одной обязательной анимации */
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* ----------------------------------------------------------------- адаптив --- */
+@media (max-width:520px){
+  :root{--tap:88px}
+  body{font-size:18px}
+  h1{font-size:1.4rem}
+  .card{padding:16px;border-radius:var(--r-md)}
+  .card-soft{padding:16px;border-radius:var(--r-md)}
+  .topbar-in{padding:8px 12px;gap:8px}
+  .brand{font-size:.98rem}
+  .brand-mark{width:34px;height:34px;flex-basis:34px}
+  .icon-btn{min-height:56px;padding:6px 12px;font-size:.95rem}
+  .btn{width:100%;padding:14px 18px}
+  .btn-row{gap:10px}
+  .wrap{padding:0 12px}
+}
+@media (min-width:768px){
+  body{font-size:20px}
+}
+@media (min-width:1280px){
+  .wrap{max-width:1180px;padding:0 24px}
+}
+</style>
+<style>
+/* ===========================================================================
+ * Часть 2: экраны занятия, элементы активностей, взрослый раздел, печать.
+ * =========================================================================== */
+
+/* ------------------------------------------------------------- активности --- */
+.activity-head{margin-bottom:14px}
+.activity-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.activity-title h1{margin:0}
+.activity-title .step-chip{
+  background:var(--cream);border:2px solid var(--ink);border-radius:999px;
+  padding:5px 14px;font-size:.9rem;font-weight:800;
+}
+
+.stage{
+  background:var(--card);border:3px solid var(--ink);border-radius:var(--r-lg);
+  padding:18px;box-shadow:var(--shadow);margin-bottom:16px;
+}
+
+/* Образец задания */
+.target{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:var(--cream);border:3px dashed var(--ink);border-radius:var(--r-md);
+  padding:14px 18px;
+}
+.target-body{display:flex;flex-direction:column;align-items:center;gap:4px}
+.target-caption{font-size:.95rem;font-weight:700;color:var(--ink-soft)}
+
+/* Ряд вариантов ответа: 2–3 крупных плитки */
+.choices{
+  display:grid;gap:16px;margin-top:16px;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+}
+.choices[data-count="2"]{grid-template-columns:repeat(2,minmax(140px,1fr))}
+.choices[data-count="3"]{grid-template-columns:repeat(3,minmax(120px,1fr))}
+@media (max-width:520px){
+  .choices,.choices[data-count="2"],.choices[data-count="3"]{grid-template-columns:1fr;gap:12px}
+}
+
+.choice{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  min-height:var(--tap);
+  padding:16px 12px 14px;
+  font:inherit;font-weight:800;color:var(--ink);
+  background:var(--cream);
+  border:4px solid var(--ink);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);cursor:pointer;
+}
+.choice:hover{background:#FFF1D8}
+.choice:active{transform:translateY(2px);box-shadow:var(--shadow-soft)}
+.choice .shape-svg{display:block;height:auto;max-width:100%}
+.choice-name{font-size:1.02rem;text-align:center}
+.choice.is-correct{background:var(--good-tint);border-color:var(--good)}
+.choice.is-wrong{background:var(--care-tint);border-color:var(--care)}
+.choice.is-hinted{background:#FFF3CF;border-color:var(--dot-ink)}
+.choice.is-locked{cursor:default;opacity:.85}
+.choice[aria-disabled="true"]{cursor:default}
+
+/* Номера вариантов: подпись, которая различает кнопки без опоры на цвет */
+.tile-index{
+  position:absolute;top:8px;left:8px;
+  min-width:34px;height:34px;padding:0 8px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--ink);color:#FFFFFF;border-radius:999px;
+  font-size:.95rem;font-weight:800;
+}
+.swatch-label{
+  display:inline-block;font-size:.98rem;font-weight:800;color:var(--ink);
+  background:#FFFFFF;border:2px solid var(--line);border-radius:999px;
+  padding:2px 12px;margin-top:4px;
+}
+
+/* Демонстрация «покажи пример» */
+.demo-ghost{
+  position:relative;
+}
+.demo-ghost::after{
+  content:"";position:absolute;inset:-10px;border-radius:inherit;
+  border:4px dashed var(--cross-ink);pointer-events:none;
+}
+.demo-note{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#FFF6E0;border:2px solid var(--cross-ink);border-radius:999px;
+  padding:6px 14px;font-weight:800;font-size:.95rem;color:#5A4300;
+}
+
+/* -------------------------------------------------- сортировка по полянкам --- */
+.sort-layout{display:grid;gap:18px}
+@media (min-width:768px){
+  .sort-layout{grid-template-columns:1fr;gap:22px}
+}
+
+.tray{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  background:#F3F8FB;border:3px solid var(--line);border-radius:var(--r-md);
+  padding:14px;min-height:110px;
+}
+.tray-empty{
+  font-weight:700;color:var(--ink-soft);
+  display:flex;align-items:center;gap:10px;
+}
+.tray-title{font-weight:800;margin:0 0 8px;font-size:1rem}
+
+.bins{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+@media (max-width:520px){.bins{grid-template-columns:1fr}}
+
+.bin{
+  display:flex;flex-direction:column;gap:8px;
+  padding:14px;font:inherit;text-align:left;color:var(--ink);
+  background:var(--card);
+  border:4px dashed var(--ink);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-soft);cursor:pointer;min-height:var(--tap);
+}
+.bin:hover{background:#F7FBFD}
+.bin.is-good{border-style:solid;border-color:var(--good);background:var(--good-tint)}
+.bin.is-care{border-color:var(--care);background:var(--care-tint)}
+.bin-head{display:flex;align-items:center;gap:12px}
+.bin-title{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bin-caption{font-size:1rem;font-weight:800;line-height:1.25}
+.bin-count{font-size:.88rem;font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.bin-slot{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;
+  min-height:64px;background:#F3F8FB;border-radius:var(--r-sm);padding:8px;
+}
+
+/* Фишка в лотке или на полянке */
+.piece{
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:0;padding:0;font:inherit;cursor:pointer;
+  border-radius:var(--r-md);
+}
+.piece[aria-disabled="true"]{cursor:default}
+.piece:focus-visible{outline:5px solid var(--focus);outline-offset:4px}
+.piece.is-selected{transform:translateY(-4px)}
+.piece-placed{cursor:default}
+.piece-name{font-size:.85rem;font-weight:700;color:var(--ink-soft)}
+
+/* Новые полянки для сортировки — большие мишени */
+.bins-inline{display:grid;gap:14px;margin-top:12px}
+@media (min-width:640px){.bins-inline{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
+
+/* --------------------------------------------------------------- счёт --- */
+.shelf{
+  display:flex;align-items:flex-end;justify-content:center;gap:14px;flex-wrap:wrap;
+  min-height:190px;padding:18px;
+  background:linear-gradient(#FFFDF7,#F1F7FB);
+  border:3px solid var(--ink);border-radius:var(--r-lg);
+}
+.slot{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:110px;min-height:150px;justify-content:flex-end;
+}
+@media (max-width:520px){
+  /* На узком экране полка ниже, чтобы кнопка счёта и цифры были видны сразу. */
+  .shelf{min-height:132px;padding:10px 6px;gap:8px}
+  .slot{width:76px;min-height:104px}
+  .slot-halo{width:76px;height:76px}
+  .number-tag{min-width:44px;height:44px;font-size:1.25rem}
+  .toy{width:64px;height:64px}
+}
+
+.number-tag{
+  min-width:52px;height:52px;padding:0 10px;
+  display:none;align-items:center;justify-content:center;
+  background:var(--stripe);color:#FFFFFF;border:3px solid var(--ink);border-radius:999px;
+  font-size:1.5rem;font-weight:900;
+}
+.slot.is-counted .number-tag{display:inline-flex}
+.slot.is-counted .toy{filter:drop-shadow(0 0 0 #FFF)}
+.toy{display:block}
+.toy-hidden{visibility:hidden}
+@keyframes halo{
+  0%,100%{opacity:.35;transform:scale(1)}
+  50%{opacity:.9;transform:scale(1.06)}
+}
+.slot.is-active .slot-halo{animation:halo .9s ease-in-out infinite}
+.slot-halo{
+  position:absolute;inset:auto;width:0;height:0;
+}
+.slot{position:relative}
+.slot-halo{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  width:104px;height:104px;border-radius:50%;
+  background:radial-gradient(circle,#FFE9A8 0%,rgba(255,233,168,0) 70%);
+  opacity:0;pointer-events:none;
+}
+.slot.is-counted .slot-halo{opacity:.5;animation:none}
+.slot.is-active .slot-halo{opacity:.9}
+
+.counter-panel{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  justify-content:space-between;margin-top:16px;
+  background:var(--cream);border:3px dashed var(--ink);border-radius:var(--r-md);
+  padding:12px 16px;
+}
+.arrow-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  min-height:var(--tap);padding:12px 24px;
+  font:inherit;font-size:1.1rem;font-weight:800;
+  color:#FFFFFF;background:var(--good);
+  border:3px solid var(--ink);border-radius:var(--r-md);
+  box-shadow:var(--shadow);cursor:pointer;
+}
+.arrow-btn:hover{background:#0F5530}
+.arrow-btn[aria-disabled="true"]{opacity:.55;cursor:default;box-shadow:none}
+
+.num-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.num-btn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:104px;min-height:var(--tap);padding:10px 14px;
+  font:inherit;font-weight:800;color:var(--ink);
+  background:var(--card);border:4px solid var(--ink);border-radius:var(--r-md);
+  box-shadow:var(--shadow);cursor:pointer;
+}
+.num-btn:hover{background:#F1F7FB}
+.num-btn.is-correct{background:var(--good-tint);border-color:var(--good)}
+.num-btn.is-wrong{background:var(--care-tint);border-color:var(--care)}
+.num-btn[aria-disabled="true"]{opacity:.6;cursor:default}
+.numeral-svg{display:block}
+
+.toy-picker{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.toy-picker .btn{min-height:80px;padding:12px 20px}
+
+/* --------------------------------------------------------- завершение --- */
+.done-hero{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:var(--good-tint);border:3px solid var(--good);border-radius:var(--r-lg);
+  padding:18px;
+}
+.done-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.done-list li{display:flex;align-items:center;gap:12px;font-weight:700}
+.done-tick{
+  width:38px;height:38px;flex:0 0 38px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--good);color:#FFFFFF;font-size:1.2rem;font-weight:900;
+}
+.done-tick.is-off{background:#E7EEF3;color:#3D5566;border:2px solid var(--line)}
+
+/* ------------------------------------------------------ взрослый раздел --- */
+.grownup{border:3px solid var(--stripe);border-radius:var(--r-lg);background:var(--card);
+  padding:20px;box-shadow:var(--shadow);margin-top:22px}
+.grownup h2{margin-top:0}
+.facts{display:grid;gap:14px}
+@media (min-width:768px){.facts{grid-template-columns:repeat(2,1fr)}}
+.fact{background:#F7FBFD;border:2px solid var(--line);border-radius:var(--r-md);padding:14px}
+.fact h3{margin-top:0;font-size:1rem}
+.fact ul{margin:0;padding-left:20px}
+.fact li{margin-bottom:6px}
+
+/* ------------------------------------------------------------- печать --- */
+@media print{
+  body{background:#FFF}
+  .topbar,.no-print{display:none!important}
+  .card,.card-soft,.stage{box-shadow:none}
+}
+</style>
+<script>
+/* ===========================================================================
+ * KERNEL CORE — встроенная копия core.js (единый источник: ../core.js).
+ * Сборка: 2026-09-15 23:35. Проверка совпадения копий — тест D в tests/tests.js.
+ * =========================================================================== */
+/* KERNEL_CORE_START */
+/*!
+ * Shapes, Colours & Sorting Garden — domain core (learning content + state logic)
+ * ---------------------------------------------------------------------------
+ * This file is the reusable, DOM-free half of the application. It contains the
+ * learning content (colours, shapes, sorting groups, activity rounds), the pure
+ * state functions (counting sequence, sorting check, progress summary) and the
+ * code-drawn SVG artwork for every shape.
+ *
+ * The same code is embedded verbatim in index.html between the KERNEL_CORE
+ * markers (see the banner above the inlined block), so that the shipped
+ * single-file app needs no external file, while tests/tests.js can require()
+ * this module and exercise the real logic (test D in tests/tests.js checks
+ * that the two copies behave identically).
+ *
+ * Works in three modes: CommonJS (Node), browser module tag (window.Core).
+ * No network, no timers, no DOM access in this file.
+ *
+ * Licence: MIT. Author: Denis / RayAgro AI Office, 2026.
+ */
+(function (root, factory) {
+  'use strict';
+  var api = factory();
+  if (typeof module === 'object' && module && module.exports) {
+    module.exports = api;
+  }
+  if (root) { root.Core = api; }
+}(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  /* =====================================================================
+   * 1. Shapes — every shape is drawn in code (no images, no icon fonts).
+   *    "path" works on a 100 x 100 viewBox and is filled with the current
+   *    item colour, so a shape keeps its identity at any size or rotation.
+   * ===================================================================== */
+  var SHAPES = {
+    circle: {
+      id: 'circle',
+      label: 'круг',
+      path: 'M50 6 A44 44 0 1 1 49.9 6 Z'
+    },
+    square: {
+      id: 'square',
+      label: 'квадрат',
+      path: 'M10 10 H90 V90 H10 Z'
+    },
+    triangle: {
+      id: 'triangle',
+      label: 'треугольник',
+      path: 'M50 8 L94 88 H6 Z'
+    }
+  };
+
+  var SHAPE_IDS = ['circle', 'square', 'triangle'];
+
+  /* =====================================================================
+   * 2. Colours — each colour group carries THREE independent cues, so no
+   *    task ever depends on colour alone (brief requirement):
+   *      • colour of the fill
+   *      • an inner pattern (dots / stripes / cross-hatch / none)
+   *      • a different silhouette per group while sorting by colour
+   *      • a written label rendered next to / under every swatch
+   * ===================================================================== */
+  var COLORS = {
+    red: {
+      id: 'red',
+      label: 'красный',
+      hex: '#C8382B',
+      pattern: 'dots',
+      patternStroke: '#FFFFFF',
+      patternFill: '#FFFFFF'
+    },
+    blue: {
+      id: 'blue',
+      label: 'синий',
+      hex: '#1B5FA8',
+      pattern: 'stripes',
+      patternStroke: '#FFFFFF',
+      patternFill: 'none'
+    },
+    yellow: {
+      id: 'yellow',
+      label: 'жёлтый',
+      hex: '#A87D00',
+      pattern: 'crosshatch',
+      patternStroke: '#241A00',
+      patternFill: 'none'
+    }
+  };
+
+  var COLOR_IDS = ['red', 'blue', 'yellow'];
+
+  /* Sorting by colour uses three different silhouettes as an extra cue, so a
+     child who cannot yet separate red from blue can still sort correctly and
+     still succeed. The sorting-by-shape round then strips colour away. */
+  var COLOR_GROUP_SHAPE = { red: 'circle', blue: 'square', yellow: 'triangle' };
+
+  /* =====================================================================
+   * 3. Activities — demonstration → guided practice → fresh application.
+   *    The demonstration turn (demo: true) is played by the app itself and
+   *    can be replayed at any time; the learner is never asked to guess
+   *    before seeing it once.
+   * ===================================================================== */
+
+  /* Activity 1 — Shapes. Identical match first, then size, then rotation,
+     then a fresh arrangement. Shape identity never changes with size or
+     rotation, which is the point of the last two rounds. */
+  function shapeRounds() {
+    return [
+      {
+        id: 's0',
+        demo: true,
+        prompt: 'Нажми на такой же круг',
+        target: { shape: 'circle', color: 'red', pattern: 'dots' },
+        choices: [
+          { shape: 'circle', color: 'red', pattern: 'dots', ok: true },
+          { shape: 'square', color: 'blue' }
+        ]
+      },
+      {
+        id: 's1',
+        demo: false,
+        prompt: 'Нажми на такой же квадрат',
+        target: { shape: 'square', color: 'blue', pattern: 'stripes' },
+        choices: [
+          { shape: 'triangle', color: 'yellow' },
+          { shape: 'square', color: 'blue', pattern: 'stripes', ok: true }
+        ]
+      },
+      {
+        id: 's2',
+        demo: false,
+        prompt: 'Нажми на такой же треугольник',
+        target: { shape: 'triangle', color: 'yellow', pattern: 'crosshatch' },
+        choices: [
+          { shape: 'triangle', color: 'yellow', pattern: 'crosshatch', ok: true },
+          { shape: 'circle', color: 'red' }
+        ]
+      },
+      {
+        id: 's3',
+        demo: false,
+        prompt: 'Тот же квадрат, только маленький',
+        target: { shape: 'square', color: 'blue', pattern: 'stripes' },
+        choices: [
+          { shape: 'triangle', color: 'yellow', size: 0.8 },
+          { shape: 'square', color: 'blue', pattern: 'stripes', size: 0.5, ok: true }
+        ]
+      },
+      {
+        id: 's4',
+        demo: false,
+        prompt: 'Тот же треугольник, только повёрнутый',
+        target: { shape: 'triangle', color: 'yellow', pattern: 'crosshatch' },
+        choices: [
+          { shape: 'triangle', color: 'yellow', pattern: 'crosshatch', rotate: 30, ok: true },
+          { shape: 'circle', color: 'red', size: 0.8 }
+        ]
+      },
+      {
+        id: 's5',
+        demo: false,
+        prompt: 'Новое: маленький повёрнутый круг',
+        target: { shape: 'circle', color: 'red', pattern: 'dots' },
+        choices: [
+          { shape: 'circle', color: 'red', pattern: 'dots', size: 0.7, rotate: -20, ok: true },
+          { shape: 'square', color: 'blue', pattern: 'stripes' }
+        ]
+      }
+    ];
+  }
+
+  /* Activity 2 — Sorting by ONE visible property. Colour round first: the
+     groups differ by silhouette, pattern and written label as well as by
+     colour, so success never depends on colour vision. The shape round is
+     the fresh application: same gesture, new property, no colour cue at all
+     (every item is painted the same neutral colour). */
+  function sortingRounds() {
+    return [
+      {
+        id: 'c1',
+        mode: 'color',
+        demo: true,
+        prompt: 'Разложи по цвету: у каждой полянки свой узор и своя фигура',
+        groups: [
+          { key: 'red', color: 'red', shape: 'circle', label: 'Красные — круглые, в точку' },
+          { key: 'blue', color: 'blue', shape: 'square', label: 'Синие — квадратные, в полоску' },
+          { key: 'yellow', color: 'yellow', shape: 'triangle', label: 'Жёлтые — треугольные, в клетку' }
+        ],
+        items: [
+          { id: 'p1', color: 'red', shape: 'circle', group: 'red', demo: true },
+          { id: 'p2', color: 'blue', shape: 'square', group: 'blue' },
+          { id: 'p3', color: 'yellow', shape: 'triangle', group: 'yellow' },
+          { id: 'p4', color: 'blue', shape: 'square', group: 'blue' },
+          { id: 'p5', color: 'red', shape: 'circle', group: 'red' },
+          { id: 'p6', color: 'yellow', shape: 'triangle', group: 'yellow' }
+        ]
+      },
+      {
+        id: 'c2',
+        mode: 'color',
+        demo: false,
+        prompt: 'Ещё раз, по-другому: разложи по цвету',
+        groups: [
+          { key: 'red', color: 'red', shape: 'triangle', label: 'Красные — треугольные, в точку' },
+          { key: 'blue', color: 'blue', shape: 'circle', label: 'Синие — круглые, в полоску' }
+        ],
+        items: [
+          { id: 'q1', color: 'blue', shape: 'circle', group: 'blue' },
+          { id: 'q2', color: 'red', shape: 'triangle', group: 'red' },
+          { id: 'q3', color: 'red', shape: 'triangle', group: 'red' },
+          { id: 'q4', color: 'blue', shape: 'circle', group: 'blue' }
+        ]
+      },
+      {
+        id: 'c3',
+        mode: 'shape',
+        demo: true,
+        prompt: 'Теперь по форме. Форма важнее цвета — все фигуры одного цвета',
+        groups: [
+          { key: 'circle', shape: 'circle', label: 'Все круги', neutral: true },
+          { key: 'square', shape: 'square', label: 'Все квадраты', neutral: true },
+          { key: 'triangle', shape: 'triangle', label: 'Все треугольники', neutral: true }
+        ],
+        items: [
+          { id: 'r1', shape: 'circle', color: 'neutral', group: 'circle', demo: true },
+          { id: 'r2', shape: 'square', color: 'neutral', group: 'square' },
+          { id: 'r3', shape: 'triangle', color: 'neutral', group: 'triangle' },
+          { id: 'r4', shape: 'square', color: 'neutral', group: 'square' },
+          { id: 'r5', shape: 'circle', color: 'neutral', group: 'circle' },
+          { id: 'r6', shape: 'triangle', color: 'neutral', group: 'triangle' }
+        ]
+      }
+    ];
+  }
+
+  /* Activity 3 — Counting a tiny collection, 1..3, revealed and highlighted
+     one object at a time. The last reveal is the answer the child commits to
+     by pressing the matching number. */
+  var COUNT_STEPS = 3;
+
+  var COUNT_ROUNDS = [
+    {
+      id: 'n1',
+      demo: true,
+      count: 3,
+      prompt: 'Считаем вместе: нажимай на кнопку со стрелкой'
+    },
+    {
+      id: 'n2',
+      demo: false,
+      count: 2,
+      prompt: 'Сколько теперь? Сначала посчитай, потом выбери цифру'
+    },
+    {
+      id: 'n3',
+      demo: false,
+      count: 3,
+      prompt: 'Новое: три игрушки в другом порядке. Посчитай и выбери цифру'
+    },
+    {
+      id: 'n4',
+      demo: false,
+      count: 1,
+      prompt: 'А если игрушка одна? Посчитай и выбери цифру'
+    }
+  ];
+
+  /* Neutral colour used in the sorting-by-shape round (the point is that
+     colour carries no information there). */
+  var NEUTRAL = {
+    id: 'neutral',
+    label: 'серо-зелёный',
+    hex: '#8FA08C',
+    pattern: 'none',
+    patternStroke: '#3B4638',
+    patternFill: 'none'
+  };
+
+  function colorOf(id) {
+    if (id === 'neutral') { return NEUTRAL; }
+    return COLORS[id] || NEUTRAL;
+  }
+
+  function shapeOf(id) {
+    return SHAPES[id] || SHAPES.circle;
+  }
+
+  /* =====================================================================
+   * 4. Pure state logic — everything the automated tests exercise.
+   * ===================================================================== */
+
+  /**
+   * A collection may hold at most three objects and always holds at least
+   * one. Used by add/remove buttons and by the round definitions.
+   */
+  function clampCount(n) {
+    n = Math.round(Number(n));
+    if (!isFinite(n)) { return 1; }
+    if (n < 1) { return 1; }
+    if (n > COUNT_STEPS) { return COUNT_STEPS; }
+    return n;
+  }
+
+  /**
+   * Counting model.
+   *
+   * The log used by the acceptance test is `highlights`: one entry per object
+   * that has been highlighted, taken in the order the child counted. The
+   * invariant the brief asks for ("counting three objects highlights exactly
+   * three objects once each") is therefore:
+   *     sequence.length === 3, unique(sequence) === sequence, log.length === 3
+   *
+   * createCountState(3) -> sequence [0,1,2], empty log, count 0.
+   * Each tap() appends exactly one entry. The log never repeats an index
+   * because tap() refuses to advance past the end.
+   */
+  function createCountState(total) {
+    var n = clampCount(total);
+    var sequence = [];
+    for (var i = 0; i < n; i++) { sequence.push(i); }
+    return {
+      total: n,
+      sequence: sequence,
+      count: 0,
+      highlights: [],
+      revealed: 0,
+      finished: false,
+      lastTapped: -1
+    };
+  }
+
+  /** One child press: reveal and highlight the next object, exactly once. */
+  function tapCount(state) {
+    if (!state || state.finished) { return state; }
+    var idx = state.sequence[state.count];
+    if (typeof idx !== 'number') {
+      state.finished = true;
+      return state;
+    }
+    state.count = state.count + 1;
+    state.revealed = state.count;
+    state.highlights = state.highlights.concat([idx]);
+    state.lastTapped = idx;
+    if (state.count >= state.sequence.length) { state.finished = true; }
+    return state;
+  }
+
+  function resetCountState(state) {
+    if (!state) { return createCountState(COUNT_STEPS); }
+    state.count = 0;
+    state.revealed = 0;
+    state.highlights = [];
+    state.finished = false;
+    state.lastTapped = -1;
+    return state;
+  }
+
+  function isCountComplete(state) {
+    return !!(state && state.count >= state.sequence.length && state.sequence.length > 0);
+  }
+
+  /**
+   * Evidence for the acceptance example: exactly one highlight per object.
+   * Returns structure, never throws, so the UI can ask "may I say done?".
+   */
+  function highlightAudit(state) {
+    var seq = (state && state.sequence) || [];
+    var log = (state && state.highlights) || [];
+    var uniq = unique(log);
+    return {
+      expected: seq.length,
+      highlighted: log.length,
+      unique: uniq.length,
+      onceEach: uniq.length === log.length && log.length === seq.length && sameSet(log, seq),
+      missing: seq.filter(function (i) { return log.indexOf(i) === -1; }),
+      repeated: uniq.filter(function (i) { return log.indexOf(i) !== uniq.lastIndexOf(i); })
+    };
+  }
+
+  /**
+   * Sorting model. Checkable without touching the DOM: place() returns the
+   * outcome a renderer should show, and the outcome text names the property
+   * so feedback is specific rather than a generic buzz.
+   */
+  function groupOf(item, mode) {
+    if (!item) { return null; }
+    return mode === 'shape' ? item.shape : item.color;
+  }
+
+  function createSortState(round) {
+    var items = (round && round.items) || [];
+    var placed = {};
+    items.forEach(function (it) { placed[it.id] = null; });
+    return {
+      id: (round && round.id) || 'sort',
+      mode: (round && round.mode) || 'color',
+      groups: (round && round.groups) || [],
+      items: items,
+      placed: placed,
+      remaining: items.length,
+      mistakes: 0,
+      lastResult: null
+    };
+  }
+
+  /** Text used for the immediate response — always names the property. */
+  function describeItem(item) {
+    if (!item) { return 'фигура'; }
+    if (item.color === 'neutral') { return shapeOf(item.shape).label; }
+    return colorOf(item.color).label + ' ' + shapeOf(item.shape).label;
+  }
+
+  function expectedGroupLabel(round, item) {
+    var key = groupOf(item, round.mode);
+    var g = (round.groups || []).filter(function (gr) { return gr.key === key; })[0];
+    if (g) { return g.label; }
+    return key;
+  }
+
+  /**
+   * One child press: try to drop `itemId` into `groupKey`.
+   * Returns {ok, groupKey, message, progress, complete} and mutates state.
+   * A wrong press is an ordinary outcome: the item stays available, the
+   * mistake counter is only used by the app to decide when to add a stronger
+   * scaffold — it is never shown as a score to the child.
+   */
+  function place(state, itemId, groupKey) {
+    var item = (state.items || []).filter(function (it) { return it.id === itemId; })[0];
+    if (!item) {
+      return { ok: false, unknownItem: true, message: 'Эту фигуру уже положили. Возьми другую.', progress: sortProgress(state) };
+    }
+    if (state.placed[itemId]) {
+      return { ok: false, alreadyPlaced: true, message: 'Эта фигура уже на полянке «' + state.placed[itemId] + '».', progress: sortProgress(state) };
+    }
+    var expected = groupOf(item, state.mode);
+    var ok = expected === groupKey;
+    var progress = sortProgress(state);
+    var res;
+    if (ok) {
+      state.placed[itemId] = groupKey;
+      state.remaining = state.remaining - 1;
+      state.lastResult = { itemId: itemId, ok: true, groupKey: groupKey };
+      res = {
+        ok: true,
+        groupKey: groupKey,
+        message: describeItem(item) + ' — на полянке «' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '».',
+        progress: sortProgress(state),
+        complete: state.remaining <= 0
+      };
+    } else {
+      state.mistakes = state.mistakes + 1;
+      state.lastResult = { itemId: itemId, ok: false, groupKey: groupKey };
+      res = {
+        ok: false,
+        groupKey: groupKey,
+        hint: describeItem(item) + ' — это ' + (state.mode === 'shape' ? 'не по форме' : 'другого цвета') + '. Попробуй другую полянку.',
+        message: 'Посмотри: ' + describeItem(item) + ' подходит к «' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '».',
+        progress: sortProgress(state),
+        complete: false
+      };
+    }
+    progress = sortProgress(state);
+    res.progress = progress;
+    return res;
+  }
+
+  function sortProgress(state) {
+    var items = (state && state.items) || [];
+    var placedList = items.filter(function (it) { return state.placed[it.id]; });
+    return {
+      placed: placedList.length,
+      total: items.length,
+      remaining: items.filter(function (it) { return !state.placed[it.id]; }).length,
+      mistakes: state.mistakes || 0,
+      complete: items.length > 0 && placedList.length === items.length
+    };
+  }
+
+  function firstRemaining(state) {
+    var items = (state && state.items) || [];
+    return items.filter(function (it) { return !state.placed[it.id]; })[0] || null;
+  }
+
+  /**
+   * Shape-matching check, used by activity 1. Size and rotation are ignored
+   * on purpose: they never change shape identity, which is exactly what the
+   * later rounds teach.
+   */
+  function checkShapeChoice(round, choice) {
+    var ok = !!(choice && round && choice.shape === round.target.shape);
+    if (ok) {
+      return {
+        ok: true,
+        message: 'Да! Это ' + shapeOf(round.target.shape).label + '.'
+      };
+    }
+    return {
+      ok: false,
+      hint: 'Посмотри на образец: у него ' + shapeOf(round.target.shape).label +
+        ' — ' + SHAPE_HINTS[round.target.shape] + '.',
+      message: 'Это ' + (choice && choice.shape ? shapeOf(choice.shape).label : 'другая фигура') +
+        '. Давай посмотрим ещё раз.'
+    };
+  }
+
+  var SHAPE_HINTS = {
+    circle: 'ровный, круглый, как солнышко',
+    square: 'четыре одинаковые стороны и четыре уголка',
+    triangle: 'три уголка и три стороны'
+  };
+
+  /* Narrower set of choices for a child who needs less at once (see the
+     educator guide, "адаптация под ребёнка"). */
+  function withFewerChoices(round, limit) {
+    limit = limit || 2;
+    var keep = [];
+    var correct = null;
+    (round.choices || []).forEach(function (c) {
+      if (c.ok) { correct = c; }
+    });
+    (round.choices || []).forEach(function (c) {
+      if (!c.ok && keep.length < limit - 1) { keep.push(c); }
+    });
+    if (correct) { keep.push(correct); }
+    return Object.assign({}, round, { choices: keep });
+  }
+
+  function limitGroups(round, maxGroups) {
+    maxGroups = maxGroups || 2;
+    var groups = (round.groups || []).slice(0, maxGroups);
+    var allowed = groups.map(function (g) { return g.key; });
+    var items = (round.items || []).filter(function (it) {
+      return allowed.indexOf(groupOf(it, round.mode)) !== -1;
+    });
+    return Object.assign({}, round, { groups: groups, items: items });
+  }
+
+  /* =====================================================================
+   * 5. Progress — kept in memory and in localStorage only.
+   * ===================================================================== */
+  var ACTIVITY_ORDER = ['shapes', 'sorting', 'counting'];
+
+  function createProgress() {
+    return { done: {}, visited: {}, counts: {}, updated: null };
+  }
+
+  function markActivity(progress, activityId, payload) {
+    if (!progress.visited) { progress.visited = {}; }
+    if (!progress.done) { progress.done = {}; }
+    if (!progress.counts) { progress.counts = {}; }
+    progress.visited[activityId] = (progress.visited[activityId] || 0) + 1;
+    if (payload && payload.finished) { progress.done[activityId] = true; }
+    if (payload && typeof payload.count === 'number') {
+      progress.counts[activityId] = payload.count;
+    }
+    progress.updated = 'saved';
+    return progress;
+  }
+
+  function completedCount(progress) {
+    return ACTIVITY_ORDER.filter(function (id) { return !!(progress && progress.done && progress.done[id]); }).length;
+  }
+
+  function nextPractice(progress) {
+    var done = (progress && progress.done) || {};
+    for (var i = 0; i < ACTIVITY_ORDER.length; i++) {
+      if (!done[ACTIVITY_ORDER[i]]) {
+        return ACTIVITY_META[ACTIVITY_ORDER[i]].suggest;
+      }
+    }
+    return 'Всё получилось. Завтра попробуйте посчитать три ложки на столе и разложить их по размеру.';
+  }
+
+  var ACTIVITY_META = {
+    shapes: {
+      id: 'shapes',
+      title: 'Формы',
+      aria: 'Активность 1: подбери такую же форму',
+      icon: 'shapes',
+      intro: 'Найди такую же фигуру.',
+      suggest: 'В следующий раз найдите круги и квадраты в комнате: тарелка, часы, окно, подушка.',
+      minutes: '1–2 минуты'
+    },
+    sorting: {
+      id: 'sorting',
+      title: 'Сортировка',
+      aria: 'Активность 2: разложи фигуры по полянкам',
+      icon: 'sorting',
+      intro: 'Разложи фигуры по полянкам.',
+      suggest: 'В следующий раз разложите вместе три пары носков по цвету — или три ложки и три вилки.',
+      minutes: '1–3 минуты'
+    },
+    counting: {
+      id: 'counting',
+      title: 'Счёт до трёх',
+      aria: 'Активность 3: посчитай игрушки от одного до трёх',
+      icon: 'counting',
+      intro: 'Посчитай игрушки и выбери цифру.',
+      suggest: 'В следующий раз посчитайте три яблока в вазе: одно, два, три.',
+      minutes: '1–2 минуты'
+    }
+  };
+
+  /* =====================================================================
+   * 6. Helpers and code-drawn artwork
+   * ===================================================================== */
+  function unique(arr) {
+    var out = [];
+    (arr || []).forEach(function (v) { if (out.indexOf(v) === -1) { out.push(v); } });
+    return out;
+  }
+
+  function sameSet(a, b) {
+    var x = unique(a).slice().sort();
+    var y = unique(b).slice().sort();
+    if (x.length !== y.length) { return false; }
+    for (var i = 0; i < x.length; i++) { if (x[i] !== y[i]) { return false; } }
+    return true;
+  }
+
+  function patternDefs(uid) {
+    var red = COLORS.red, blue = COLORS.blue, yellow = COLORS.yellow;
+    return '<defs>' +
+      '<pattern id="dots-' + uid + '" width="14" height="14" patternUnits="userSpaceOnUse">' +
+      '<circle cx="7" cy="7" r="2.6" fill="' + red.patternFill + '"/></pattern>' +
+      '<pattern id="stripes-' + uid + '" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+      '<rect x="0" y="0" width="7" height="14" fill="' + blue.patternFill + '"/></pattern>' +
+      '<pattern id="crosshatch-' + uid + '" width="14" height="14" patternUnits="userSpaceOnUse">' +
+      '<path d="M0 3.5 H14 M3.5 0 V14" stroke="' + yellow.patternStroke + '" stroke-width="2.2" fill="none"/></pattern>' +
+      '</defs>';
+  }
+
+  function patternFillFor(colorId, uid) {
+    var c = colorOf(colorId);
+    if (!c || c.pattern === 'none' || !c.pattern) { return ''; }
+    if (c.pattern === 'dots') { return 'url(#dots-' + uid + ')'; }
+    if (c.pattern === 'stripes') { return 'url(#stripes-' + uid + ')'; }
+    if (c.pattern === 'crosshatch') { return 'url(#crosshatch-' + uid + ')'; }
+    return '';
+  }
+
+  /**
+   * One shape as inline SVG. Callers pass an explicit uid so several copies
+   * on one page never share pattern ids (which would cross-paint patterns).
+   * `label` adds the written colour/shape name under the drawing: the visual
+   * equivalent of audio and the colour-independent cue.
+   */
+  function shapeSvg(opts) {
+    opts = opts || {};
+    var uid = opts.uid || 'u';
+    var shape = shapeOf(opts.shape);
+    var color = colorOf(opts.color);
+    var size = opts.size || 1;
+    var degrees = opts.rotate || 0;
+    var px = Math.round(120 * size);
+    var extra = opts.neutralFill ? '#8FA08C' : color.hex;
+    var fill = extra;
+    var overlay = patternFillFor(opts.color, uid);
+    var defs = (opts.withDefs === false) ? '' : patternDefs(uid);
+    var label = opts.label === false ? '' : (opts.labelText || '');
+    var cls = opts.className || 'shape-svg';
+    var stroke = opts.stroke || '#123040CC';
+    return '' +
+      '<svg class="' + cls + '" viewBox="0 0 100 100" width="' + px + '" height="' + px + '" ' +
+      'role="img" aria-hidden="true" focusable="false">' +
+      defs +
+      '<g transform="rotate(' + degrees + ' 50 50)">' +
+      '<path d="' + shape.path + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="6" stroke-linejoin="round"/>' +
+      (overlay ? '<path d="' + shape.path + '" fill="' + overlay + '"/>' : '') +
+      '</g>' +
+      '</svg>' +
+      (label ? '<span class="swatch-label">' + label + '</span>' : '');
+  }
+
+  /** Small numeral card (1..3) used by the counting answer buttons. */
+  function numeralCard(n, opts) {
+    opts = opts || {};
+    var cx = opts.cx || 50, cy = opts.cy || 50, r = opts.r || 34;
+    var uid = opts.uid || 'n';
+    return '<svg class="numeral-svg" viewBox="0 0 100 100" width="' + (opts.px || 96) + '" height="' + (opts.px || 96) + '" role="img" aria-hidden="true" focusable="false">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + (opts.fill || '#FFF3DC') + '" stroke="#123040" stroke-width="5"/>' +
+      '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" font-size="44" font-weight="800" fill="#123040">' + n + '</text>' +
+      '</svg>';
+  }
+
+  var api = {
+    SHAPES: SHAPES,
+    SHAPE_IDS: SHAPE_IDS,
+    COLORS: COLORS,
+    COLOR_IDS: COLOR_IDS,
+    COLOR_GROUP_SHAPE: COLOR_GROUP_SHAPE,
+    NEUTRAL: NEUTRAL,
+    SHAPE_HINTS: SHAPE_HINTS,
+    COUNT_STEPS: COUNT_STEPS,
+    COUNT_ROUNDS: COUNT_ROUNDS,
+    ACTIVITY_ORDER: ACTIVITY_ORDER,
+    ACTIVITY_META: ACTIVITY_META,
+    shapeRounds: shapeRounds,
+    sortingRounds: sortingRounds,
+    colorOf: colorOf,
+    shapeOf: shapeOf,
+    clampCount: clampCount,
+    createCountState: createCountState,
+    tapCount: tapCount,
+    resetCountState: resetCountState,
+    isCountComplete: isCountComplete,
+    highlightAudit: highlightAudit,
+    createSortState: createSortState,
+    groupOf: groupOf,
+    describeItem: describeItem,
+    expectedGroupLabel: expectedGroupLabel,
+    place: place,
+    sortProgress: sortProgress,
+    firstRemaining: firstRemaining,
+    checkShapeChoice: checkShapeChoice,
+    withFewerChoices: withFewerChoices,
+    limitGroups: limitGroups,
+    createProgress: createProgress,
+    markActivity: markActivity,
+    completedCount: completedCount,
+    nextPractice: nextPractice,
+    shapeSvg: shapeSvg,
+    numeralCard: numeralCard,
+    patternDefs: patternDefs,
+    unique: unique,
+    sameSet: sameSet
+  };
+
+  return api;
+}));
+/* KERNEL_CORE_END */
+</script>
+<script>
+/* ===========================================================================
+ * Сад форм, цвета и порядка — приложение.
+ * Часть 1: звук (необязательный), состояние, маршрутизация по хешу,
+ * постоянная память прогресса, стартовый экран и каркас.
+ *
+ * Правила, зашитые в код:
+ *  • ни один ответ не блокирует занятие: неверный выбор всегда оставляет
+ *    активность рабочей и выдаёт подсказку;
+ *  • звук стартует только после действия ребёнка, по умолчанию выключен,
+ *    у любого звукового сообщения есть текстовый двойник;
+ *  • прогресс хранится только в этом браузере (localStorage) и стирается
+ *    кнопкой «Сбросить».
+ * =========================================================================== */
+(function () {
+  'use strict';
+
+  var C = window.Core;
+  var app = document.getElementById('app-root');
+
+  /* ------------------------------------------------------------------ звук --- */
+  var Sound = (function () {
+    var ctx = null;
+    var available = !!(window.AudioContext || window.webkitAudioContext);
+    var enabled = false;
+
+    function ensure() {
+      if (!available) { return null; }
+      if (!ctx) {
+        try {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) { available = false; return null; }
+      }
+      if (ctx && ctx.state === 'suspended' && ctx.resume) {
+        try { ctx.resume(); } catch (e) {}
+      }
+      return ctx;
+    }
+
+    function tone(freq, start, dur, type, gain) {
+      var c = ensure();
+      if (!c) { return; }
+      var osc = c.createOscillator();
+      var g = c.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      var t0 = c.currentTime + start;
+      var peak = gain || 0.16;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(g); g.connect(c.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.05);
+    }
+
+    var MAP = {
+      /* «да» — мягко вверх, без победного фанфарного шума */
+      correct: [[523.25, 0, 0.16], [659.25, 0.14, 0.22]],
+      /* подсказка — один спокойный тон, ничего похожего на ошибку */
+      hint: [[392.00, 0, 0.24]],
+      /* счёт — ровные шаги, последний чуть выше */
+      count1: [[440.00, 0, 0.18]],
+      count2: [[493.88, 0, 0.18]],
+      count3: [[587.33, 0, 0.26]],
+      /* завершение занятия — три спокойные ноты */
+      done: [[523.25, 0, 0.2], [659.25, 0.18, 0.2], [783.99, 0.36, 0.3]],
+      /* переключение экрана */
+      step: [[330.00, 0, 0.12]]
+    };
+
+    return {
+      isAvailable: function () { return available; },
+      isEnabled: function () { return enabled && available; },
+      setEnabled: function (on) {
+        enabled = !!on && available;
+        if (enabled) { ensure(); }
+        return enabled;
+      },
+      play: function (name) {
+        if (!enabled || !available) { return false; }
+        var seq = MAP[name];
+        if (!seq) { return false; }
+        seq.forEach(function (n, i) {
+          tone(n[0], n[1], n[2], name.indexOf('count') === 0 ? 'triangle' : 'sine', i === seq.length - 1 ? 0.18 : 0.14);
+        });
+        return true;
+      },
+      /* Речь — дополнение; если голоса нет, занятие продолжается молча. */
+      say: function (text) {
+        if (!enabled || !text) { return false; }
+        var sy = window.speechSynthesis;
+        if (!sy || typeof window.SpeechSynthesisUtterance !== 'function') { return false; }
+        try {
+          sy.cancel();
+          var u = new window.SpeechSynthesisUtterance(text);
+          u.lang = 'ru-RU';
+          u.rate = 0.92;
+          u.pitch = 1.05;
+          var voices = sy.getVoices ? sy.getVoices() : [];
+          var ru = null;
+          for (var i = 0; i < voices.length; i++) {
+            if (voices[i] && /^ru/i.test(voices[i].lang || '')) { ru = voices[i]; break; }
+          }
+          if (ru) { u.voice = ru; }
+          sy.speak(u);
+          return true;
+        } catch (e) { return false; }
+      },
+      stopSpeaking: function () {
+        if (window.speechSynthesis && window.speechSynthesis.cancel) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+      }
+    };
+  }());
+
+  /* --------------------------------------------------------------- прогресс --- */
+  var STORE_KEY = 'shapes-garden-progress-v1';
+
+  function storageAvailable() {
+    try {
+      window.localStorage.setItem('__sg_test__', '1');
+      window.localStorage.removeItem('__sg_test__');
+      return true;
+    } catch (e) { return false; }
+  }
+
+  var storage = {
+    ok: storageAvailable(),
+    read: function () {
+      if (!this.ok) { return null; }
+      try {
+        var raw = window.localStorage.getItem(STORE_KEY);
+        if (!raw) { return null; }
+        var parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') { return null; }
+        if (!parsed.visited) { parsed.visited = {}; }
+        if (!parsed.done) { parsed.done = {}; }
+        if (!parsed.counts) { parsed.counts = {}; }
+        return parsed;
+      } catch (e) { return null; }
+    },
+    write: function (progress) {
+      if (!this.ok) { return false; }
+      try {
+        window.localStorage.setItem(STORE_KEY, JSON.stringify(progress));
+        return true;
+      } catch (e) { return false; }
+    },
+    clear: function () {
+      if (!this.ok) { return false; }
+      try { window.localStorage.removeItem(STORE_KEY); return true; } catch (e) { return false; }
+    }
+  };
+
+  /* ------------------------------------------------------------------ состояние --- */
+  var S = {
+    screen: 'start',
+    activity: null,
+    progress: storage.read() || C.createProgress(),
+    soundOn: false,
+    grownupOpen: false,
+    textSize: 'normal',   /* normal | large */
+    fewerChoices: false,
+    /* состояние активностей */
+    shapeRound: 0,
+    shapeFeedback: null,
+    shapeHinted: false,
+    shapeSolved: {},
+    shapeDemoPlayed: false,
+    sortRound: 0,
+    sortState: null,
+    sortSelected: null,
+    sortFeedback: null,
+    sortDemoPlayed: false,
+    sortStageMistakes: 0,
+    sortPendingDemo: false,
+    finishedActivity: null,
+    countRound: 0,
+    countState: null,
+    countFeedback: null,
+    countAnswerNeeded: false,
+    countAnswered: {},
+    countDemoRunning: false,
+    countDemoIndex: 0,
+    /* служебное */
+    uid: 0,
+    focusTarget: null,
+    timers: [],
+    announce: '',
+    announceKind: 'polite',
+    announceSeq: 0
+  };
+
+  function uid() { S.uid += 1; return 'u' + S.uid; }
+
+  /* ------------------------------------------------------------------ render ---
+   * Логика состояния живёт в этом блоке скрипта, а отрисовка — в следующем.
+   * Между ними ровно один контракт: слой отрисовки при загрузке подставляет
+   * свою функцию в __GARDEN__.render, а этот блок вызывает render() по имени.
+   * Заглушка не даёт упасть, если слой отрисовки почему-то не загрузился:
+   * занятие в этом случае сообщает о себе словами, а не молчит. */
+  function render() {
+    if (typeof window.__GARDEN__.render === 'function') { window.__GARDEN__.render(); }
+  }
+  function clearTimers() { S.timers.forEach(function (t) { window.clearTimeout(t); }); S.timers = []; }
+  function later(fn, ms) { var t = window.setTimeout(fn, ms); S.timers.push(t); return t; }
+  function el(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s === undefined || s === null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* Меньше движения — короче задержки демонстраций. */
+  function reducedMotion() {
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+  function stepDelay(ms) { return reducedMotion() ? Math.min(ms, 260) : ms; }
+
+  function saveProgress() {
+    storage.write(S.progress);
+    updateStorageNote();
+  }
+
+  function markDone(activityId, payload) {
+    var before = C.completedCount(S.progress);
+    C.markActivity(S.progress, activityId, payload || {});
+    saveProgress();
+    return { completed: C.completedCount(S.progress), gained: C.completedCount(S.progress) > before };
+  }
+
+  /* ------------------------------------------------------------------ маршрут --- */
+  var HASH_ROUTES = {
+    '#activity-1': { screen: 'activity', activity: 'shapes' },
+    '#activity-2': { screen: 'activity', activity: 'sorting' },
+    '#activity-3': { screen: 'activity', activity: 'counting' },
+    '#shapes': { screen: 'activity', activity: 'shapes' },
+    '#sorting': { screen: 'activity', activity: 'sorting' },
+    '#counting': { screen: 'activity', activity: 'counting' },
+    '#start': { screen: 'start' },
+    '#home': { screen: 'home' },
+    '#done': { screen: 'done' },
+    '#grownups': { screen: 'grownups' }
+  };
+
+  function hashForActivity(id) {
+    if (id === 'shapes') { return '#activity-1'; }
+    if (id === 'sorting') { return '#activity-2'; }
+    if (id === 'counting') { return '#activity-3'; }
+    return '#home';
+  }
+
+  function routeFromHash(hash) {
+    if (!hash) { return null; }
+    var h = String(hash).trim().toLowerCase();
+    if (!h) { return null; }
+    if (h.charAt(0) !== '#') { h = '#' + h; }
+    return HASH_ROUTES[h] || null;
+  }
+
+  /* Программная навигация: обновляем хеш, а применяет его один обработчик. */
+  function go(hash) {
+    var target = hash || '#home';
+    if (window.location.hash === target) {
+      applyRoute(target, false);
+    } else {
+      window.location.hash = target;
+    }
+  }
+
+  /* Единственное место, где меняется экран по адресу. */
+  function applyRoute(hash, fromUrl) {
+    var route = routeFromHash(hash);
+    if (!route) { return false; }
+    if (route.screen === 'activity') {
+      openActivity(route.activity, { viaRoute: true, focus: !!fromUrl });
+    } else if (route.screen === 'start') {
+      showStart({ focus: !!fromUrl });
+    } else if (route.screen === 'home') {
+      showHome();
+    } else if (route.screen === 'done') {
+      showDone({ focus: !!fromUrl });
+    } else if (route.screen === 'grownups') {
+      showHome();
+      S.grownupOpen = true;
+      render();
+      return true;
+    }
+    return true;
+  }
+
+  window.addEventListener('hashchange', function () {
+    applyRoute(window.location.hash, true);
+  });
+
+  /* --------------------------------------------------------------- навигация --- */
+  function resetActivityState() {
+    clearTimers();
+    Sound.stopSpeaking();
+    S.shapeFeedback = null; S.shapeHinted = false; S.shapeSolved = {}; S.shapeDemoPlayed = false;
+    S.sortSelected = null; S.sortFeedback = null; S.sortDemoPlayed = false; S.sortStageMistakes = 0;
+    S.countFeedback = null; S.countAnswerNeeded = false; S.countAnswered = {}; S.countDemoRunning = false;
+  }
+
+  function showStart(opts) {
+    resetActivityState();
+    S.screen = 'start';
+    S.activity = null;
+    S.grownupOpen = !!(opts && opts.grownup);
+    if (!opts || opts.focus !== false) { S.focusTarget = 'start-heading'; }
+    render();
+  }
+
+  function showHome(opts) {
+    resetActivityState();
+    S.screen = 'home';
+    S.activity = null;
+    if (opts && opts.focus) { S.focusTarget = 'home-heading'; }
+    render();
+  }
+
+  function showDone(opts) {
+    resetActivityState();
+    S.screen = 'done';
+    S.activity = null;
+    if (opts && opts.sound !== false) { Sound.play('done'); }
+    S.focusTarget = 'done-heading';
+    render();
+  }
+
+  function openActivity(id, opts) {
+    if (!C.ACTIVITY_META[id]) { return; }
+    var sameActivity = (S.activity === id && S.screen === 'activity' && !(opts && opts.reset));
+    if (!sameActivity) { resetActivityState(); }
+    S.screen = 'activity';
+    S.activity = id;
+    C.markActivity(S.progress, id, {});   /* visited, но не done */
+    saveProgress();
+    if (id === 'shapes') { initShapeActivity(opts); }
+    if (id === 'sorting') { initSortActivity(opts); }
+    if (id === 'counting') { initCountActivity(opts); }
+    if (!(opts && opts.silent)) { Sound.play('step'); }
+    if (opts && opts.focus) { S.focusTarget = id + '-heading'; }
+    render();
+  }
+
+  /* =========================================================== активность 1 ===
+   * Подбор формы. Образец — сверху; снизу 2–3 крупных варианта с номерами.
+   * Первый ход показывает приложение (демонстрация), дальше ребёнок ведёт.
+   * ========================================================================= */
+  function activeShapeRounds() {
+    var rounds = C.shapeRounds();
+    if (S.fewerChoices) {
+      rounds = rounds.map(function (r) { return C.withFewerChoices(r, 2); });
+    }
+    return rounds;
+  }
+
+  function initShapeActivity(opts) {
+    opts = opts || {};
+    var rounds = activeShapeRounds();
+    if (opts.reset) { S.shapeRound = 0; }
+    if (S.shapeRound >= rounds.length) { S.shapeRound = 0; }
+    S.shapeDemoPlayed = false;
+    S.shapeHinted = false;
+    S.shapeFeedback = null;
+    if (opts.playDemo) { playShapeDemo(); }
+    return rounds[S.shapeRound];
+  }
+
+  function playShapeDemo() {
+    var round = activeShapeRounds()[S.shapeRound];
+    if (!round) { return; }
+    S.shapeDemoPlayed = true;
+    var correct = round.choices.filter(function (c) { return c.ok; })[0];
+    var idx = round.choices.indexOf(correct);
+    setAnnounce('Пример: нажимаем на вариант ' + (idx + 1) + '.', 'polite');
+    render();
+    later(function () {
+      var node = el('shape-choice-' + idx);
+      if (node) { node.classList.add('demo-ghost'); }
+      Sound.play('step');
+    }, stepDelay(120));
+    later(function () {
+      var node = el('shape-choice-' + idx);
+      if (node) { node.classList.remove('demo-ghost'); }
+      S.shapeFeedback = { kind: 'good', text: 'Вот так: ' + C.shapeOf(round.target.shape).label + ' — это вариант ' + (idx + 1) + '. Теперь твоя очередь.' };
+      S.shapeHinted = true;
+      setAnnounce(S.shapeFeedback.text, 'polite');
+      render();
+    }, stepDelay(1500));
+  }
+
+  function answerShape(index) {
+    var rounds = activeShapeRounds();
+    var round = rounds[S.shapeRound];
+    if (!round) { return; }
+    var choice = round.choices[index];
+    if (!choice) { return; }
+    var res = C.checkShapeChoice(round, choice);
+    if (res.ok) {
+      S.shapeSolved[round.id] = true;
+      S.shapeFeedback = { kind: 'good', text: res.message + ' ' + SHAPE_PRAISE[S.shapeRound % SHAPE_PRAISE.length] };
+      Sound.play('correct');
+      Sound.say(res.message);
+      setAnnounce(S.shapeFeedback.text, 'polite');
+      render();
+      later(function () {
+        if (S.screen !== 'activity' || S.activity !== 'shapes') { return; }
+        if (S.shapeRound + 1 < rounds.length) {
+          S.shapeRound += 1;
+          initShapeActivity({});
+          render();
+        } else {
+          completeActivity('shapes');
+        }
+      }, stepDelay(1400));
+    } else {
+      /* Неверный выбор: занятие остаётся рабочим, даём мягкую подсказку. */
+      S.shapeHinted = true;
+      S.shapeFeedback = { kind: 'care', text: res.hint, sub: 'Попробуй ещё раз — попытки не ограничены.' };
+      Sound.play('hint');
+      Sound.say('Посмотри на образец. ' + C.SHAPE_HINTS[round.target.shape] + '.');
+      setAnnounce(S.shapeFeedback.text, 'polite');
+      render();
+      var node = el('shape-choice-' + index);
+      if (node) {
+        node.classList.add('is-wrong');
+        later(function () { node.classList.remove('is-wrong'); }, 1600);
+      }
+    }
+  }
+
+  function showShapeHint() {
+    var rounds = activeShapeRounds();
+    var round = rounds[S.shapeRound];
+    if (!round) { return; }
+    var correct = round.choices.filter(function (c) { return c.ok; })[0];
+    var idx = round.choices.indexOf(correct);
+    S.shapeHinted = true;
+    S.shapeFeedback = {
+      kind: 'care',
+      text: 'Подсказка: подходит вариант ' + (idx + 1) + ' — у него ' + C.shapeOf(round.target.shape).label + ', ' + C.SHAPE_HINTS[round.target.shape] + '.',
+      sub: 'Можно нажать на него или послушать ещё раз.'
+    };
+    Sound.play('hint');
+    Sound.say(S.shapeFeedback.text);
+    setAnnounce(S.shapeFeedback.text, 'polite');
+    render();
+    var node = el('shape-choice-' + idx);
+    if (node) {
+      node.classList.add('is-hinted');
+      later(function () { node.classList.remove('is-hinted'); }, 2200);
+    }
+  }
+
+  var SHAPE_PRAISE = ['Получилось!', 'Верно!', 'Точно такая же!', 'Да, это она!', 'Молодец!', 'Отлично!'];
+
+  /* =========================================================== активность 2 ===
+   * Сортировка по ОДНОМУ видимому свойству. Сначала по цвету (у каждой
+   * полянки свой узор, своя форма и своя подпись — цвет не единственная
+   * опора), затем новое применение: сортировка по форме, где все фигуры
+   * одного цвета и опора на цвет полностью убрана.
+   * ========================================================================= */
+  function activeSortRounds() {
+    if (S.fewerChoices) {
+      return [
+        C.limitGroups(C.sortingRounds()[0], 2),
+        C.limitGroups(C.sortingRounds()[2], 2)
+      ];
+    }
+    return C.sortingRounds();
+  }
+
+  function initSortActivity(opts) {
+    opts = opts || {};
+    var rounds = activeSortRounds();
+    if (opts.reset) { S.sortRound = 0; }
+    if (S.sortRound >= rounds.length) { S.sortRound = 0; }
+    var round = rounds[S.sortRound] || rounds[0];
+    S.sortState = C.createSortState(round);
+    S.sortSelected = null;
+    S.sortFeedback = null;
+    S.sortDemoPlayed = false;
+    S.sortStageMistakes = 0;
+    /* Демонстрационная фишка ставится сама только тогда, когда ребёнок нажал
+       «Покажи пример» — иначе занятие ждёт его хода. */
+    S.sortPendingDemo = !!round.demo;
+    if (opts.playDemo) { playSortDemo(); S.sortPendingDemo = false; }
+    return round;
+  }
+
+  function playSortDemo() {
+    var rounds = activeSortRounds();
+    var round = rounds[S.sortRound];
+    if (!round || !S.sortState) { return; }
+    var demoItem = round.items.filter(function (it) { return it.demo; })[0];
+    if (!demoItem) { demoItem = C.firstRemaining(S.sortState); }
+    if (!demoItem) { return; }
+    var res = C.place(S.sortState, demoItem.id, C.groupOf(demoItem, round.mode));
+    S.sortDemoPlayed = true;
+    S.sortSelected = null;
+    S.sortFeedback = { kind: 'good', text: 'Пример: ' + res.message, sub: 'Теперь разложи остальные фигуры.' };
+    Sound.play('step');
+    setAnnounce(S.sortFeedback.text, 'polite');
+    render();
+    if (C.sortProgress(S.sortState).complete) { later(function () { if (S.activity === 'sorting') { completeActivity('sorting'); } }, stepDelay(1200)); }
+  }
+
+  function selectPiece(itemId) {
+    if (S.sortSelected === itemId) { S.sortSelected = null; } else { S.sortSelected = itemId; }
+    S.sortFeedback = null;
+    Sound.play('step');
+    render();
+  }
+
+  function dropInto(groupKey) {
+    var rounds = activeSortRounds();
+    var round = rounds[S.sortRound];
+    if (!round || !S.sortState) { return; }
+    var itemId = S.sortSelected;
+    if (!itemId) {
+      itemId = (C.firstRemaining(S.sortState) || {}).id;
+    }
+    if (!itemId) { return; }
+    var res = C.place(S.sortState, itemId, groupKey);
+    if (res.ok) {
+      S.sortSelected = null;
+      S.sortFeedback = { kind: 'good', text: res.message };
+      Sound.play('correct');
+      Sound.say(res.message);
+      setAnnounce(res.message, 'polite');
+      render();
+      var bin = el('sort-bin-' + groupKey);
+      if (bin) { bin.classList.add('is-good'); }
+      if (res.complete) {
+        later(function () { if (S.activity === 'sorting') { completeSortRound(); } }, stepDelay(1300));
+      }
+      return;
+    }
+    /* Неверная полянка: фигура остаётся на месте, занятие продолжается. */
+    S.sortStageMistakes += 1;
+    S.sortFeedback = { kind: 'care', text: res.hint, sub: res.message };
+    Sound.play('hint');
+    Sound.say('Попробуй другую полянку.');
+    setAnnounce(res.hint, 'polite');
+    render();
+    var node = el('sort-bin-' + groupKey);
+    if (node) {
+      node.classList.add('is-care');
+      later(function () { node.classList.remove('is-care'); }, 1700);
+    }
+  }
+
+  function completeSortRound() {
+    var rounds = activeSortRounds();
+    if (S.sortRound + 1 < rounds.length) {
+      S.sortRound += 1;
+      initSortActivity({});
+      render();
+    } else {
+      completeActivity('sorting');
+    }
+  }
+
+  /* =========================================================== активность 3 ===
+   * Счёт крошечной коллекции. Игрушки открываются по одной и каждая
+   * подсвечивается ровно один раз (это же проверяют автотесты). Ответ
+   * ребёнок подтверждает, нажав на цифру.
+   * ========================================================================= */
+  function activeCountRounds() { return C.COUNT_ROUNDS; }
+
+  function initCountActivity(opts) {
+    opts = opts || {};
+    var rounds = activeCountRounds();
+    if (opts.reset) { S.countRound = 0; }
+    if (S.countRound >= rounds.length) { S.countRound = 0; }
+    var round = rounds[S.countRound] || rounds[0];
+    S.countState = C.createCountState(round.count);
+    S.countFeedback = null;
+    S.countAnswerNeeded = false;
+    S.countAnswered = {};
+    S.countDemoRunning = false;
+    S.countDemoIndex = 0;
+    if (opts.playDemo) { runCountDemo(); }
+    return round;
+  }
+
+  /* Демонстрация счёта: игрушки открываются сами, по одной, каждая ровно один
+     раз, звука нет — только образец порядка «одна, две, три». Затем состояние
+     сбрасывается, и ребёнок считает сам. */
+  function runCountDemo() {
+    clearTimers();
+    if (!S.countState) { return; }
+    C.resetCountState(S.countState);
+    S.countAnswerNeeded = false;
+    S.countDemoIndex = 0;
+    S.countDemoRunning = true;
+    S.countFeedback = { kind: 'idle', text: 'Смотрим пример: одна, две, три.' };
+    render();
+    var total = S.countState.sequence.length;
+    for (var i = 1; i <= total; i++) {
+      (function (n) {
+        later(function () {
+          if (S.screen !== 'activity' || S.activity !== 'counting' || !S.countState) { return; }
+          C.tapCount(S.countState);
+          Sound.play('count' + n);
+          render();
+          if (n === total) {
+            S.countDemoRunning = false;
+            S.countAnswerNeeded = true;
+            S.countFeedback = {
+              kind: 'good',
+              text: 'Так считают: одна, две, три. Теперь нажми на кнопку со стрелкой и считай сам.'
+            };
+            C.resetCountState(S.countState);
+            setAnnounce(S.countFeedback.text, 'polite');
+            render();
+          }
+        }, stepDelay(900 * n));
+      }(i));
+    }
+  }
+
+  function countTap() {
+    if (!S.countState) { return; }
+    if (C.isCountComplete(S.countState)) {
+      S.countAnswerNeeded = true;
+      S.countFeedback = { kind: 'care', text: 'Все игрушки посчитаны. Выбери цифру — сколько их?', sub: 'Можно нажать «Начать счёт заново».' };
+      render();
+      return;
+    }
+    C.tapCount(S.countState);
+    S.countFeedback = null;
+    Sound.play('count' + S.countState.count);
+    Sound.say(String(S.countState.count));
+    setAnnounce('Считаем: ' + S.countState.count, 'polite');
+    if (C.isCountComplete(S.countState)) {
+      S.countAnswerNeeded = true;
+      S.countFeedback = { kind: 'good', text: 'Посчитали: ' + S.countState.sequence.length + '. Теперь выбери такую цифру.' };
+      Sound.say('Сколько получилось?');
+    }
+    render();
+  }
+
+  function resetCounting() {
+    if (!S.countState) { return; }
+    C.resetCountState(S.countState);
+    S.countAnswerNeeded = false;
+    S.countFeedback = { kind: 'idle', text: 'Считаем заново. Нажимай на кнопку со стрелкой.' };
+    setAnnounce(S.countFeedback.text, 'polite');
+    render();
+  }
+
+  function answerCount(n) {
+    if (!S.countState) { return; }
+    var rounds = activeCountRounds();
+    var round = rounds[S.countRound];
+    var target = S.countState.sequence.length;
+    if (n === target) {
+      S.countAnswered[round.id] = true;
+      S.countFeedback = { kind: 'good', text: 'Да! Их ' + target + '. ' + COUNT_PRAISE[S.countRound % COUNT_PRAISE.length] };
+      Sound.play('correct');
+      Sound.say('Да, их ' + target);
+      setAnnounce(S.countFeedback.text, 'polite');
+      render();
+      later(function () {
+        if (S.screen !== 'activity' || S.activity !== 'counting') { return; }
+        if (S.countRound + 1 < rounds.length) {
+          S.countRound += 1;
+          initCountActivity({});
+          render();
+        } else {
+          completeActivity('counting');
+        }
+      }, stepDelay(1500));
+    } else {
+      /* Мягко: называем то, что ребёнок выбрал, и предлагаем пересчитать. */
+      S.countFeedback = {
+        kind: 'care',
+        text: 'Ты выбрал ' + n + '. Давай пересчитаем вместе: нажми на кнопку со стрелкой и называй: одна, две, три.',
+        sub: 'Цифру можно выбирать сколько угодно раз.'
+      };
+      Sound.play('hint');
+      Sound.say('Давай пересчитаем. Нажми на стрелку.');
+      setAnnounce(S.countFeedback.text, 'polite');
+      render();
+      var node = el('count-answer-' + n);
+      if (node) {
+        node.classList.add('is-wrong');
+        later(function () { node.classList.remove('is-wrong'); }, 1700);
+      }
+    }
+  }
+
+  var COUNT_PRAISE = ['Ты посчитал сам!', 'Верно!', 'Точно!', 'Отлично посчитал!'];
+
+  /* --------------------------------------------------- завершение активности --- */
+  function completeActivity(id) {
+    var res = markDone(id, { finished: true });
+    Sound.stopSpeaking();
+    Sound.play('done');
+    var all = C.completedCount(S.progress);
+    if (all >= C.ACTIVITY_ORDER.length) {
+      showDone({});
+      return;
+    }
+    S.screen = 'activity-done';
+    S.finishedActivity = id;
+    S.focusTarget = 'activity-done-heading';
+    render();
+  }
+
+  /* Объявление для экранных дикторов. kind='focus' дополнительно переносит
+     фокус на блок состояния: так ребёнок, работающий только клавиатурой,
+     сразу слышит ответ, и фокус не теряется при перерисовке. */
+  function setAnnounce(text, kind) {
+    S.announceSeq += 1;
+    S.announce = text || '';
+    S.announceKind = kind || 'polite';
+    if (kind === 'focus') { S.focusTarget = 'status'; }
+  }
+
+  function updateStorageNote() {
+    var node = el('storage-note');
+    if (!node) { return; }
+    node.textContent = storage.ok
+      ? 'Прогресс сохраняется только в этом браузере, на этом устройстве. Кнопка «Сбросить» в разделе для взрослых удаляет его полностью.'
+      : 'Браузер запретил сохранение, поэтому прогресс живёт только пока открыта страница. Занятие от этого не меняется.';
+  }
+
+  /* ------------------------------------------------------------------ экспорт ---
+   * Публичный фасад: единственная точка, через которую слой отрисовки
+   * (часть 2 файла) обращается к состоянию. Никаких «магических» глобалов. */
+  window.__GARDEN__ = {
+    C: C,
+    S: S,
+    Sound: Sound,
+    storage: storage,
+    routeFromHash: routeFromHash,
+    /* Загрузка по адресу. Функция НЕ вызывает render() сама: слой отрисовки
+       живёт в следующем блоке скрипта, поэтому загрузку запускает он — уже
+       после того, как определены все экраны. */
+    bootFromHash: function () {
+      var forced = window.location.hash;
+      if (routeFromHash(forced)) { applyRoute(forced, true); return 'routed'; }
+      if (S.progress.updated && C.completedCount(S.progress) > 0) { showHome(); return 'home'; }
+      showStart({ focus: false });
+      return 'start';
+    },
+    go: go,
+    setAnnounce: setAnnounce,
+    updateStorageNote: updateStorageNote,
+    openActivity: openActivity,
+    showStart: showStart,
+    showHome: showHome,
+    showDone: showDone,
+    initShapeActivity: initShapeActivity,
+    playShapeDemo: playShapeDemo,
+    showShapeHint: showShapeHint,
+    answerShape: answerShape,
+    initSortActivity: initSortActivity,
+    playSortDemo: playSortDemo,
+    selectPiece: selectPiece,
+    dropInto: dropInto,
+    initCountActivity: initCountActivity,
+    runCountDemo: runCountDemo,
+    countTap: countTap,
+    resetCounting: resetCounting,
+    answerCount: answerCount,
+    activeShapeRoundsValue: activeShapeRounds,
+    activeSortRoundsValue: activeSortRounds,
+    activeCountRoundsValue: activeCountRounds
+  };
+}());
+</script>
+<script>
+/* ===========================================================================
+ * Часть 2: отрисовка экранов, обработка нажатий и клавиатуры, инициализация.
+ * Здесь же кнопки «звук», «покажи пример», «подсказка», «начать заново»,
+ * раздел для взрослых, итог занятия и сброс прогресса.
+ *
+ * Правило фокуса: любая перерисовка возвращает фокус туда, где он был, или на
+ * осмысленный соседний элемент. Ребёнок, работающий только клавиатурой, не
+ * остаётся без фокуса ни на одном шаге.
+ * =========================================================================== */
+(function () {
+  'use strict';
+  var C = window.Core;
+  var G = window.__GARDEN__;
+  var S = G.S;
+  var Sound = G.Sound;
+  var storage = G.storage;
+  var app = document.getElementById('app-root');
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s === undefined || s === null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function u() { S.uid += 1; return 'u' + S.uid; }
+
+  /* -------------------------------------------------------------- фигурки --- */
+  function toySvg(kind, color, px) {
+    px = px || 84;
+    if (kind === 'ball') {
+      return '<svg class="toy" viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+        '<circle cx="50" cy="58" r="34" fill="' + color + '" stroke="#123040" stroke-width="6"/>' +
+        '<path d="M16 58 A34 34 0 0 1 84 58" fill="none" stroke="#FFFFFF" stroke-width="7" opacity=".85"/>' +
+        '<circle cx="41" cy="47" r="7" fill="#FFFFFF" opacity=".9"/>' +
+        '</svg>';
+    }
+    if (kind === 'box') {
+      return '<svg class="toy" viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+        '<rect x="18" y="26" width="64" height="60" rx="8" fill="' + color + '" stroke="#123040" stroke-width="6"/>' +
+        '<path d="M18 46 H82" stroke="#FFFFFF" stroke-width="7"/>' +
+        '<path d="M50 26 V86" stroke="#123040" stroke-width="5"/>' +
+        '</svg>';
+    }
+    return '<svg class="toy" viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+      '<path d="M50 12 L61 40 L92 42 L68 62 L76 92 L50 75 L24 92 L32 62 L8 42 L39 40 Z" fill="' + color + '" stroke="#123040" stroke-width="6" stroke-linejoin="round"/>' +
+      '<circle cx="50" cy="52" r="7" fill="#FFFFFF" opacity=".85"/>' +
+      '</svg>';
+  }
+
+  var TOY_KINDS = ['ball', 'box', 'star'];
+  var TOY_COLORS = ['#C8382B', '#1B5FA8', '#A87D00'];
+
+  function activityIcon(kind, px) {
+    px = px || 56;
+    if (kind === 'shapes') {
+      return '<svg viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+        '<circle cx="30" cy="32" r="20" fill="#C8382B" stroke="#123040" stroke-width="5"/>' +
+        '<rect x="52" y="14" width="38" height="38" rx="4" fill="#1B5FA8" stroke="#123040" stroke-width="5"/>' +
+        '<path d="M50 58 L78 92 H22 Z" fill="#A87D00" stroke="#123040" stroke-width="5" stroke-linejoin="round"/>' +
+        '</svg>';
+    }
+    if (kind === 'sorting') {
+      return '<svg viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+        '<rect x="6" y="66" width="88" height="26" rx="8" fill="#DBE6F3" stroke="#123040" stroke-width="5"/>' +
+        '<circle cx="26" cy="34" r="15" fill="#C8382B" stroke="#123040" stroke-width="5"/>' +
+        '<rect x="46" y="20" width="28" height="28" rx="4" fill="#1B5FA8" stroke="#123040" stroke-width="5"/>' +
+        '<path d="M76 48 L94 48 L85 30 Z" fill="#A87D00" stroke="#123040" stroke-width="5" stroke-linejoin="round"/>' +
+        '</svg>';
+    }
+    return '<svg viewBox="0 0 100 100" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' +
+      '<circle cx="22" cy="30" r="14" fill="#C8382B" stroke="#123040" stroke-width="5"/>' +
+      '<circle cx="54" cy="30" r="14" fill="#1B5FA8" stroke="#123040" stroke-width="5"/>' +
+      '<circle cx="86" cy="30" r="14" fill="#A87D00" stroke="#123040" stroke-width="5"/>' +
+      '<rect x="10" y="60" width="80" height="14" rx="7" fill="#8FA08C" stroke="#123040" stroke-width="5"/>' +
+      '</svg>';
+  }
+
+  /* --------------------------------------------------------------- статус --- */
+  function idleText() {
+    if (S.screen === 'activity') {
+      if (S.activity === 'shapes') { return 'Выбери фигуру, которая такая же, как образец.'; }
+      if (S.activity === 'sorting') { return 'Сначала нажми на фигуру, потом на её полянку.'; }
+      if (S.activity === 'counting') { return 'Нажимай на кнопку со стрелкой и считай вслух.'; }
+    }
+    return 'Выбери занятие.';
+  }
+
+  function feedbackForActivity() {
+    if (S.activity === 'shapes') { return S.shapeFeedback; }
+    if (S.activity === 'sorting') { return S.sortFeedback; }
+    if (S.activity === 'counting') { return S.countFeedback; }
+    return null;
+  }
+
+  function statusBox(feedback) {
+    var kind = (feedback && feedback.kind) || 'idle';
+    var text = (feedback && feedback.text) || idleText();
+    var sub = feedback && feedback.sub ? feedback.sub : '';
+    var icon = kind === 'good'
+      ? '<svg class="status-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="40" fill="#146B3A"/><path d="M30 52 L45 67 L71 36" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : (kind === 'care'
+        ? '<svg class="status-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="40" fill="#FBEBD3" stroke="#8A5312" stroke-width="7"/><path d="M50 26 V56" stroke="#8A5312" stroke-width="10" stroke-linecap="round"/><circle cx="50" cy="72" r="7" fill="#8A5312"/></svg>'
+        : '<svg class="status-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="40" fill="#E9F1F7" stroke="#3D5566" stroke-width="7"/><path d="M50 26 V56" stroke="#3D5566" stroke-width="10" stroke-linecap="round"/><circle cx="50" cy="72" r="7" fill="#3D5566"/></svg>');
+    return '<div class="status is-' + kind + '" id="status" tabindex="-1" role="status" aria-live="polite">' + icon +
+      '<span><strong>' + esc(text) + '</strong>' +
+      (sub ? '<br><span class="foot-note">' + esc(sub) + '</span>' : '') + '</span></div>';
+  }
+
+  /* ---------------------------------------------------------------- шапка --- */
+  function soundIcon(on) {
+    return on
+      ? '<svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true" focusable="false"><path d="M14 38 H30 L52 20 V80 L30 62 H14 Z" fill="#152B36"/><path d="M62 34 A24 24 0 0 1 62 66" fill="none" stroke="#146B3A" stroke-width="8" stroke-linecap="round"/><path d="M74 24 A38 38 0 0 1 74 76" fill="none" stroke="#146B3A" stroke-width="8" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true" focusable="false"><path d="M14 38 H30 L52 20 V80 L30 62 H14 Z" fill="#3D5566"/><path d="M64 36 L88 64 M88 36 L64 64" stroke="#8A5312" stroke-width="9" stroke-linecap="round"/></svg>';
+  }
+
+  function topbar() {
+    var done = C.completedCount(S.progress);
+    var total = C.ACTIVITY_ORDER.length;
+    var soundOn = Sound.isEnabled();
+    return '' +
+      '<header class="topbar no-print">' +
+        '<div class="topbar-in">' +
+          '<button class="icon-btn" data-action="goto-start" data-focus-key="brand" aria-label="Сад форм и порядка. В начало занятия">' +
+            '<svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
+              '<circle cx="50" cy="82" r="14" fill="#146B3A"/>' +
+              '<path d="M50 74 C50 52 36 42 22 40 C26 60 38 70 50 74 Z" fill="#8FA08C" stroke="#123040" stroke-width="4"/>' +
+              '<path d="M50 74 C50 52 64 42 78 40 C74 60 62 70 50 74 Z" fill="#146B3A" stroke="#123040" stroke-width="4"/>' +
+              '<path d="M50 78 V46" stroke="#123040" stroke-width="5" stroke-linecap="round"/>' +
+              '<circle cx="50" cy="34" r="12" fill="#A87D00" stroke="#123040" stroke-width="4"/>' +
+            '</svg>' +
+            '<span><span class="brand">Сад форм и порядка</span>' +
+            '<span class="brand-sub">занятие для трёх лет</span></span>' +
+          '</button>' +
+          '<button class="icon-btn" data-action="toggle-sound" data-focus-key="sound" aria-pressed="' + (soundOn ? 'true' : 'false') + '">' +
+            soundIcon(soundOn) +
+            '<span>' + (soundOn ? 'Звук включён' : 'Звук выключен') + '</span>' +
+          '</button>' +
+          '<button class="icon-btn" data-action="toggle-grownup" data-focus-key="grownup" aria-expanded="' + (S.grownupOpen ? 'true' : 'false') + '">' +
+            '<span>Взрослым</span>' +
+          '</button>' +
+          '<button class="icon-btn" data-action="text-size" data-focus-key="textsize">' +
+            '<span>Буквы: ' + (S.textSize === 'large' ? 'крупные' : 'обычные') + '</span>' +
+          '</button>' +
+          '<span class="chip" aria-label="Пройдено занятий: ' + done + ' из ' + total + '">Пройдено: ' + done + ' из ' + total + '</span>' +
+        '</div>' +
+      '</header>';
+  }
+
+  function footer() {
+    return '' +
+      '<footer class="foot-note" style="margin-top:26px">' +
+        '<p id="storage-note">Прогресс сохраняется только в этом браузере.</p>' +
+        '<p>Без рекламы, без регистрации, без аналитики и без сбора данных о ребёнке. Код и вся графика созданы для этого задания, лицензия MIT.</p>' +
+      '</footer>';
+  }
+
+  /* ------------------------------------------------------------- карточки --- */
+  function activityCards() {
+    return '<div class="choices" data-count="3" style="margin-top:18px">' +
+      C.ACTIVITY_ORDER.map(function (id, i) {
+        var meta = C.ACTIVITY_META[id];
+        var done = S.progress.done && S.progress.done[id];
+        return '<button class="choice" data-action="open-activity" data-activity="' + id + '" ' +
+          'data-focus-key="card-' + id + '" aria-label="' + esc(meta.aria) + '">' +
+          '<span class="tile-index">' + (i + 1) + '</span>' +
+          activityIcon(meta.icon, 72) +
+          '<span class="choice-name">' + esc(meta.title) + '</span>' +
+          '<span class="swatch-label">' + (done ? 'Уже пробовали' : meta.minutes) + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>';
+  }
+
+  /* ================================================================ экраны === */
+  function screenStart() {
+    return '' +
+      '<div class="wrap stack">' +
+        '<section class="card">' +
+          '<div class="done-hero">' +
+            '<svg viewBox="0 0 120 120" width="112" height="112" aria-hidden="true" focusable="false">' +
+              '<circle cx="60" cy="92" r="20" fill="#146B3A"/>' +
+              '<path d="M60 84 C60 52 42 40 22 36 C28 66 44 80 60 84 Z" fill="#8FA08C" stroke="#123040" stroke-width="4"/>' +
+              '<path d="M60 84 C60 52 78 40 98 36 C92 66 76 80 60 84 Z" fill="#146B3A" stroke="#123040" stroke-width="4"/>' +
+              '<circle cx="60" cy="30" r="16" fill="#A87D00" stroke="#123040" stroke-width="4"/>' +
+              '<path d="M60 46 V90" stroke="#123040" stroke-width="6" stroke-linecap="round"/>' +
+            '</svg>' +
+            '<div style="flex:1 1 320px">' +
+              '<h1 id="start-heading">Сад форм, цвета и порядка</h1>' +
+              '<p>Три коротких занятия для ребёнка около трёх лет: подобрать такую же фигуру, разложить фигуры по полянкам и посчитать игрушки до трёх. Рядом нужен взрослый, и остановиться можно в любой момент.</p>' +
+              '<p class="foot-note">Читать и писать не нужно: всё делается нажатиями. Звук выключен, пока взрослый не включит его кнопкой в шапке.</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="btn-row" style="margin-top:20px">' +
+            '<button class="btn" data-action="begin" data-focus-key="begin">Начать занятие</button>' +
+            '<button class="btn btn-plain" data-action="goto-home">Выбрать занятие</button>' +
+            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым: как заниматься</button>' +
+          '</div>' +
+        '</section>' +
+        '<section class="card-soft" aria-labelledby="start-how">' +
+          '<h2 id="start-how">Как это работает</h2>' +
+          '<div class="facts">' +
+            '<div class="fact"><h3>1. Сначала показываем</h3><p>В каждом занятии есть кнопка «Покажи пример»: приложение само показывает первый ход, и пример можно повторять сколько угодно раз.</p></div>' +
+            '<div class="fact"><h3>2. Потом пробуем вместе</h3><p>Взрослый рядом называет вслух: «круг», «синий», «одна, две, три».</p></div>' +
+            '<div class="fact"><h3>3. Затем новое задание</h3><p>В конце каждого занятия есть чуть другое задание: фигура повёрнута или меньше, но форма та же.</p></div>' +
+            '<div class="fact"><h3>Без оценки</h3><p>Нет баллов, таймеров, рейтингов и проигрышных звуков. Неверный выбор — это подсказка и ещё одна попытка.</p></div>' +
+          '</div>' +
+          activityCards() +
+        '</section>' +
+        footer() +
+      '</div>';
+  }
+
+  function screenHome() {
+    var done = C.completedCount(S.progress);
+    var allDone = done >= C.ACTIVITY_ORDER.length;
+    return '' +
+      '<div class="wrap stack">' +
+        '<section class="card">' +
+          '<h1 id="home-heading">Выбери занятие</h1>' +
+          '<p>Три занятия подряд — примерно 4–6 минут. Начать можно с любого и остановиться в любой момент.</p>' +
+          activityCards() +
+          '<div class="btn-row" style="margin-top:18px">' +
+            '<button class="btn btn-leaf" data-action="open-next" data-focus-key="next">' +
+              (allDone ? 'Пройти занятие ещё раз' : 'Продолжить занятие') + '</button>' +
+            (allDone ? '<button class="btn btn-plain" data-action="goto-done">Итог занятия</button>' : '') +
+            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым</button>' +
+          '</div>' +
+        '</section>' +
+        footer() +
+      '</div>';
+  }
+
+  function activityShell(titleId, title, stepText, stage, controls) {
+    var idx = C.ACTIVITY_ORDER.indexOf(S.activity) + 1;
+    return '' +
+      '<div class="wrap stack">' +
+        '<div class="activity-head">' +
+          '<p class="foot-note" style="margin-bottom:6px">Занятие ' + idx + ' из 3</p>' +
+          '<div class="activity-title">' +
+            '<h1 id="' + titleId + '">' + esc(title) + '</h1>' +
+            '<span class="step-chip">' + esc(stepText) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<section class="stage" aria-labelledby="' + titleId + '">' +
+          stage +
+          '<div style="margin-top:16px">' + statusBox(feedbackForActivity()) + '</div>' +
+          '<div class="btn-row" style="margin-top:16px">' + controls + '</div>' +
+        '</section>' +
+        footer() +
+      '</div>';
+  }
+
+  function activityControls(extra) {
+    return '' +
+      '<button class="btn" data-action="demo" data-focus-key="demo">Покажи пример</button>' +
+      '<button class="btn btn-plain" data-action="hint" data-focus-key="hint">Подсказка</button>' +
+      '<button class="btn btn-plain" data-action="restart-activity" data-focus-key="restart">Начать заново</button>' +
+      (extra || '');
+  }
+
+  /* --- Занятие 1: формы --- */
+  function screenShapes() {
+    var rounds = G.activeShapeRoundsValue();
+    var round = rounds[S.shapeRound];
+    if (!round) { return screenHome(); }
+    var target = round.target;
+    var stage = '' +
+      '<div class="target">' +
+        '<div class="target-body">' +
+          '<span class="target-caption">Образец</span>' +
+          C.shapeSvg({ shape: target.shape, color: target.color, uid: u(), size: 1.5, label: false }) +
+          '<span class="swatch-label">' + esc(C.colorOf(target.color).label + ' ' + C.shapeOf(target.shape).label) + '</span>' +
+        '</div>' +
+        '<p style="flex:1 1 220px;margin:0"><strong>' + esc(round.prompt) + '</strong><br>' +
+        'У каждой кнопки есть номер. Нажми на ту, у которой такая же форма.</p>' +
+      '</div>' +
+      '<div class="choices" data-count="' + Math.min(round.choices.length, 3) + '" role="group" aria-label="Варианты ответа">' +
+      round.choices.map(function (c, i) {
+        return '<button class="choice" id="shape-choice-' + i + '" data-action="answer-shape" data-index="' + i + '" ' +
+          'data-focus-key="shape-choice-' + i + '" aria-label="Вариант ' + (i + 1) + ': ' + esc(shapeName(c)) + '">' +
+          '<span class="tile-index">' + (i + 1) + '</span>' +
+          C.shapeSvg({ shape: c.shape, color: c.color, uid: u(), size: c.size || 1, rotate: c.rotate || 0, label: false }) +
+          '<span class="choice-name">' + esc(shapeName(c)) + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>';
+    return activityShell(
+      'shapes-heading',
+      C.ACTIVITY_META.shapes.title,
+      'Шаг ' + (S.shapeRound + 1) + ' из ' + rounds.length,
+      stage,
+      activityControls(fewerNote())
+    );
+  }
+
+  function fewerNote() {
+    return S.fewerChoices ? '<span class="chip">Режим: два варианта</span>' : '';
+  }
+
+  function shapeName(c) {
+    if (!c) { return 'фигура'; }
+    return C.colorOf(c.color).label + ' ' + C.shapeOf(c.shape).label;
+  }
+
+  /* --- Занятие 2: сортировка --- */
+  function screenSorting() {
+    var rounds = G.activeSortRoundsValue();
+    var round = rounds[S.sortRound];
+    if (!round || !S.sortState) { return screenHome(); }
+    var st = S.sortState;
+    var remaining = st.items.filter(function (it) { return !st.placed[it.id]; });
+    var tray = remaining.length
+      ? remaining.map(function (it) { return pieceButton(it); }).join('')
+      : '<span class="tray-empty">Все фигуры разложены — можно посмотреть, что получилось.</span>';
+
+    var bins = round.groups.map(function (g) {
+      var placedItems = st.items.filter(function (it) { return st.placed[it.id] === g.key; });
+      var swatchShape = g.shape || C.COLOR_GROUP_SHAPE[g.key] || 'circle';
+      return '<button class="bin" id="sort-bin-' + g.key + '" data-action="drop" data-group="' + g.key + '" ' +
+        'data-focus-key="bin-' + g.key + '" ' +
+        'aria-label="Полянка: ' + esc(g.label) + '. Фигур здесь: ' + placedItems.length + '">' +
+        '<span class="bin-head">' +
+          C.shapeSvg({ shape: swatchShape, color: g.neutral ? 'neutral' : g.key, uid: u(), size: 0.62, label: false }) +
+          '<span class="bin-title">' +
+            '<span class="bin-caption">' + esc(g.label) + '</span>' +
+            '<span class="bin-count">Фигур здесь: ' + placedItems.length + ' из ' + st.items.length + '</span>' +
+          '</span>' +
+        '</span>' +
+        '<span class="bin-slot">' + (placedItems.length
+          ? placedItems.map(function (it) { return pieceSvgSpan(it, 58); }).join('')
+          : '<span class="foot-note">Пока пусто</span>') + '</span>' +
+        '</button>';
+    }).join('');
+
+    var modeNote = round.mode === 'shape'
+      ? '<div class="coach"><strong>Здесь цвет — не подсказка.</strong> Все фигуры одного цвета, поэтому смотрим только на форму.</div>'
+      : '<div class="coach"><strong>Различаем не только цветом.</strong> У каждой полянки свой узор, своя форма и своя подпись: круглая в точку, квадратная в полоску, треугольная в клетку.</div>';
+
+    var stage = '' +
+      '<p><strong>' + esc(round.prompt) + '</strong></p>' +
+      '<p class="tray-title">Фигуры, которые ждут своей полянки:</p>' +
+      '<div class="tray" role="group" aria-label="Фигуры для сортировки">' + tray + '</div>' +
+      '<div class="bins-inline" role="group" aria-label="Полянки">' + bins + '</div>' +
+      '<div style="margin-top:12px">' + modeNote + '</div>';
+
+    return activityShell(
+      'sorting-heading',
+      C.ACTIVITY_META.sorting.title,
+      'Шаг ' + (S.sortRound + 1) + ' из ' + rounds.length,
+      stage,
+      activityControls('<span class="chip" data-focus-key="selected-chip">Выбрано: ' +
+        (S.sortSelected ? esc(pieceName(byId(st, S.sortSelected))) : 'ничего') + '</span>' + fewerNote())
+    );
+  }
+
+  function byId(st, id) {
+    return st.items.filter(function (it) { return it.id === id; })[0] || null;
+  }
+
+  function pieceName(item) {
+    return item ? C.describeItem(item) : 'фигура';
+  }
+
+  function pieceButton(item) {
+    var selected = S.sortSelected === item.id;
+    return '<button class="piece' + (selected ? ' is-selected' : '') + '" id="piece-' + item.id + '" ' +
+      'data-action="select-piece" data-item="' + item.id + '" data-focus-key="piece-' + item.id + '" ' +
+      'aria-pressed="' + (selected ? 'true' : 'false') + '" ' +
+      'aria-label="' + esc(pieceName(item)) + (selected ? ', выбрано' : '') + '">' +
+      pieceSvgSpan(item, 76) +
+      '<span class="piece-name">' + esc(pieceName(item)) + (selected ? ' — выбрано' : '') + '</span>' +
+      '</button>';
+  }
+
+  function pieceSvgSpan(item, px) {
+    return '<span class="piece-visual">' +
+      C.shapeSvg({ shape: item.shape, color: item.color, uid: u(), size: px / 120, label: false }) +
+      '</span>';
+  }
+
+  /* --- Занятие 3: счёт --- */
+  function screenCounting() {
+    var rounds = G.activeCountRoundsValue();
+    var round = rounds[S.countRound];
+    if (!round || !S.countState) { return screenHome(); }
+    var st = S.countState;
+    var slots = '';
+    for (var i = 0; i < st.sequence.length; i++) {
+      var counted = i < st.revealed;
+      var active = counted && (i === st.revealed - 1);
+      var kind = TOY_KINDS[i % TOY_KINDS.length];
+      var color = TOY_COLORS[i % TOY_COLORS.length];
+      slots += '<div class="slot' + (counted ? ' is-counted' : '') + (active ? ' is-active' : '') + '">' +
+        '<span class="slot-halo" aria-hidden="true"></span>' +
+        '<span class="number-tag" aria-hidden="true">' + (i + 1) + '</span>' +
+        '<span class="' + (counted ? '' : 'toy-hidden') + '">' + toySvg(kind, color, 84) + '</span>' +
+        '</div>';
+    }
+    var complete = C.isCountComplete(st);
+    var numBtns = [1, 2, 3].map(function (n) {
+      return '<button class="num-btn" id="count-answer-' + n + '" ' +
+        'data-action="answer-count" data-number="' + n + '" data-focus-key="answer-' + n + '" ' +
+        'aria-label="Цифра ' + n + '"' + (st.count < 1 ? ' aria-disabled="true"' : '') + '>' +
+        C.numeralCard(n, { uid: u(), px: 64 }) +
+        '<span>Столько же</span>' +
+        '</button>';
+    }).join('');
+
+    var arrowLabel = complete
+      ? 'Посчитали: ' + st.sequence.length
+      : 'Считаем: ' + (st.count + 1);
+    var arrowAria = complete
+      ? 'Все игрушки посчитаны. Теперь выбери цифру: ' + st.sequence.length + '.'
+      : 'Считаем дальше: нажми, чтобы открыть и посчитать ' + (st.count + 1) + '.';
+
+    var stage = '' +
+      '<p><strong>' + esc(round.prompt) + '</strong></p>' +
+      '<div class="shelf" role="group" aria-label="Игрушки на полке">' + slots + '</div>' +
+      '<div class="counter-panel">' +
+        '<button class="arrow-btn" data-action="count-tap" data-focus-key="count-tap" ' +
+          'aria-label="' + esc(arrowAria) + '"' + (complete ? ' aria-disabled="true"' : '') + '>' +
+          '<svg viewBox="0 0 100 100" width="34" height="34" aria-hidden="true" focusable="false">' +
+            '<circle cx="50" cy="50" r="44" fill="#FFFFFF" opacity=".25"/>' +
+            '<path d="M26 50 H68 M54 32 L74 50 L54 68" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '</svg>' +
+          esc(arrowLabel) +
+        '</button>' +
+        '<div class="num-row" role="group" aria-label="Сколько игрушек">' + numBtns + '</div>' +
+      '</div>' +
+      '<div class="toy-picker">' +
+        '<span class="foot-note">Можно собрать свою коллекцию:</span>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="1" data-focus-key="set-1">1 игрушка</button>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="2" data-focus-key="set-2">2 игрушки</button>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="3" data-focus-key="set-3">3 игрушки</button>' +
+      '</div>';
+
+    return activityShell(
+      'counting-heading',
+      C.ACTIVITY_META.counting.title,
+      'Шаг ' + (S.countRound + 1) + ' из ' + rounds.length,
+      stage,
+      activityControls('<button class="btn btn-plain" data-action="count-reset" data-focus-key="count-reset">Считать заново</button>' + fewerNote())
+    );
+  }
+
+  /* -------------------------------------------------- завершение одного шага --- */
+  function screenActivityDone() {
+    var id = S.finishedActivity || S.activity;
+    var meta = C.ACTIVITY_META[id] || C.ACTIVITY_META.shapes;
+    var nextId = null;
+    for (var i = 0; i < C.ACTIVITY_ORDER.length; i++) {
+      if (!(S.progress.done && S.progress.done[C.ACTIVITY_ORDER[i]])) { nextId = C.ACTIVITY_ORDER[i]; break; }
+    }
+    return '' +
+      '<div class="wrap stack">' +
+        '<section class="card">' +
+          '<div class="done-hero">' +
+            '<svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true" focusable="false">' +
+              '<circle cx="50" cy="50" r="42" fill="#146B3A"/>' +
+              '<path d="M28 52 L44 68 L72 34" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+            '<div style="flex:1 1 260px">' +
+              '<h1 id="activity-done-heading">Занятие «' + esc(meta.title) + '» закончено</h1>' +
+              '<p>Получилось. Можно пройти это занятие ещё раз — задания те же, а порядок другой.</p>' +
+              '<p class="foot-note">Следующая практика без экрана: ' + esc(meta.suggest) + '</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="btn-row" style="margin-top:18px">' +
+            (nextId
+              ? '<button class="btn btn-leaf" data-action="open-activity" data-activity="' + nextId + '" data-focus-key="next-activity">Следующее занятие: ' + esc(C.ACTIVITY_META[nextId].title) + '</button>'
+              : '<button class="btn btn-leaf" data-action="goto-done" data-focus-key="to-summary">Итог занятия</button>') +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="' + id + '" data-reset="1">Пройти ещё раз</button>' +
+            '<button class="btn btn-plain" data-action="goto-home">Все занятия</button>' +
+          '</div>' +
+        '</section>' +
+        footer() +
+      '</div>';
+  }
+
+  function screenDone() {
+    var total = C.ACTIVITY_ORDER.length;
+    var done = C.completedCount(S.progress);
+    var list = C.ACTIVITY_ORDER.map(function (id) {
+      var ok = !!(S.progress.done && S.progress.done[id]);
+      return '<li><span class="done-tick' + (ok ? '' : ' is-off') + '" aria-hidden="true">' + (ok ? '✓' : '·') + '</span>' +
+        '<span>' + esc(C.ACTIVITY_META[id].title) + ' — ' + (ok ? 'получилось' : 'можно попробовать в другой раз') + '</span></li>';
+    }).join('');
+    return '' +
+      '<div class="wrap stack">' +
+        '<section class="card">' +
+          '<div class="done-hero">' +
+            '<svg viewBox="0 0 120 120" width="110" height="110" aria-hidden="true" focusable="false">' +
+              '<circle cx="60" cy="64" r="40" fill="#A87D00" opacity=".22"/>' +
+              '<circle cx="60" cy="64" r="28" fill="#146B3A"/>' +
+              '<path d="M44 64 L56 76 L78 50" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+            '<div style="flex:1 1 300px">' +
+              '<h1 id="done-heading">Занятие закончено</h1>' +
+              '<p>Пройдено ' + done + ' из ' + total + '. Это не оценка, а отметка о том, что уже пробовали. Страницу можно закрыть и вернуться позже — прогресс сохранится в этом браузере.</p>' +
+            '</div>' +
+          '</div>' +
+          '<h2>Что было</h2>' +
+          '<ul class="done-list">' + list + '</ul>' +
+          '<h2 style="margin-top:18px">Следующая практика</h2>' +
+          '<p>' + esc(C.nextPractice(S.progress)) + '</p>' +
+          '<div class="btn-row" style="margin-top:16px">' +
+            '<button class="btn btn-leaf" data-action="goto-home" data-focus-key="back-home">Вернуться к занятиям</button>' +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="counting" data-reset="1">Ещё раз посчитать</button>' +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="shapes" data-reset="1">Ещё раз про формы</button>' +
+            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым</button>' +
+            '<button class="btn btn-plain" data-action="reset-progress" data-focus-key="reset-progress">Сбросить прогресс</button>' +
+          '</div>' +
+        '</section>' +
+        footer() +
+      '</div>';
+  }
+
+  /* -------------------------------------------------------------- взрослым --- */
+  function grownupPanel() {
+    if (!S.grownupOpen) { return ''; }
+    return '' +
+      '<section class="grownup no-print" aria-labelledby="grownup-heading">' +
+        '<h2 id="grownup-heading">Взрослым</h2>' +
+        '<p>Занятие рассчитано на 4–6 минут: три активности по 1–3 минуты. Остановиться раньше — нормально, занятие ничего не «проваливает».</p>' +
+        '<div class="facts">' +
+          '<div class="fact"><h3>Меньше вариантов</h3>' +
+            '<p>Если ребёнку пока трудно выбирать из трёх, включите режим с двумя вариантами и двумя полянками — задания останутся теми же.</p>' +
+            '<button class="btn btn-plain" data-action="toggle-fewer" data-focus-key="fewer" aria-pressed="' + (S.fewerChoices ? 'true' : 'false') + '">' +
+              (S.fewerChoices ? 'Вернуть три варианта' : 'Оставить два варианта') + '</button>' +
+          '</div>' +
+          '<div class="fact"><h3>Звук и речь</h3>' +
+            '<p>Звук выключен, пока взрослый не включит его кнопкой в шапке. Голос браузера может быть недоступен — тогда занятие идёт молча, и всё важное написано словами на экране.</p>' +
+          '</div>' +
+          '<div class="fact"><h3>Что сохраняется</h3>' +
+            '<p>' + (storage.ok
+              ? 'В этом браузере сохраняются только отметки о пройденных занятиях и выбранное число игрушек. Ни имён, ни аналитики, ни запросов в сеть.'
+              : 'Сохранение в браузере недоступно, поэтому отметки живут только до закрытия страницы.') + '</p>' +
+            '<button class="btn btn-plain" data-action="reset-progress">Сбросить прогресс</button>' +
+          '</div>' +
+          '<div class="fact"><h3>Доступность</h3>' +
+            '<ul>' +
+              '<li>У каждой фигуры и кнопки есть номер и словесное название, поэтому задания не зависят от цветового зрения.</li>' +
+              '<li>Всё управляется клавиатурой: Tab, Enter, пробел, стрелки внутри группы. Фокус всегда видно.</li>' +
+              '<li>Анимация уважает системную настройку «уменьшить движение».</li>' +
+              '<li>Никаких миганий, таймеров и авто-звука.</li>' +
+            '</ul>' +
+          '</div>' +
+        '</div>' +
+        '<div class="btn-row" style="margin-top:16px">' +
+          '<button class="btn btn-plain" data-action="goto-start">Сначала</button>' +
+          '<button class="btn btn-plain" data-action="goto-home">К занятиям</button>' +
+          '<button class="btn btn-plain" data-action="toggle-grownup">Свернуть</button>' +
+        '</div>' +
+      '</section>';
+  }
+
+  /* ------------------------------------------------------------- рендеринг --- */
+  function render() {
+    var body;
+    if (S.screen === 'start') { body = screenStart(); }
+    else if (S.screen === 'home') { body = screenHome(); }
+    else if (S.screen === 'activity' && S.activity === 'shapes') { body = screenShapes(); }
+    else if (S.screen === 'activity' && S.activity === 'sorting') { body = screenSorting(); }
+    else if (S.screen === 'activity' && S.activity === 'counting') { body = screenCounting(); }
+    else if (S.screen === 'activity-done') { body = screenActivityDone(); }
+    else if (S.screen === 'done') { body = screenDone(); }
+    else { body = screenHome(); }
+
+    var prev = document.activeElement;
+    var prevKey = prev && prev.getAttribute ? prev.getAttribute('data-focus-key') : null;
+    var prevId = prev && prev.id ? prev.id : null;
+
+    app.innerHTML = '' +
+      '<a class="skip-link no-print" href="#main-content">Перейти к занятию</a>' +
+      topbar() +
+      '<main id="main-content" class="' + (S.textSize === 'large' ? 'text-large' : '') + '">' + body + '</main>' +
+      grownupPanel();
+
+    G.updateStorageNote();
+    applyTextSize();
+    restoreFocus(prevKey, prevId);
+  }
+
+  function applyTextSize() {
+    document.documentElement.style.fontSize = S.textSize === 'large' ? '21.5px' : '';
+  }
+
+  /* Возврат фокуса: явная цель → прежний элемент → осмысленный сосед. */
+  function restoreFocus(prevKey, prevId) {
+    var target = null;
+    if (S.focusTarget) {
+      target = el(S.focusTarget);
+    }
+    S.focusTarget = null;
+    if (!target && prevId) { target = el(prevId); }
+    if (!target && prevKey) { target = app.querySelector('[data-focus-key="' + prevKey + '"]'); }
+    if (!target) { target = app.querySelector('[data-focus-key]'); }
+
+    /* Внутри полянок и рядов цифр приоритет — сама группа. */
+    var groupFocus = app.querySelector('.num-row') || null;
+    if (target && !isUsable(target) && groupFocus) { target = groupFocus; }
+    if (!target || !isUsable(target)) { return; }
+    try { target.focus({ preventScroll: true }); } catch (e) { try { target.focus(); } catch (e2) {} }
+  }
+
+  function isUsable(node) {
+    return !!(node && node.isConnected && !node.disabled && node.getClientRects && node.getClientRects().length > 0);
+  }
+
+  /* Контракт со слоем состояния (первый блок скрипта): он вызывает render()
+     по имени, а этот блок подставляет сюда свою реализацию. */
+  G.render = render;
+
+  /* -------------------------------------------------------------- действия --- */
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest('[data-action]') : null;
+    if (!btn) { return; }
+    var action = btn.getAttribute('data-action');
+    var ariaOff = btn.getAttribute('aria-disabled') === 'true';
+
+    switch (action) {
+      case 'begin':
+        G.go('#activity-1');
+        break;
+      case 'goto-start':
+        G.go('#start');
+        break;
+      case 'goto-home':
+        G.go('#home');
+        break;
+      case 'goto-done':
+        G.go('#done');
+        break;
+      case 'toggle-sound':
+        var wasOn = Sound.isEnabled();
+        S.soundOn = Sound.setEnabled(!wasOn);
+        if (S.soundOn) { Sound.play('step'); } else { Sound.stopSpeaking(); }
+        render();
+        announce(S.soundOn
+          ? 'Звук включён. Занятие говорит вслух и всё важное дублирует словами на экране.'
+          : 'Звук выключен. Всё занятие работает без звука.');
+        break;
+      case 'toggle-grownup':
+        S.grownupOpen = !S.grownupOpen;
+        render();
+        break;
+      case 'text-size':
+        S.textSize = S.textSize === 'large' ? 'normal' : 'large';
+        render();
+        break;
+      case 'toggle-fewer':
+        S.fewerChoices = !S.fewerChoices;
+        if (S.activity === 'shapes') { S.shapeRound = 0; G.initShapeActivity({}); }
+        if (S.activity === 'sorting') { S.sortRound = 0; G.initSortActivity({}); }
+        if (S.activity === 'counting') { S.countRound = 0; G.initCountActivity({}); }
+        render();
+        announce(S.fewerChoices
+          ? 'Режим с двумя вариантами включён. Задания те же, выборов меньше.'
+          : 'Снова по три варианта.');
+        break;
+      case 'open-activity':
+        openActivityByButton(btn);
+        break;
+      case 'open-next':
+        var nextId = null;
+        for (var i = 0; i < C.ACTIVITY_ORDER.length; i++) {
+          if (!(S.progress.done && S.progress.done[C.ACTIVITY_ORDER[i]])) { nextId = C.ACTIVITY_ORDER[i]; break; }
+        }
+        G.go('#activity-' + (C.ACTIVITY_ORDER.indexOf(nextId || C.ACTIVITY_ORDER[0]) + 1));
+        break;
+      case 'demo':
+        if (S.activity === 'shapes') { G.playShapeDemo(); }
+        else if (S.activity === 'sorting') { G.playSortDemo(); }
+        else if (S.activity === 'counting') { G.initCountActivity({ playDemo: true }); render(); }
+        break;
+      case 'hint':
+        if (S.activity === 'shapes') { G.showShapeHint(); }
+        else if (S.activity === 'sorting') { showSortHint(); }
+        else if (S.activity === 'counting') { showCountHint(); }
+        break;
+      case 'restart-activity':
+        if (S.activity === 'shapes') { S.shapeRound = 0; G.openActivity('shapes', { reset: true, focus: true }); }
+        else if (S.activity === 'sorting') { S.sortRound = 0; G.openActivity('sorting', { reset: true, focus: true }); }
+        else if (S.activity === 'counting') { S.countRound = 0; G.openActivity('counting', { reset: true, focus: true }); }
+        break;
+      case 'answer-shape':
+        G.answerShape(parseInt(btn.getAttribute('data-index'), 10));
+        break;
+      case 'select-piece':
+        G.selectPiece(btn.getAttribute('data-item'));
+        break;
+      case 'drop':
+        G.dropInto(btn.getAttribute('data-group'));
+        break;
+      case 'count-tap':
+        if (ariaOff) { announce('Все игрушки посчитаны. Выбери цифру под полкой.'); }
+        else { G.countTap(); }
+        break;
+      case 'count-reset':
+        G.resetCounting();
+        break;
+      case 'set-count':
+        setCount(parseInt(btn.getAttribute('data-count'), 10));
+        break;
+      case 'answer-count':
+        if (ariaOff) { announce('Сначала посчитай игрушки: нажми кнопку со стрелкой.'); }
+        else { G.answerCount(parseInt(btn.getAttribute('data-number'), 10)); }
+        break;
+      case 'reset-progress':
+        doResetProgress();
+        break;
+    }
+  });
+
+  function openActivityByButton(btn) {
+    var aid = btn.getAttribute('data-activity');
+    var reset = btn.getAttribute('data-reset') === '1';
+    var hash = '#activity-' + (C.ACTIVITY_ORDER.indexOf(aid) + 1);
+    if (reset) {
+      if (aid === 'shapes') { S.shapeRound = 0; }
+      if (aid === 'sorting') { S.sortRound = 0; }
+      if (aid === 'counting') { S.countRound = 0; }
+      G.openActivity(aid, { reset: true, focus: true, silent: false });
+      if (window.location.hash !== hash) {
+        try { window.history.replaceState(null, '', hash); } catch (e) { window.location.hash = hash; }
+      }
+    } else {
+      G.go(hash);
+    }
+  }
+
+  /* Клавиатура: стрелки внутри групп вариантов, полянок и цифр.
+     Enter и пробел работают штатно, потому что все элементы — <button>. */
+  document.addEventListener('keydown', function (ev) {
+    if (!ev.target || !ev.target.closest) { return; }
+    var group = ev.target.closest('[role="group"]');
+    if (!group) { return; }
+    var key = ev.key;
+    if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].indexOf(key) === -1) { return; }
+    var items = Array.prototype.slice.call(group.querySelectorAll('button:not([aria-disabled="true"])'));
+    var idx = items.indexOf(ev.target);
+    if (idx === -1) { return; }
+    ev.preventDefault();
+    var nextIdx = idx;
+    if (key === 'ArrowRight' || key === 'ArrowDown') { nextIdx = (idx + 1) % items.length; }
+    if (key === 'ArrowLeft' || key === 'ArrowUp') { nextIdx = (idx - 1 + items.length) % items.length; }
+    if (key === 'Home') { nextIdx = 0; }
+    if (key === 'End') { nextIdx = items.length - 1; }
+    items[nextIdx].focus();
+  });
+
+  /* ------------------------------------------------------------ объявления --- */
+  function announce(text) {
+    var box = el('polite-news');
+    if (!box) { return; }
+    box.textContent = '';
+    window.setTimeout(function () { box.textContent = text; }, 30);
+  }
+
+  function showSortHint() {
+    var rounds = G.activeSortRoundsValue();
+    var round = rounds[S.sortRound];
+    if (!round || !S.sortState) { return; }
+    var item = C.firstRemaining(S.sortState);
+    var text;
+    if (!item) {
+      text = 'Все фигуры уже разложены.';
+    } else if (round.mode === 'shape') {
+      text = 'Подсказка: у этой фигуры ' + C.SHAPE_HINTS[item.shape] + ' — значит, её полянка «' + C.expectedGroupLabel(round, item) + '».';
+    } else {
+      var c = C.colorOf(item.color);
+      text = 'Подсказка: эта фигура ' + c.label + ' цвета и ' + C.shapeOf(item.shape).label + ' — её полянка «' +
+        C.expectedGroupLabel(round, item) + '».';
+    }
+    S.sortFeedback = { kind: 'care', text: text, sub: 'Можно нажать на подсказанную полянку — попытки не ограничены.' };
+    Sound.play('hint');
+    Sound.say(text);
+    G.setAnnounce(text, 'focus');
+    render();
+  }
+
+  function showCountHint() {
+    if (!S.countState) { return; }
+    var complete = C.isCountComplete(S.countState);
+    var text = complete
+      ? 'Все игрушки посчитаны. Их ' + S.countState.sequence.length + '. Нажми на цифру ' + S.countState.sequence.length + '.'
+      : 'Считаем по одной: нажми на кнопку со стрелкой, это будет ' + Math.min(S.countState.count + 1, S.countState.sequence.length) + '.';
+    S.countFeedback = { kind: 'care', text: text, sub: 'Считать можно сколько угодно раз.' };
+    Sound.play('hint');
+    Sound.say(text);
+    G.setAnnounce(text, 'focus');
+    render();
+  }
+
+  function setCount(n) {
+    if (!S.countState) { return; }
+    S.countState = C.createCountState(C.clampCount(n));
+    S.countAnswerNeeded = false;
+    S.countFeedback = {
+      kind: 'idle',
+      text: 'Собрали коллекцию из ' + S.countState.sequence.length + '. Теперь посчитаем её по одной.'
+    };
+    Sound.play('step');
+    G.setAnnounce(S.countFeedback.text, 'focus');
+    render();
+  }
+
+  function doResetProgress() {
+    storage.clear();
+    S.progress = C.createProgress();
+    S.grownupOpen = false;
+    Sound.stopSpeaking();
+    G.showStart({ focus: true });
+    announce('Прогресс сброшен. Занятие начинается с чистого листа.');
+  }
+
+  /* ------------------------------------------------------------ инициализация --- */
+  (function boot() {
+    var live = document.createElement('div');
+    live.id = 'polite-news';
+    live.className = 'sr-only';
+    live.setAttribute('role', 'status');
+    live.setAttribute('aria-live', 'polite');
+    document.body.appendChild(live);
+
+    /* Все экраны уже определены выше, поэтому загрузку можно запускать. */
+    G.bootFromHash();
+  }());
+}());
+</script>
+</body>
+</html>

@@ -23,7 +23,7 @@
   --sky-ink:#07405F;
   --leaf:#1F6B3A;
   --leaf-bg:#E4F4E7;
-  --sun:#B86A00;
+  --sun:#8F5200;
   --sun-bg:#FFF1D6;
   --plum:#7A2E6E;
   --plum-bg:#F7E7F4;
@@ -110,9 +110,8 @@ button{font:inherit;color:inherit}
 .btn.secondary:hover{background:#EFF6FC}
 .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:none;font-weight:700}
 .btn.ghost:hover{background:#F1F6FB}
-.btn.warm{background:var(--sun);border-color:#7E4A00;box-shadow:0 3px 0 rgba(126,74,0,.5)}
-.btn.warm:hover{background:#96560
-0}
+.btn.warm{background:var(--sun);border-color:#5A3300;box-shadow:0 3px 0 rgba(90,51,0,.5)}
+.btn.warm:hover{background:#6E3F00}
 .btn.good{background:var(--leaf);border-color:#144726;box-shadow:0 3px 0 rgba(20,71,38,.5)}
 .btn.good:hover{background:#17512C}
 .btn[disabled]{opacity:.55;cursor:not-allowed}
@@ -124,18 +123,20 @@ button{font:inherit;color:inherit}
 @media (min-width:900px){
   .work.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
 }
-.panel{border:3px dashed var(--line);border-radius:var(--radius);padding:12px;background:#FCFDFF}
+/* Панель — элемент сетки: без min-width:0 её собственная минимальная ширина
+   (длинные подписи, ряд предметов, таблица) распирала узкий экран. */
+.panel{border:3px dashed var(--line);border-radius:var(--radius);padding:12px;background:#FCFDFF;min-width:0}
 .panel>.panel-title{margin:0 0 8px;font-size:.9rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
 
 /* ---------- ten-frame ---------- */
 .frame-wrap{display:flex;flex-direction:column;gap:10px;align-items:center}
 .ten-frame{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;
   background:#EAF1F8;border:4px solid var(--line-strong);border-radius:14px;padding:8px;
-  width:100%;max-width:520px;
+  width:100%;max-width:520px;min-width:0;
 }
 .slot{
-  position:relative;aspect-ratio:1/1;min-width:44px;min-height:44px;
+  position:relative;aspect-ratio:1/1;width:100%;min-width:0;min-height:0;
   border:3px solid var(--line-strong);border-radius:12px;background:#fff;
   cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;
   transition:background .12s ease,border-color .12s ease;
@@ -176,11 +177,19 @@ button{font:inherit;color:inherit}
 /* ---------- история ---------- */
 .story-stage{
   background:#F6FAFF;border:3px solid var(--line);border-radius:14px;padding:12px;
-  display:flex;flex-direction:column;gap:10px;
+  display:flex;flex-direction:column;gap:10px;width:100%;max-width:100%;min-width:0;
 }
-.glyph-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;min-height:70px}
+/* Ряд предметов истории. Обычная flex-строка с переносом и предметами фиксированного
+   размера: у grid-вариантов (auto-fill, а также repeat(5, minmax(0,1fr))) квадратные
+   предметы задавали собственную минимальную ширину, из-за которой ряд распирал узкий
+   экран и появлялась горизонтальная прокрутка. */
+.glyph-row{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;
+  width:100%;max-width:100%;min-width:0;
+}
 .glyph{
-  width:64px;height:64px;border-radius:14px;border:3px solid var(--line-strong);background:#fff;
+  flex:0 0 auto;width:76px;height:76px;min-width:0;border-radius:14px;
+  border:3px solid var(--line-strong);background:#fff;
   display:flex;align-items:center;justify-content:center;padding:2px;cursor:pointer;
 }
 .glyph svg{width:80%;height:80%}
@@ -265,7 +274,13 @@ summary{font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:
   .btn{padding:12px 16px;flex:1 1 auto}
   .btn-row{gap:8px}
   .equation{font-size:1.35rem;padding:10px}
-  .glyph{width:56px;height:56px}
+  .glyph-row{gap:5px}
+  .glyph{width:60px;height:60px}
+  /* На узком экране пять гнёзд по 44px не помещаются в 360px: рамка ужимается,
+     но остаётся полной — все десять гнёзд видны без горизонтальной прокрутки. */
+  .ten-frame{gap:5px;padding:6px;border-width:3px}
+  .slot{min-width:0;min-height:0;border-width:3px}
+  .slot .idx-tag{display:none}
   .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .table-scroll table{min-width:420px}
 }
@@ -1087,7 +1102,14 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
 
   var a1 = { tab:0, target:3, flags:[], demoStep:0, solved:[] };
   var a2 = { tab:0, round:0, plan:C.bondRoundPlan(), flags:[], start:6, chosen:null, note:"" };
-  var a3 = { step:0, index:0, bank:null, marked:0, pool:[], chosen:null };
+  var a3 = { step:0, index:0, bank:null, marked:0, pool:[], picked:new Array(10).fill(false), chosen:null,
+             // picked[] — какие предметы взяты в пуле (у каждого своё состояние),
+             // syncPicked() приводит его в соответствие с количеством marked.
+             syncPicked:function(){
+               var total = this.problem ? this.problem.initial + this.problem.operand : 0;
+               if (this.picked.length !== total) this.picked = new Array(total).fill(false);
+               for (var i = 0; i < total; i++) this.picked[i] = i < this.marked;
+             } };
   var a4 = { finale:null, flags:[], chosen:null, removeSolved:false };
 
   function $(id){ return document.getElementById(id); }
@@ -1115,7 +1137,9 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
   }
 
   /* ---------- продвижение ---------- */
+  var storageBlocked = false;
   function loadProgress(){
+    if (storageBlocked) return;
     try{
       var raw = window.localStorage.getItem(STORE_KEY);
       if (!raw) return;
@@ -1126,9 +1150,10 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
         if (Array.isArray(data.storiesSolved)) state.storiesSolved = data.storiesSolved;
         if (data.scaffold === "less" || data.scaffold === "more") state.scaffold = data.scaffold;
       }
-    } catch (e) { /* приватный режим — просто без сохранения */ }
+    } catch (e) { storageBlocked = true; }
   }
   function saveProgress(){
+    if (storageBlocked) return;
     try{
       window.localStorage.setItem(STORE_KEY, JSON.stringify({
         done:state.done, bonds:state.bonds, storiesSolved:state.storiesSolved, scaffold:state.scaffold
@@ -1297,47 +1322,52 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     [0,1,2].forEach(function(i){
       var t = $("a1tab" + i);
       t.setAttribute("aria-selected", i === a1.tab ? "true" : "false");
-      t.onclick = function(){ a1.tab = i; a1StartRound(true); };
+      t.onclick = function(){ a1.tab = i; a1StartRound(); };
     });
   }
-  function a1StartRound(redrawOnly){
-    if (a1.tab === 0){ a1DemoStart(); return; }
+  function a1StartRound(){
+    a1.fixed = new Array(C.FRAME_SIZE).fill(false);
+    a1.demoStep = 0;
+    a1.flags = new Array(C.FRAME_SIZE).fill(false);
+    $("a1Next").textContent = (a1.tab === 2) ? "Дальше: упражнение 2" : "Продолжить";
+    if (a1.tab === 0){
+      a1.target = 3;
+      a1Render("Показ", "Нажимай на подсвеченное гнездо — так мы вместе посадим три светлячка и увидим число 3.");
+      return;
+    }
     if (a1.tab === 1){
-      a1.target = 4; a1.flags = a1.flags.length ? a1.flags : [];
-      if (!redrawOnly) a1.flags = new Array(C.FRAME_SIZE).fill(false);
-      a1Render("Вместе", "Смотри: я закрасил первые два гнезда. Дальше — твой ход: нажми на третье гнездо.");
+      // Первые два гнезда заполняет взрослый: они только для показа и не снимаются.
+      a1.target = 4;
+      a1.flags[0] = true;
+      a1.flags[1] = true;
+      a1.fixed[0] = true;
+      a1.fixed[1] = true;
+      a1Render("Вместе", "Первые два светлячка я уже посадил — убери их нельзя. Твой ход: нажми на третье и четвёртое гнездо, чтобы стало четыре.");
       return;
     }
     a1.target = 7;
-    if (!redrawOnly) a1.flags = new Array(C.FRAME_SIZE).fill(false);
-    a1Render("Сам", "Собери ровно семь сам. Подсказка есть, но она появится только по кнопке.");
-    a1NextAfterRound("Сам");
-  }
-  function a1DemoStart(){
-    a1.demoStep = 0;
-    a1.target = 3;
-    a1.flags = new Array(C.FRAME_SIZE).fill(false);
-    a1Render("Показ", "Нажимай на подсвеченное гнездо — так мы вместе посадим три светлячка и увидим число 3.");
+    a1Render("Сам", "Собери ровно семь сам. Кнопка «Подсказка» рядом, но она появится не сама.");
   }
   function a1Render(modeTitle, intro){
-    var h = [];
-    if (state.scaffold === "more") h = [0,1];
+    var highlight = [];
+    if (state.scaffold === "more"){
+      if (a1.tab === 0) highlight = [C.countOf(a1.flags)];
+      if (a1.tab === 1) highlight = [2, 3];
+    }
     drawFrame($("a1Frame"), {
-      flags:a1.flags, highlight:h, ariaLabel:"Рамка упражнения 1, из десяти гнёзд",
+      flags:a1.flags, fixed:a1.fixed, highlight:highlight,
+      ariaLabel:"Рамка упражнения 1, из десяти гнёзд",
       onToggle:function(i){
+        if (a1.fixed[i]) return;
         a1.flags[i] = !a1.flags[i];
-        if (a1.tab === 0){
+        if (a1.tab === 0 && a1.flags[i]){
           a1.demoStep++;
-          if (a1.demoStep === 1) setFeedback("a1Feedback", "info", "Смотри", "Первый светлячок на месте. Считаем: один.");
-          else if (a1.demoStep === 2) setFeedback("a1Feedback", "info", "Смотри", "Второй светлячок. Считаем: два.");
-          else if (a1.demoStep === 3) setFeedback("a1Feedback", "info", "Смотри", "Третий светлячок. В рамке «3» — три. Число 3 и три светлячка — это одно и то же.");
+          setFeedback("a1Feedback", "info", "Смотри",
+            a1.demoStep === 1 ? "Первый светлячок на месте. Считаем: один." :
+            a1.demoStep === 2 ? "Второй светлячок. Считаем: два." :
+            "Третий светлячок. В рамке «3» — три. Число 3 и три светлячка — это одно и то же.");
         }
-        a1UpdateReadout();
-        drawFrame($("a1Frame"), {
-          flags:a1.flags, highlight:(state.scaffold === "more" && a1.tab === 0) ? [C.countOf(a1.flags)] : [],
-          ariaLabel:"Рамка упражнения 1, из десяти гнёзд",
-          onToggle:function(j){ a1.flags[j] = !a1.flags[j]; a1UpdateReadout(); a1Render(modeTitle, intro); }
-        });
+        a1Render(modeTitle, intro);
       }
     });
     a1UpdateReadout();
@@ -1362,13 +1392,10 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     setFeedback("a1Feedback", r.kind, r.title, r.body);
     say(r.title + ". " + r.body);
     if (r.ok){
-      a1.solved.push(a1.target);
-      if (a1.tab === 2){ markDone("activity1"); a1NextLabel("Дальше: упражнение 2"); }
-      else a1NextLabel("Продолжить");
+      if (a1.solved.indexOf(a1.target) === -1) a1.solved.push(a1.target);
+      $("a1Next").textContent = (a1.tab === 2) ? "Дальше: упражнение 2" : "Продолжить";
     }
   }
-  function a1NextLabel(t){ $("a1Next").textContent = t; }
-  function a1NextAfterRound(){ }
   function a1Hint(){
     var s = C.hintForCount(a1.target, a1.flags);
     setFeedback("a1Feedback", "hint", "Подсказка", s);
@@ -1542,7 +1569,10 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     var p = a3.bank[a3.index];
     a3.problem = p;
     a3.step = 0;
+    // В начале истории ничего не выложено: пул пустой, ряд пустой — предметы
+    // ребёнок добавляет сам, поэтому счётчик и признаки состояния всегда согласованы.
     a3.marked = 0;
+    a3.picked = new Array(p.initial + p.operand).fill(false);
     a3.chosen = null;
     a3Render();
   }
@@ -1553,19 +1583,21 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     var steps = C.storySteps(p);
     $("a3StepNote").textContent = steps[a3.step].text;
     $("a3FrameCaption");
-    // ряд «в истории»
+    // ряд «в истории» — строится из тех же данных, что и пул (a3.picked),
+    // поэтому количество в ряду и в подписях не может разойтись.
     var items = $("a3Items");
     items.textContent = "";
     var total = p.initial + p.operand;
+    if (a3.picked.length !== total) a3.picked = new Array(total).fill(false);
     for (var i = 0; i < total; i++){
       var cell = el("button", "glyph");
       cell.type = "button";
       var isNew = (p.kind === "add" && i >= p.initial);
       var stateName;
       if (p.kind === "add"){
-        stateName = (i < a3.marked) ? (isNew ? "new" : "out") : "out";
+        stateName = a3.picked[i] ? (isNew ? "new" : "out") : "out";
       } else {
-        stateName = (i < a3.marked) ? "out" : "gone";
+        stateName = a3.picked[i] ? "out" : "gone";
       }
       cell.setAttribute("data-state", stateName);
       cell.innerHTML = C.ICONS[p.icon];
@@ -1578,29 +1610,32 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       })(i);
       items.appendChild(cell);
     }
+    $("a3Moved").textContent = String(C.countOf(a3.picked));
+    // a3.marked — только зеркало для модели: единственный источник правды это a3.picked.
+    a3.marked = C.countOf(a3.picked);
     var info = C.movedInfo(p, a3.step);
     $("a3ItemsNote").textContent = info.note;
-    // пул предметов
+    // пул предметов: у каждого предмета своё состояние «взят / не взят».
+    // Считаем именно выбранные, а не «первые N»: иначе снятие одного предмета
+    // в середине ряда сдвигало весь ряд и сбивало количество.
     var pool = $("a3Pool");
     pool.textContent = "";
     for (var j = 0; j < total; j++){
       var pcell = el("button", "glyph");
       pcell.type = "button";
-      pcell.setAttribute("data-state", j < a3.marked ? "out" : "gone");
+      var taken = !!a3.picked[j];
+      pcell.setAttribute("data-state", taken ? "out" : "gone");
       pcell.innerHTML = C.ICONS[p.icon];
       pcell.appendChild(el("span", "badge", String(j + 1)));
-      pcell.setAttribute("aria-label", wordF(j + 1) + " " + p.item + (j < a3.marked ? " — отмечен, нажми, чтобы вернуть" : " — не отмечен, нажми, чтобы отметить"));
+      pcell.setAttribute("aria-label", wordF(j + 1) + " " + p.item + (taken ? " — в истории, нажми, чтобы убрать" : " — ещё не в истории, нажми, чтобы добавить"));
       pcell.onclick = (function(idx){
-        return function(){
-          if (idx < a3.marked) a3.marked = idx;
-          else a3.marked = idx + 1;
-          a3Render();
-        };
+        return function(){ a3TogglePool(idx); };
       })(j);
       pool.appendChild(pcell);
-      if (j === a3.marked - 1) pcell.setAttribute("data-highlight", "true");
+      if (j === C.countOf(a3.picked) - 1) pcell.setAttribute("data-highlight", "true");
     }
     $("a3Moved").textContent = String(a3.marked);
+    $("a3Moved").textContent = String(C.countOf(a3.picked));
     var eq = $("a3Equation");
     eq.textContent = p.kind === "add"
       ? p.initial + " + " + p.operand + " = ?"
@@ -1633,9 +1668,16 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     $("a3Next").textContent = (a3.tab === 0) ? "Дальше: задачи" : "Следующая история";
   }
   function a3Toggle(i){
-    var p = a3.problem;
-    // i — индекс предмета; отмечено становится i+1 предметов (или i, если нажали на уже отмеченный последним)
-    a3.marked = (i + 1 === a3.marked) ? i : (i + 1);
+    // Ряд «в истории» показывает первые i+1 предметов: так выглядит модель истории.
+    // Нажатие на последний отмеченный предмет возвращает его обратно.
+    var want = (i + 1 === C.countOf(a3.picked)) ? i : (i + 1);
+    for (var k = 0; k < a3.picked.length; k++) a3.picked[k] = k < want;
+    a3.chosen = null;
+    a3Render();
+  }
+  function a3TogglePool(j){
+    // У каждого предмета пула своё состояние: снятие одного не сдвигает остальные.
+    a3.picked[j] = !a3.picked[j];
     a3.chosen = null;
     a3Render();
   }
@@ -1649,23 +1691,34 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       return;
     }
     if (r.pending === "equation"){
-      setFeedback("a3Feedback", "try", r.title, r.body);
+      // Предметы выложены верно, но запись ещё не подходит (или не выбрана).
+      setFeedback("a3Feedback", "try", r.title,
+        r.body + " Запись внизу можно менять сколько угодно раз.");
       a3Render();
       return;
     }
+    // Запись верна и предметы на месте: показываем подтверждение,
+    // а переход к следующему шагу делает кнопка «Проверить» (или нажатие
+    // этой же записи ещё раз) — так у ребёнка есть время прочитать объяснение.
     setFeedback("a3Feedback", "ok", r.title, r.body);
-    say(r.title);
-    if (state.storiesSolved.indexOf(p.id) === -1){
-      state.storiesSolved.push(p.id);
-      saveProgress();
+    say(r.title + ". " + r.body);
+    if (a3.step === 0){
+      a3.step = 1;
+      a3Render();
+      setFeedback("a3Feedback", "ok", r.title,
+        r.body + " Это был первый шаг. Теперь история продолжается: " + C.storySteps(p)[1].text);
+    } else {
+      if (state.storiesSolved.indexOf(p.id) === -1){
+        state.storiesSolved.push(p.id);
+        saveProgress();
+      }
+      if (a3.index >= a3.bank.length - 1){
+        markDone("activity3");
+        markDone("activity4");
+        $("a3Next").textContent = "Дальше: новое задание";
+      }
+      a3Render();
     }
-    a3.chosen = p.right;
-    if (a3.index >= a3.bank.length - 1){
-      markDone("activity3");
-      markDone("activity4");
-      $("a3Next").textContent = "Дальше: новое задание";
-    }
-    a3Render();
   }
   function a3Check(){
     var p = a3.problem;
@@ -1877,8 +1930,10 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
      ========================================================================== */
   function init(){
     state.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    loadProgress();
-    $("sumStorageNote").textContent = "Продвижение хранится только в этом браузере (localStorage).";
+    // Продвижение не обязательно: при запрете localStorage (приватный режим, песочница,
+    // документ без источника) приложение обязано работать дальше, просто без сохранения.
+    try{ loadProgress(); } catch (e) { storageBlocked = true; }
+    try{ $("sumStorageNote").textContent = "Продвижение хранится только в этом браузере (localStorage)."; } catch (e) {}
 
     if (!speechOk){
       $("btnSound").disabled = true;
@@ -1905,7 +1960,12 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       state.bonds = []; state.storiesSolved = [];
       a1 = { tab:0, target:3, flags:[], demoStep:0, solved:[] };
       a2 = { tab:0, round:0, plan:C.bondRoundPlan(), flags:[], start:6, chosen:null, note:"" };
-      a3 = { step:0, index:0, bank:null, marked:0, pool:[], chosen:null };
+      a3 = { step:0, index:0, bank:null, marked:0, pool:[], picked:new Array(10).fill(false), chosen:null,
+             syncPicked:function(){
+               var total = this.problem ? this.problem.initial + this.problem.operand : 0;
+               if (this.picked.length !== total) this.picked = new Array(total).fill(false);
+               for (var i = 0; i < total; i++) this.picked[i] = i < this.marked;
+             } };
       a4 = { finale:null, flags:[], chosen:null, removeSolved:false };
       a1Tabs(); a1StartRound(); a2Tabs(); a2StartRound(); a3Tabs(); a3Load(); a4Start();
       renderBondLog();
@@ -1930,8 +1990,6 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       saveProgress();
       a1Render("Показ", "Нажми на подсвеченное гнездо — посадим светлячков вместе.");
       a2Render();
-      a3Render();
-      a4Render();
     }
     $("btnStart").onclick = function(){ state.done.welcome = true; show(1); };
 
@@ -1946,15 +2004,19 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     a4Start();
     renderBondLog();
 
-    $("a1Clear").onclick = function(){ a1.flags = new Array(C.FRAME_SIZE).fill(false); a1Render("Ещё раз", "Рамка пустая — ноль светлячков. Собери снова."); };
+    $("a1Clear").onclick = function(){
+      // Постоянные гнёзда режима «Вместе» остаются: их ставил взрослый для показа.
+      for (var i = 0; i < C.FRAME_SIZE; i++){ if (!a1.fixed[i]) a1.flags[i] = false; }
+      a1.demoStep = 0;
+      a1Render("Ещё раз", "Свободные гнёзда снова пустые. Собери нужное число заново.");
+    };
     $("a1Hint").onclick = a1Hint;
     $("a1Check").onclick = a1Check;
     $("a1Next").onclick = function(){
       if (a1.tab < 2){
         a1.tab++;
         a1Tabs();
-        if (a1.tab === 1){ a1.flags = new Array(C.FRAME_SIZE).fill(false); a1.flags[0] = true; a1.flags[1] = true; a1StartRound(); }
-        else { a1.flags = new Array(C.FRAME_SIZE).fill(false); a1StartRound(); }
+        a1StartRound();
         return;
       }
       markDone("activity1");
@@ -1978,7 +2040,13 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
       a2AdvanceRound();
     };
 
-    $("a3Undo").onclick = function(){ a3.marked = Math.max(0, a3.marked - 1); a3.chosen = null; a3Render(); };
+    $("a3Undo").onclick = function(){
+      var n = C.countOf(a3.picked);
+      if (n === 0) return;
+      for (var k = 0; k < a3.picked.length; k++) a3.picked[k] = k < n - 1;
+      a3.chosen = null;
+      a3Render();
+    };
     $("a3Hint").onclick = a3Hint;
     $("a3Check").onclick = a3Check;
     $("a3Next").onclick = a3Next;
