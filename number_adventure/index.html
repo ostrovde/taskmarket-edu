@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Number Adventure: Make Ten — интерактивный урок математики для детей около 6 лет: число и количество до десяти, состав десяти, сложение и вычитание в пределах десяти с видимыми предметами.">
+<meta name="color-scheme" content="light">
+<title>Number Adventure: Make Ten — числовая садовая тропа</title>
+<style>
+/* ==========================================================================
+   Number Adventure: Make Ten — единый файл приложения.
+   Никаких внешних запросов: нет ссылок на CDN, шрифты, картинки, аналитику.
+   ========================================================================== */
+
+:root{
+  --paper:#FFFDF6;
+  --card:#FFFFFF;
+  --ink:#12233A;
+  --ink-soft:#3B4E66;
+  --line:#B9C7D8;
+  --line-strong:#5C7996;
+  --sky:#0E5E8A;
+  --sky-ink:#07405F;
+  --leaf:#1F6B3A;
+  --leaf-bg:#E4F4E7;
+  --sun:#B86A00;
+  --sun-bg:#FFF1D6;
+  --plum:#7A2E6E;
+  --plum-bg:#F7E7F4;
+  --wrong:#A8202B;
+  --wrong-bg:#FDEDEE;
+  --radius:18px;
+  --shadow:0 2px 0 rgba(18,35,58,.16), 0 10px 24px -14px rgba(18,35,58,.4);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  background-image:
+     radial-gradient(circle at 8% 6%, rgba(31,107,58,.10) 0 22px, transparent 23px),
+     radial-gradient(circle at 92% 14%, rgba(184,106,0,.12) 0 18px, transparent 19px),
+     radial-gradient(circle at 18% 92%, rgba(14,94,138,.10) 0 26px, transparent 27px);
+  color:var(--ink);
+  font-family:"Segoe UI",Tahoma,"Trebuchet MS",system-ui,-apple-system,Arial,sans-serif;
+  font-size:20px;
+  line-height:1.5;
+}
+img,svg{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+
+/* ---------- общая раскладка ---------- */
+.app{max-width:1100px;margin:0 auto;padding:14px 14px 40px}
+.topbar{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  background:var(--card);border:3px solid var(--line);border-radius:var(--radius);
+  padding:10px 14px;box-shadow:var(--shadow);margin-bottom:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-title{font-size:1.05rem;font-weight:800;letter-spacing:.01em;line-height:1.2}
+.brand-sub{display:block;font-size:.72rem;font-weight:600;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase}
+.avatar{width:56px;height:56px;flex:0 0 auto}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  min-height:52px;padding:8px 16px;border-radius:999px;border:3px solid var(--line-strong);
+  background:#fff;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+}
+.chip[aria-pressed="true"]{background:var(--leaf-bg);border-color:var(--leaf)}
+.chip:hover{background:#F1F6FB}
+.chip:focus-visible,.btn:focus-visible,.slot:focus-visible,summary:focus-visible{
+  outline:4px solid #0B5FFF;outline-offset:3px;
+}
+
+/* ---------- прогресс ---------- */
+.progress{padding:0 4px 10px}
+.progress-head{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:.9rem;color:var(--ink-soft)}
+.progress-track{height:16px;border-radius:999px;background:#E5ECF4;border:2px solid var(--line);overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;width:0;background:var(--leaf);border-radius:999px;transition:width .3s ease}
+.step-dots{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0}
+.step-dots li{display:flex}
+.step-dots span{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:34px;min-height:30px;padding:2px 8px;border-radius:10px;
+  border:2px solid var(--line);background:#fff;font-size:.78rem;font-weight:700;color:var(--ink-soft);
+}
+.step-dots li[data-state="done"] span{background:var(--leaf-bg);border-color:var(--leaf);color:#0F4A24}
+.step-dots li[data-state="now"] span{background:var(--sun-bg);border-color:var(--sun);color:#6B3D00;box-shadow:0 0 0 3px rgba(184,106,0,.25)}
+
+/* ---------- карточки ---------- */
+.card{
+  background:var(--card);border:3px solid var(--line);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);margin-bottom:12px;
+}
+.card h1{font-size:1.6rem;line-height:1.2;margin:.1em 0 .3em}
+.card h2{font-size:1.25rem;line-height:1.25;margin:.1em 0 .4em}
+.card h3{font-size:1.05rem;margin:.8em 0 .3em}
+.lead{font-size:1.02rem;color:var(--ink-soft);margin:.2em 0 .6em}
+.muted{color:var(--ink-soft);font-size:.86rem}
+
+/* ---------- кнопки ---------- */
+.btn{
+  min-height:60px;min-width:60px;padding:12px 22px;border-radius:16px;
+  border:3px solid var(--sky-ink);background:var(--sky);color:#fff;
+  font-size:1.06rem;font-weight:800;cursor:pointer;box-shadow:0 3px 0 rgba(7,64,95,.5);
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;text-align:center;
+}
+.btn:hover{background:var(--sky-ink)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(7,64,95,.5)}
+.btn.secondary{background:#fff;color:var(--sky-ink);border-color:var(--line-strong);box-shadow:0 3px 0 rgba(92,121,150,.35)}
+.btn.secondary:hover{background:#EFF6FC}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:none;font-weight:700}
+.btn.ghost:hover{background:#F1F6FB}
+.btn.warm{background:var(--sun);border-color:#7E4A00;box-shadow:0 3px 0 rgba(126,74,0,.5)}
+.btn.warm:hover{background:#96560
+0}
+.btn.good{background:var(--leaf);border-color:#144726;box-shadow:0 3px 0 rgba(20,71,38,.5)}
+.btn.good:hover{background:#17512C}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.btn-row.tight{gap:8px}
+
+/* ---------- сетка рабочей области ---------- */
+.work{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:900px){
+  .work.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+}
+.panel{border:3px dashed var(--line);border-radius:var(--radius);padding:12px;background:#FCFDFF}
+.panel>.panel-title{margin:0 0 8px;font-size:.9rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* ---------- ten-frame ---------- */
+.frame-wrap{display:flex;flex-direction:column;gap:10px;align-items:center}
+.ten-frame{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+  background:#EAF1F8;border:4px solid var(--line-strong);border-radius:14px;padding:8px;
+  width:100%;max-width:520px;
+}
+.slot{
+  position:relative;aspect-ratio:1/1;min-width:44px;min-height:44px;
+  border:3px solid var(--line-strong);border-radius:12px;background:#fff;
+  cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;
+  transition:background .12s ease,border-color .12s ease;
+}
+.slot:hover{background:#EFF6FC}
+.slot .slot-glyph{width:74%;height:74%}
+.slot[aria-pressed="true"]{background:#FFF3D8;border-color:#8A5A00}
+.slot[data-fixed="true"]{background:#F2F6FA;border-color:var(--line);border-style:dashed;cursor:not-allowed}
+.slot[data-highlight="true"]{box-shadow:0 0 0 4px rgba(11,95,255,.28) inset}
+.slot .idx-tag{
+  position:absolute;left:4px;top:2px;font-size:.62rem;font-weight:700;color:#7C8CA0;
+}
+.slot[aria-pressed="true"] .idx-tag{color:#7A4E00}
+@media (prefers-reduced-motion:no-preference){
+  .slot .dot-enter{animation:pop .22s ease-out}
+  @keyframes pop{from{transform:scale(.6);opacity:.2}to{transform:scale(1);opacity:1}}
+}
+.frame-caption{font-size:.9rem;color:var(--ink-soft);text-align:center}
+
+/* ---------- показания количества ---------- */
+.readout{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px;
+}
+.stat{background:#F6FAFF;border:3px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat .k{font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.stat .v{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;word-break:break-word}
+.stat.accent{background:var(--sun-bg);border-color:var(--sun)}
+.stat.accent .v{color:#6B3D00}
+.equation{
+  font-size:1.7rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.04em;
+  background:#F2F8FF;border:3px solid var(--line-strong);border-radius:14px;padding:10px 14px;display:inline-block;
+  max-width:100%;
+}
+.equation .q{color:var(--sky-ink)}
+.equation.is-true{background:var(--leaf-bg);border-color:var(--leaf)}
+.equation.is-false{background:var(--wrong-bg);border-color:var(--wrong)}
+
+/* ---------- история ---------- */
+.story-stage{
+  background:#F6FAFF;border:3px solid var(--line);border-radius:14px;padding:12px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.glyph-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;min-height:70px}
+.glyph{
+  width:64px;height:64px;border-radius:14px;border:3px solid var(--line-strong);background:#fff;
+  display:flex;align-items:center;justify-content:center;padding:2px;cursor:pointer;
+}
+.glyph svg{width:80%;height:80%}
+.glyph[data-state="out"]{border-style:dashed;background:#F7F9FC}
+.glyph[data-state="out"] svg{opacity:.42}
+.glyph[data-state="gone"]{border-color:var(--line);background:#F1F4F8}
+.glyph[data-state="gone"] svg{opacity:.3;filter:grayscale(1)}
+.glyph[data-state="new"]{border-color:#8A5A00;background:#FFF6E2;border-width:4px}
+.glyph[data-state="new"] svg{filter:drop-shadow(0 0 5px rgba(184,106,0,.65))}
+.glyph:hover{background:#EFF6FC}
+.glyph .badge{position:absolute;font-size:.6rem}
+.glyph .badge{position:static;margin-left:2px;font-weight:800;font-size:.7rem;color:var(--sky-ink)}
+.glyph-note{font-size:.86rem;color:var(--ink-soft);margin:0}
+.eq-choices{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.eq-choice{
+  min-height:64px;min-width:150px;padding:10px 18px;border-radius:14px;border:3px solid var(--line-strong);
+  background:#fff;font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;
+}
+.eq-choice:hover{background:#EFF6FC}
+.eq-choice[aria-pressed="true"]{background:var(--sun-bg);border-color:var(--sun)}
+.eq-choice.is-true{background:var(--leaf-bg);border-color:var(--leaf)}
+.eq-choice.is-false{background:var(--wrong-bg);border-color:var(--wrong)}
+
+/* ---------- обратная связь ---------- */
+.feedback{
+  border:3px solid var(--line);border-left-width:10px;border-radius:14px;padding:12px 14px;background:#F6FAFF;
+  display:flex;gap:12px;align-items:flex-start;margin-top:12px;
+}
+.feedback .mark{
+  flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;font-weight:800;background:#E7EEF7;color:var(--sky-ink);border:2px solid var(--line-strong);
+}
+.feedback .fb-title{font-weight:800;margin:0 0 2px}
+.feedback .fb-body{margin:0;font-size:.95rem;color:var(--ink-soft)}
+.feedback[data-kind="ok"]{border-color:var(--leaf);background:var(--leaf-bg)}
+.feedback[data-kind="ok"] .mark{background:#fff;border-color:var(--leaf);color:#0F4A24}
+.feedback[data-kind="try"]{border-color:var(--sun);background:var(--sun-bg)}
+.feedback[data-kind="try"] .mark{background:#fff;border-color:var(--sun);color:#6B3D00}
+.feedback[data-kind="hint"]{border-color:var(--plum);background:var(--plum-bg)}
+.feedback[data-kind="hint"] .mark{background:#fff;border-color:var(--plum);color:#5A1F50}
+.feedback[data-kind="info"]{border-color:var(--line-strong);background:#F2F8FF}
+.feedback[data-kind="info"] .mark{background:#fff}
+
+/* ---------- вспомогательное ---------- */
+.prompt-line{font-size:1.12rem;font-weight:700;margin:.2em 0}
+.hint-list{margin:6px 0 0;padding-left:1.2em;font-size:.92rem;color:var(--ink-soft)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.tab{
+  min-height:52px;padding:8px 16px;border-radius:999px;border:3px solid var(--line);background:#fff;
+  font-weight:700;cursor:pointer;
+}
+.tab[aria-selected="true"]{background:var(--sun-bg);border-color:var(--sun);color:#6B3D00}
+details{border:3px solid var(--line);border-radius:14px;padding:8px 12px;background:#FCFDFF;margin-top:10px}
+summary{font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);
+  white-space:nowrap;border:0;
+}
+.visually-hidden-table{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.hidden{display:none !important}
+.two-col-list{columns:1}
+@media (min-width:700px){.two-col-list{columns:2}}
+.bond-log{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.bond-log li{
+  background:#fff;border:3px solid var(--line-strong);border-radius:12px;padding:6px 12px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+.bond-log li[data-new="true"]{background:var(--sun-bg);border-color:var(--sun)}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.garden{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.bloom{width:38px;height:38px}
+.badge-soft{
+  display:inline-block;padding:2px 10px;border-radius:999px;background:#E7EEF7;color:var(--sky-ink);
+  font-size:.8rem;font-weight:800;border:2px solid var(--line-strong);
+}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:.86rem;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:22px;height:22px;border-radius:6px;border:2px solid var(--line-strong)}
+dialog{border:4px solid var(--line-strong);border-radius:18px;padding:18px;max-width:520px;background:#fff}
+dialog::backdrop{background:rgba(18,35,58,.45)}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<a class="sr-only" href="#main">Перейти к уроку</a>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="avatar" viewBox="0 0 64 64" role="img" aria-label="Улитка Биби — проводник по садовой тропе">
+        <circle cx="32" cy="32" r="30" fill="#E4F4E7"/>
+        <path d="M8 46h48" stroke="#7FA07F" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="30" cy="44" rx="18" ry="6" fill="#8FBF7A"/>
+        <path d="M46 44c0-4 8-4 8 0" fill="none" stroke="#5E8C4C" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="24" cy="30" r="12" fill="#C98A3C"/>
+        <path d="M24 30m-7 0a7 7 0 1 1 14 0a5 5 0 1 0-10 0a3 3 0 1 1 6 0" fill="none" stroke="#7A4B12" stroke-width="3"/>
+        <line x1="20" y1="20" x2="16" y2="12" stroke="#7A4B12" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="20" x2="32" y2="12" stroke="#7A4B12" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="16" cy="11" r="2.6" fill="#12233A"/>
+        <circle cx="32" cy="11" r="2.6" fill="#12233A"/>
+      </svg>
+      <div>
+        <span class="brand-sub">Number Adventure</span>
+        <span class="brand-title" id="brandTitle">Собери десятку</span>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="chip" id="btnSound" type="button" aria-pressed="false" title="Читать текст на экране вслух">
+        <span aria-hidden="true">🔊</span><span id="soundLabel">Читать вслух: выкл</span>
+      </button>
+      <button class="chip" id="btnReset" type="button">
+        <span aria-hidden="true">↻</span><span>Начать заново</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="progress" aria-label="Продвижение по уроку">
+    <div class="progress-head">
+      <span id="stepTitle">Шаг 1 из 5: знакомство</span>
+      <span id="stepCount">0 из 4 упражнений готово</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <ul class="step-dots" id="stepDots"></ul>
+  </section>
+
+  <main id="main">
+    <section class="card hidden" id="view-welcome" aria-labelledby="welcomeTitle">
+      <h1 id="welcomeTitle">Ляля-улитка зовёт в сад: помоги собрать десятку</h1>
+      <p class="lead">В саду висит рамка с десятью гнёздами. Мы будем наполнять её светлячками, собирать десять разными способами и решать короткие садовые истории. Всё делается нажатиями: мышкой, пальцем или клавишами.</p>
+      <div class="work two">
+        <div class="panel">
+          <h2 style="margin-top:0">Как играть</h2>
+          <ul class="hint-list" style="font-size:1rem">
+            <li>Нажимай на гнёзда рамки — в них появляются светлячки.</li>
+            <li>Всё, что нарисовано, подписано словами и цифрой: «семь», «7».</li>
+            <li>Ошибиться можно сколько угодно раз. Рядом всегда есть кнопка «Подсказка».</li>
+            <li>Внизу каждой карточки есть кнопка «Ещё раз» — начать это упражнение сначала.</li>
+          </ul>
+          <h3>Выбери, как удобнее заниматься</h3>
+          <div class="btn-row tight" role="group" aria-label="Уровень поддержки">
+            <button class="btn secondary" id="btnScaffoldMore" type="button" aria-pressed="true">Больше подсказок</button>
+            <button class="btn secondary" id="btnScaffoldLess" type="button" aria-pressed="false">Меньше подсказок</button>
+          </div>
+          <p class="muted" id="scaffoldExplain">«Больше подсказок»: гнёзда пронумерованы, первые два шага подсвечены, предметы в историях подписаны. Можно переключать в любой момент — это не оценка.</p>
+          <div class="btn-row">
+            <button class="btn good" id="btnStart" type="button">Начать приключение</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 style="margin-top:0">Что мы узнаем</h2>
+          <ul class="hint-list" style="font-size:1rem">
+            <li>Число и количество от нуля до десяти: «ноль» — это когда в рамке пусто, и это тоже ответ.</li>
+            <li>Состав числа 10: 0+10, 5+5 и другие пары.</li>
+            <li>Сложение и вычитание в пределах десяти с видимыми предметами, а потом с записью.</li>
+          </ul>
+          <p class="prompt-line" style="margin-top:14px">Сколько светлячков в этой рамке?</p>
+          <div class="frame-wrap">
+            <div id="welcomeFrame" class="ten-frame" role="group" aria-label="Рамка из десяти гнёзд с пятью светлячками"></div>
+            <p class="frame-caption" id="welcomeFrameCaption">Пять светлячков, пять гнёзд пустые — всего десять гнёзд.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="view-activity1" aria-labelledby="a1Title">
+      <h1 id="a1Title" style="font-size:1.35rem">Упражнение 1. Собери столько же</h1>
+      <div class="tabs" role="tablist" aria-label="Части упражнения 1">
+        <button class="tab" role="tab" id="a1tab0" data-tab="0" aria-selected="true" type="button">Показ</button>
+        <button class="tab" role="tab" id="a1tab1" data-tab="1" aria-selected="false" type="button">Вместе</button>
+        <button class="tab" role="tab" id="a1tab2" data-tab="2" aria-selected="false" type="button">Сам</button>
+      </div>
+      <div class="work two">
+        <div class="panel">
+          <h2 class="panel-title">Рамка на десять</h2>
+          <p class="prompt-line" id="a1Prompt">Нажми на гнездо, чтобы посадить светлячка.</p>
+          <div class="frame-wrap">
+            <div id="a1Frame" class="ten-frame" role="group" aria-label="Рамка из десяти гнёзд"></div>
+            <p class="frame-caption" id="a1FrameCaption">Все десять гнёзд пустые — это ноль светлячков.</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost" id="a1Clear" type="button">Очистить рамку</button>
+            <button class="btn secondary" id="a1Hint" type="button">Подсказка</button>
+            <button class="btn warm" id="a1Check" type="button">Проверить</button>
+            <button class="btn" id="a1Next" type="button">Дальше</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Задание</h2>
+          <div class="readout">
+            <div class="stat accent">
+              <div class="k">Нужное число</div>
+              <div class="v" id="a1Target">3</div>
+            </div>
+            <div class="stat">
+              <div class="k">Что написано словами</div>
+              <div class="v" id="a1TargetWord">три</div>
+            </div>
+            <div class="stat">
+              <div class="k">Сейчас в рамке</div>
+              <div class="v" id="a1Have">0 — ноль</div>
+            </div>
+          </div>
+          <div class="equation is-false" id="a1Equation" style="margin-top:10px">0 = 3</div>
+          <p class="frame-caption" id="a1Sentence">Сейчас в рамке ноль, а нужно три — это число «3».</p>
+          <div id="a1Feedback" class="feedback" data-kind="info" role="status" aria-live="polite">
+            <div class="mark" aria-hidden="true">i</div>
+            <div><p class="fb-title">Показ</p><p class="fb-body">Смотри: я нажимаю гнёзда одно за другим и считаю вслух: один, два, три.</p></div>
+          </div>
+          <details>
+            <summary>Как играть в это упражнение</summary>
+            <ul class="hint-list">
+              <li>Нажми на гнездо — светлячок сядет в него. Нажми ещё раз — светлячок улетит.</li>
+              <li>Ошибиться нельзя: любое число попыток разрешено.</li>
+              <li>«Показ» объясняет, «Вместе» — подсказывает после первой попытки, «Сам» — считаешь без подсказок.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="view-activity2" aria-labelledby="a2Title">
+      <h1 id="a2Title" style="font-size:1.35rem">Упражнение 2. Дополни до десяти</h1>
+      <div class="tabs" role="tablist" aria-label="Части упражнения 2">
+        <button class="tab" role="tab" id="a2tab0" data-tab="0" aria-selected="true" type="button">Показ и вместе</button>
+        <button class="tab" role="tab" id="a2tab1" data-tab="1" aria-selected="false" type="button">Сам</button>
+      </div>
+      <div class="work two">
+        <div class="panel">
+          <h2 class="panel-title">Рамка на десять</h2>
+          <p class="prompt-line" id="a2Prompt">В рамке уже есть светлячки. Добавь столько, чтобы стало десять.</p>
+          <div class="frame-wrap">
+            <div id="a2Frame" class="ten-frame" role="group" aria-label="Рамка из десяти гнёзд"></div>
+            <p class="frame-caption" id="a2FrameCaption">Пять занято, пять пустых.</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost" id="a2Clear" type="button">Убрать мои светлячки</button>
+            <button class="btn secondary" id="a2Hint" type="button">Подсказка</button>
+            <button class="btn warm" id="a2Check" type="button">Проверить</button>
+            <button class="btn" id="a2Next" type="button">Дальше</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Задание</h2>
+          <div class="readout">
+            <div class="stat">
+              <div class="k">Уже есть</div>
+              <div class="v" id="a2Start">5 — пять</div>
+            </div>
+            <div class="stat accent">
+              <div class="k">Добавил я</div>
+              <div class="v" id="a2Added">0 — ноль</div>
+            </div>
+            <div class="stat">
+              <div class="k">Всего в рамке</div>
+              <div class="v" id="a2Total">5</div>
+            </div>
+          </div>
+          <div class="equation is-false" id="a2Equation" style="margin-top:10px">5 + 0 = 5</div>
+          <p class="frame-caption" id="a2Sentence">Пока в рамке пять из десяти.</p>
+          <p class="prompt-line" id="a2CounterSentence">Сколько ещё нужно добавить, чтобы получилось десять?</p>
+          <div class="btn-row tight" id="a2CounterChoices" role="group" aria-label="Ответ на вопрос: сколько добавить">
+            <button class="btn ghost" type="button" data-answer="3">3</button>
+            <button class="btn ghost" type="button" data-answer="4">4</button>
+            <button class="btn ghost" type="button" data-answer="5">5</button>
+            <button class="btn ghost" type="button" data-answer="6">6</button>
+          </div>
+          <h3>Способы, которые мы уже собрали</h3>
+          <ul class="bond-log" id="a2BondLog" aria-label="Собранные способы получить десять"></ul>
+          <div id="a2Feedback" class="feedback" data-kind="info" role="status" aria-live="polite">
+            <div class="mark" aria-hidden="true">i</div>
+            <div><p class="fb-title">Показ</p><p class="fb-body">Сначала посмотри: пять и пять — вместе десять.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="view-activity3" aria-labelledby="a3Title">
+      <h1 id="a3Title" style="font-size:1.35rem">Упражнение 3. Садовые истории</h1>
+      <div class="tabs" role="tablist" aria-label="Части упражнения 3">
+        <button class="tab" role="tab" id="a3tab0" data-tab="0" aria-selected="true" type="button">Показ</button>
+        <button class="tab" role="tab" id="a3tab1" data-tab="1" aria-selected="false" type="button">Задачи</button>
+      </div>
+      <div class="work two">
+        <div class="panel">
+          <h2 class="panel-title">История и предметы</h2>
+          <p class="prompt-line" id="a3Prompt">Ляля собрала семь яблок. Три яблока принесла бабушка. Сколько яблок стало?</p>
+          <div class="story-stage">
+            <div class="glyph-row" id="a3Items" role="group" aria-label="Предметы в истории"></div>
+            <p class="glyph-note" id="a3ItemsNote">Отмечено «в истории»: 7 яблок.</p>
+            <p class="glyph-note" id="a3StepNote">Шаг 1 из 2: выложи яблоки Ляли. Нажимай на яблоки ниже, чтобы переложить их в ряд.</p>
+          </div>
+          <div class="panel" style="margin-top:10px;border-style:solid">
+            <h3 style="margin-top:0">Все предметы истории</h3>
+            <div class="glyph-row" id="a3Pool" role="group" aria-label="Предметы, которые можно перекладывать"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost" id="a3Undo" type="button">Убрать один</button>
+            <button class="btn secondary" id="a3Hint" type="button">Подсказка</button>
+            <button class="btn warm" id="a3Check" type="button">Проверить</button>
+            <button class="btn" id="a3Next" type="button">Следующая история</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Модель и запись</h2>
+          <div class="equation" id="a3Equation" aria-live="polite">7 + 3 = ?</div>
+          <p class="frame-caption" id="a3EquationHint">Сначала выложи предметы, потом выбери запись.</p>
+          <div class="readout" style="margin-top:10px">
+            <div class="stat"><div class="k">Сейчас выложено</div><div class="v" id="a3Moved">0</div></div>
+            <div class="stat accent"><div class="k">Про задачу</div><div class="v" id="a3Index" style="font-size:1.1rem">Показ</div></div>
+          </div>
+          <h3>Какая запись подходит к истории?</h3>
+          <div class="eq-choices" id="a3Choices" role="group" aria-label="Варианты математической записи"></div>
+          <p class="frame-caption" id="a3ChoiceNote">Выбери одну запись — она подсветится.</p>
+          <div id="a3Feedback" class="feedback" data-kind="info" role="status" aria-live="polite">
+            <div class="mark" aria-hidden="true">i</div>
+            <div><p class="fb-title">Показ</p><p class="fb-body">Первая история — вместе. Я покажу, как это делается, а ты нажмёшь то же самое.</p></div>
+          </div>
+          <details open>
+            <summary>Такая же история словами и таблицей</summary>
+            <p class="muted" id="a3TextAlt">Словами: было 7 яблок, стало 10 яблок, значит 7 + 3 = 10.</p>
+            <table id="a3Table" style="width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px">
+              <caption class="sr-only">Таблица истории: что было, что произошло, что стало</caption>
+              <thead><tr><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что было</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что произошло</th><th scope="col" style="text-align:left;border-bottom:2px solid var(--line-strong);padding:4px">Что стало</th></tr></thead>
+              <tbody id="a3TableBody"></tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="view-activity4" aria-labelledby="a4Title">
+      <h1 id="a4Title" style="font-size:1.35rem">Новое задание. Грядка Ляли</h1>
+      <p class="lead">Здесь нужны все три умения сразу. Сначала посади ровно десять семян на рамку и посмотри, как десять распалось на две части. Потом скажи, сколько осталось, когда часть съели.</p>
+      <div class="work two">
+        <div class="panel">
+          <h2 class="panel-title">Рамка на десять</h2>
+          <p class="prompt-line" id="a4Prompt">Посади на рамку ровно десять семян.</p>
+          <div class="frame-wrap">
+            <div id="a4Frame" class="ten-frame" role="group" aria-label="Рамка из десяти гнёзд"></div>
+            <p class="frame-caption" id="a4FrameCaption">Пока пусто — ноль семян.</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost" id="a4Clear" type="button">Очистить рамку</button>
+            <button class="btn secondary" id="a4Hint" type="button">Подсказка</button>
+            <button class="btn warm" id="a4Check" type="button">Проверить</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">Запись</h2>
+          <div class="equation is-false" id="a4EqMove">0 + 0 = 0</div>
+          <p class="frame-caption" id="a4MoveNote">Первая запись появится, когда на рамке будет десять семян.</p>
+          <h3 id="a4Q2" class="hidden">Биби съела <span id="a4Eaten">3</span> семени. Сколько семян осталось?</h3>
+          <div class="eq-choices hidden" id="a4RemoveChoices" role="group" aria-label="Варианты ответа: сколько семян осталось"></div>
+          <p class="frame-caption" id="a4RemoveNote"></p>
+          <div id="a4Feedback" class="feedback" data-kind="info" role="status" aria-live="polite">
+            <div class="mark" aria-hidden="true">i</div>
+            <div><p class="fb-title">Новое задание</p><p class="fb-body">Подсказок будет меньше, чем раньше, но кнопка «Подсказка» всегда рядом.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="view-summary" aria-labelledby="sumTitle">
+      <h1 id="sumTitle">Тропа пройдена: десять собрано</h1>
+      <p class="lead" id="sumLead">Ты работал с числом и количеством до десяти, собирал десятку разными способами и решал садовые истории. Вот что получилось.</p>
+      <div class="summary-grid">
+        <div class="panel">
+          <h3 style="margin-top:0">Способы собрать десять</h3>
+          <ul class="bond-log" id="sumBonds" aria-label="Способы собрать десять"></ul>
+          <p class="muted" id="sumBondsNote">Здесь появятся пары, которые ты собрал сам.</p>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0">Садовые истории</h3>
+          <p class="prompt-line" id="sumStories">Решено историй: 0</p>
+          <p class="muted" id="sumStoriesNote">Каждую историю можно повторить кнопкой «Ещё раз» на её шаге.</p>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0">Что дальше поупражнять</h3>
+          <ul class="hint-list" id="sumNext"></ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h3 style="margin-top:0">Садовые цветы за пройденные шаги</h3>
+        <div class="garden" id="sumGarden" role="img" aria-label="Сад с цветами"></div>
+        <p class="frame-caption" id="sumGardenNote">Цветок появляется за каждый пройденный шаг. Это не оценка и не рейтинг — просто отметка пути.</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn good" id="sumRestart" type="button">Пройти тропу ещё раз</button>
+        <button class="btn secondary" id="sumBack" type="button">Вернуться к историям</button>
+      </div>
+      <p class="muted" id="sumStorageNote"></p>
+    </section>
+  </main>
+
+  <footer class="muted" style="padding:6px 4px">
+    <p style="margin:.4em 0">Number Adventure: Make Ten · учебный урок без рекламы, без сбора данных, без входа в аккаунт. Код под лицензией MIT.</p>
+    <p style="margin:.4em 0">Подсказки для взрослых — в файлах README.md и EDUCATOR_GUIDE.md рядом с приложением.</p>
+  </footer>
+</div>
+
+<dialog id="resetDialog" aria-labelledby="resetTitle">
+  <h2 id="resetTitle" style="margin-top:0">Начать заново?</h2>
+  <p>Продвижение по уроку будет очищено. Задания можно проходить снова сколько угодно раз.</p>
+  <div class="btn-row">
+    <button class="btn good" id="resetYes" type="button">Да, начать заново</button>
+    <button class="btn secondary" id="resetNo" type="button">Оставить как есть</button>
+  </div>
+</dialog>
+
+<!-- ==========================================================================
+     ЧИСТАЯ МОДЕЛЬ: арифметика, оформление чисел, содержимое историй.
+     Не обращается к DOM, поэтому проверяется тестами (tests/tests.js).
+     ========================================================================== -->
+<script id="na-core">
+(function(){
+  "use strict";
+
+  var FRAME_SIZE = 10;
+
+  var NUMBER_WORDS = {
+    0:"ноль",1:"один",2:"два",3:"три",4:"четыре",5:"пять",
+    6:"шесть",7:"семь",8:"восемь",9:"девять",10:"десять"
+  };
+  var NUMBER_WORDS_F = {
+    0:"ноль",1:"одна",2:"две",3:"три",4:"четыре",5:"пять",
+    6:"шесть",7:"семь",8:"восемь",9:"девять",10:"десять"
+  };
+
+  function clamp(n, lo, hi){ return Math.min(hi, Math.max(lo, n)); }
+
+  function countOn(count){
+    var c = clamp(Math.round(Number(count) || 0), 0, FRAME_SIZE);
+    var frame = [];
+    for (var i = 0; i < FRAME_SIZE; i++){
+      frame.push({ index:i, on: i < c, value: i < c ? 1 : 0 });
+    }
+    return frame;
+  }
+  function frameOfCount(count){ return countOn(count); }
+  function countOf(flags){
+    var n = 0;
+    for (var i = 0; i < flags.length; i++){ if (flags[i]) n++; }
+    return n;
+  }
+  function frameSummary(flags){
+    var list = [];
+    for (var i = 0; i < flags.length; i++){
+      list.push((flags[i] ? "светлячок" : "пусто"));
+    }
+    return list;
+  }
+  function spacingRound(flags){
+    // Сколько пустых гнёзд идёт подряд — для подсказки «посчитай пустые гнёзда».
+    var runs = 0, best = 0, cur = 0;
+    for (var i = 0; i < flags.length; i++){
+      if (flags[i]){ cur = 0; }
+      else { cur++; if (cur === 1) runs++; if (cur > best) best = cur; }
+    }
+    return { empty: FRAME_SIZE - countOf(flags), emptyRuns: runs, longestEmptyRun: best };
+  }
+
+  /* ---- проверки и обратная связь (упражнение 1) ---- */
+  function evalCount(target, flags){
+    var targetN = clamp(Math.round(Number(target) || 0), 0, FRAME_SIZE);
+    var have = countOf(flags);
+    var ok = have === targetN;
+    var kind, title, body;
+    if (ok){
+      if (targetN === 0){
+        kind = "ok"; title = "Да: это ноль";
+        body = "Пустая рамка — это число «0», ноль светлячков. Ноль — такой же ответ, как и любой другой.";
+      } else {
+        kind = "ok"; title = "Совпало: " + targetN + " — " + NUMBER_WORDS[targetN];
+        body = "В рамке ровно " + NUMBER_WORDS[targetN] + " светлячков, и число на карточке тоже " + targetN + ".";
+      }
+    } else if (have < targetN){
+      kind = "try"; title = "Пока меньше";
+      body = "В рамке " + have + " (" + NUMBER_WORDS_F[have] + "), а нужно " + targetN + " (" + NUMBER_WORDS[targetN] + "). Посади ещё " + (targetN - have) + " — посчитай пустые гнёзда слева направо.";
+    } else {
+      kind = "try"; title = "Пока больше";
+      body = "В рамке " + have + " (" + NUMBER_WORDS_F[have] + "), а нужно " + targetN + " (" + NUMBER_WORDS[targetN] + "). Убери " + (have - targetN) + " светлячка: нажми на них ещё раз.";
+    }
+    return { ok:ok, have:have, target:targetN, kind:kind, title:title, body:body,
+             equation: have + (ok ? " = " : " ≠ ") + targetN };
+  }
+  function targetToFind(target, flags){
+    var t = clamp(Math.round(Number(target) || 0), 0, FRAME_SIZE);
+    var have = countOf(flags);
+    if (have < t) return t - have;
+    if (have > t) return have - t;
+    return 0;
+  }
+  function hintForCount(target, flags){
+    var t = clamp(Math.round(Number(target) || 0), 0, FRAME_SIZE);
+    var have = countOf(flags);
+    if (t === 0){
+      return "Ноль — это когда ни одного светлячка. Убери всех, чтобы рамка стала пустой.";
+    }
+    if (have > t){
+      return "Сейчас " + have + " — это больше, чем " + t + ". Нажми на " + (have - t) + " светлячка, чтобы они улетели.";
+    }
+    if (have === t){
+      return "Уже " + t + ". Нажми «Проверить», чтобы я подтвердил.";
+    }
+    var gaps = FRAME_SIZE - have;
+    if (gaps === 0){
+      return "Рамка полная: в ней десять. Чтобы стало " + t + ", убери " + (have - t) + ".";
+    }
+    return "Тебе не хватает " + (t - have) + ". Помогает такой приём: посчитай пустые гнёзда по порядку — пустых сейчас " + gaps + " — и просто сравни с числом " + t + ".";
+  }
+
+  /* ---- упражнение 2: дополни до десяти ---- */
+  function allBonds(){
+    var out = [];
+    for (var a = 0; a <= FRAME_SIZE; a++){ out.push([a, FRAME_SIZE - a]); }
+    return out;
+  }
+  function partsOfTen(a){
+    var x = clamp(Math.round(Number(a) || 0), 0, FRAME_SIZE);
+    return [x, FRAME_SIZE - x];
+  }
+  // Порядок раундов составлен заранее: охвачены 0+10, 5+5, 7+3, 1+9, 8+2.
+  var BOND_ROUND_PLAN = [
+    { order:["together", "self"], phases:["guided", "independent"] },
+    { order:["self", "together"], phases:["guided", "independent"] },
+    { order:["5+5", "7+3", "1+9"], phases:["guided", "guided", "independent"] }
+  ];
+  function bondRoundPlan(){
+    return [
+      { starts:[6, 7], tabs:[0, 0], labels:["Вместе", "Вместе"] },
+      { starts:[5, 8], tabs:[0, 0], labels:["Вместе", "Вместе"] },
+      { starts:[0, 5, 1], tabs:[1, 1, 1], labels:["Сам", "Сам", "Сам"] }
+    ];
+  }
+  function bondsCovered(plan){
+    var seen = [];
+    for (var i = 0; i < plan.length; i++){
+      for (var j = 0; j < plan[i].starts.length; j++){
+        var pair = partsOfTen(plan[i].starts[j]);
+        seen.push(pair[0] + "+" + pair[1]);
+      }
+    }
+    return seen;
+  }
+  function evalMakeTen(start, addedFlags){
+    var s = clamp(Math.round(Number(start) || 0), 0, FRAME_SIZE);
+    var added = countOf(addedFlags);
+    var total = clamp(s + added, 0, FRAME_SIZE);
+    var need = FRAME_SIZE - s;
+    var ok = total === FRAME_SIZE;
+    var kind, title, body;
+    if (ok){
+      if (need === 0){
+        kind = "ok"; title = "Уже десять";
+        body = "Здесь было десять с самого начала: десять и ноль — тоже способ получить десять.";
+      } else {
+        kind = "ok"; title = "Десять: " + s + " и " + need;
+        body = "Ты добавил " + need + " — получилось " + s + " + " + need + " = 10. Две части сложились в целое.";
+      }
+    } else if (total < FRAME_SIZE){
+      kind = "try"; title = "Пока меньше десяти";
+      body = "Сейчас вместе " + total + ". Посчитай пустые гнёзда — их " + (FRAME_SIZE - total) + " — и добавь столько же.";
+    } else {
+      kind = "try"; title = "Уже больше";
+      body = "Не получается больше десяти: в рамке всего десять гнёзд. Одно гнездо занимает ровно один светлячок, поэтому убери лишние.";
+    }
+    return { ok:ok, start:s, added:added, total:total, need:need, kind:kind, title:title, body:body,
+             equation: s + " + " + added + (ok ? " = " : " = ") + total };
+  }
+  function hintForMakeTen(start, addedFlags){
+    var s = clamp(Math.round(Number(start) || 0), 0, FRAME_SIZE);
+    var added = countOf(addedFlags);
+    var total = s + added;
+    if (total === FRAME_SIZE) return "Получилось десять. Нажми «Проверить».";
+    var gaps = FRAME_SIZE - total;
+    return "Пустых гнёзд сейчас " + gaps + " — значит, не хватает " + gaps + ". Нажми на пустые гнёзда столько раз.";
+  }
+  function missingToTen(start, added){
+    var s = clamp(Math.round(Number(start) || 0), 0, FRAME_SIZE);
+    var a = clamp(Math.round(Number(added) || 0), 0, FRAME_SIZE);
+    return clamp(FRAME_SIZE - s - a, 0, FRAME_SIZE);
+  }
+
+  /* ---- упражнение 3: садовые истории ---- */
+  var ICONS = {
+    apple:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><circle cx="24" cy="29" r="15" fill="#D8452F"/><path d="M24 15c0-4 3-7 7-7" stroke="#5C3A1E" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M31 8c4 0 7 3 7 6-4 1-7-2-7-6z" fill="#3F8A4A"/><ellipse cx="18" cy="24" rx="4" ry="3" fill="#FFFFFF" opacity=".45"/></svg>',
+    pear:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><path d="M24 14c6 0 12 8 12 16 0 7-5 12-12 12s-12-5-12-12c0-8 6-16 12-16z" fill="#B9C93C"/><path d="M24 14c0-4 2-6 5-7" stroke="#5C3A1E" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="19" cy="30" rx="4" ry="5" fill="#FFFFFF" opacity=".4"/></svg>',
+    beetle:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><ellipse cx="24" cy="29" rx="13" ry="11" fill="#7A3B8F"/><circle cx="24" cy="16" r="7" fill="#5B2A6B"/><path d="M24 20v20" stroke="#3A1445" stroke-width="2"/><path d="M12 26c-4-2-6-6-5-10 3 1 5 4 6 8" fill="#5B2A6B"/><path d="M36 26c4-2 6-6 5-10-3 1-5 4-6 8" fill="#5B2A6B"/><circle cx="21" cy="14" r="1.8" fill="#fff"/><circle cx="27" cy="14" r="1.8" fill="#fff"/></svg>',
+    wheel:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><circle cx="24" cy="24" r="15" fill="#2B2F38"/><circle cx="24" cy="24" r="6" fill="#C9D3DE"/><path d="M24 9v30M9 24h30" stroke="#8A97A6" stroke-width="3"/></svg>',
+    snail:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><path d="M8 38h32" stroke="#7FA07F" stroke-width="3" stroke-linecap="round"/><ellipse cx="22" cy="36" rx="14" ry="5" fill="#8FBF7A"/><circle cx="17" cy="25" r="10" fill="#C98A3C"/><path d="M17 25m-6 0a6 6 0 1 1 12 0a4 4 0 1 0-8 0a2 2 0 1 1 4 0" fill="none" stroke="#7A4B12" stroke-width="2.6"/><line x1="34" y1="34" x2="38" y2="26" stroke="#7A4B12" stroke-width="3" stroke-linecap="round"/><circle cx="38" cy="25" r="2.2" fill="#12233A"/></svg>',
+    flower:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><path d="M24 44V26" stroke="#3F8A4A" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="18" r="6" fill="#F2B705"/><circle cx="15" cy="18" r="6" fill="#E86A8A"/><circle cx="33" cy="18" r="6" fill="#E86A8A"/><circle cx="24" cy="10" r="6" fill="#E86A8A"/><circle cx="24" cy="26" r="6" fill="#E86A8A"/></svg>',
+    seed:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><ellipse cx="24" cy="26" rx="12" ry="15" fill="#C98A3C"/><path d="M24 12c3 6 3 22 0 28" stroke="#8A5A1E" stroke-width="2.4" fill="none"/><ellipse cx="19" cy="21" rx="3" ry="5" fill="#FFFFFF" opacity=".35"/></svg>',
+    star:'<svg viewBox="0 0 48 48" role="img" aria-hidden="true"><path d="M24 7l5 11 12 1-9 9 2 12-10-6-10 6 2-12-9-9 12-1z" fill="#F2B705" stroke="#B88700" stroke-width="2"/></svg>'
+  };
+
+  function optionsFor(sum, minuend){
+    var cands = [];
+    if (sum !== undefined && sum !== null) cands.push({ text: "7 + 3 = 10", sum: 10 });
+    return cands;
+  }
+
+  function makeOptions(correctText, alternatives){
+    var list = [];
+    var alt = alternatives || [];
+    for (var i = 0; i < alt.length; i++){ list.push(alt[i]); }
+    list.push(correctText);
+    // перемешиваем так, чтобы правильный вариант не всегда был первым
+    var out = [];
+    var iCorrect = 0;
+    for (var k = 0; k < list.length; k++){
+      var pos = (k * 2 + iCorrect) % (k + 1);
+      out.splice(pos, 0, list[k]);
+      if (list[k] === correctText) iCorrect = out.indexOf(correctText);
+    }
+    return out;
+  }
+
+  function storyBank(){
+    return [
+      {
+        id:"S1", icon:"apple", noun:"яблока", item:"яблоко", verb:"яблоки", kind:"add",
+        setup:"Ляля собрала 7 яблок. Бабушка принесла ещё 3 яблока.", prompt:"Сколько яблок стало?",
+        initial:7, operand:3, result:10, level:"Показ",
+        equationVariants:["7 + 3 = ?"],
+        right:"7 + 3 = 10", wrong:["7 − 3 = 4", "7 + 3 = 9"],
+        hint:"Сложи две группы яблок: 7 и 3. Начни с семи и посчитай дальше: восемь, девять, десять.",
+        explain:"Было 7 яблок, прибавили 3 — вместе 10. Сложение: 7 + 3 = 10.",
+        next:"Теперь смотри: немного изменим историю."
+      },
+      {
+        id:"S2", icon:"apple", noun:"яблок", item:"яблоко", verb:"яблоки", kind:"subtract",
+        setup:"В корзине было 9 красных яблок. Биби-улитка съела 4 яблока.", prompt:"Сколько яблок осталось?",
+        initial:9, operand:4, result:5, level:"Задача 1",
+        equationVariants:["9 − 4 = ?"],
+        right:"9 − 4 = 5", wrong:["4 − 9 = 5", "9 + 4 = 13"],
+        hint:"Яблок стало меньше, значит это вычитание. Начни с девяти и отсчитай назад четыре шага.",
+        explain:"Вычитание всегда уменьшает: из 9 убрали 4, осталось 5. Меньше нуля не получится — предметы просто заканчиваются.",
+        next:"Дальше — светлячки в банке."
+      },
+      {
+        id:"S3", icon:"beetle", noun:"жучка", item:"жучок", verb:"жучки", kind:"add",
+        setup:"На большом листе сидели 6 блестящих жучков. Прилетели ещё 4.", prompt:"Сколько жучков стало?",
+        initial:6, operand:4, result:10, level:"Задача 2",
+        equationVariants:["6 + 4 = ?"],
+        right:"6 + 4 = 10", wrong:["6 − 4 = 2", "6 + 4 = 11"],
+        hint:"Шесть и четыре — это две части одного целого. Досчитай от шести: семь, восемь, девять, десять.",
+        explain:"6 + 4 = 10: два ряда по пять. Такое легко увидеть на рамке.",
+        next:"Дальше — колёса у тачки."
+      },
+      {
+        id:"S4", icon:"wheel", noun:"колёс", item:"колесо", verb:"колёса", kind:"subtract",
+        setup:"У садовой тачки было 7 колёс в запасе. Три колеса поставили на тачку.", prompt:"Сколько колёс осталось в запасе?",
+        initial:7, operand:3, result:4, level:"Задача 3",
+        equationVariants:["7 − 3 = ?"],
+        right:"7 − 3 = 4", wrong:["3 − 7 = ?", "7 + 3 = 10"],
+        hint:"Колёса забрали — значит вычитаем. Из семи убери три: останется четыре.",
+        explain:"7 − 3 = 4. Проверка: 4 + 3 = 7, всё сходится.",
+        next:"Дальше — светлячки в стеклянной банке."
+      },
+      {
+        id:"S5", icon:"snail", noun:"улиток", item:"улитка", verb:"улитки", kind:"add",
+        setup:"На мокром камне грелись 5 улиток. Приползли ещё 3 улитки.", prompt:"Сколько улиток стало?",
+        initial:5, operand:3, result:8, level:"Задача 4",
+        equationVariants:["5 + 3 = ?"],
+        right:"5 + 3 = 8", wrong:["5 − 3 = 2", "5 + 3 = 9"],
+        hint:"Начни с пяти и прибавь три: шесть, семь, восемь.",
+        explain:"5 + 3 = 8. Восемь меньше десяти — рамка ещё не полная, там два пустых гнезда.",
+        next:"Дальше — лейка."
+      },
+      {
+        id:"S6", icon:"flower", noun:"цветов", item:"цветок", verb:"цветы", kind:"subtract",
+        setup:"Ляля несла 10 цветов. По дороге она подарила 6 цветов.", prompt:"Сколько цветов у неё осталось?",
+        initial:10, operand:6, result:4, level:"Задача 5",
+        equationVariants:["10 − 6 = ?"],
+        right:"10 − 6 = 4", wrong:["10 + 6 = 16", "6 + 4 = 10"],
+        hint:"Цветы подарили — значит вычитаем. Из десяти убери шесть: посчитай, сколько осталось в руках.",
+        explain:"10 − 6 = 4. Проверка: 4 + 6 = 10 — подаренные и оставшиеся вместе дают все цветы.",
+        next:"Дальше — семечки."
+      },
+      {
+        id:"S7", icon:"seed", noun:"семечек", item:"семечко", verb:"семечки", kind:"subtract",
+        setup:"В мешочке было 10 семечек подсолнуха. Биби съела 2 семечка.", prompt:"Сколько семечек осталось?",
+        initial:10, operand:2, result:8, level:"Задача 6",
+        equationVariants:["10 − 2 = ?"],
+        right:"10 − 2 = 8", wrong:["2 − 10 = ?", "10 − 2 = 7"],
+        hint:"Из десяти убери два — останется восемь. Два и восемь вместе снова дают десять.",
+        explain:"10 − 2 = 8. Вычитание уменьшает количество, а вместе части снова дают десять.",
+        next:"Дальше — новый сад Ляли."
+      },
+      {
+        id:"S8", icon:"star", noun:"звёзд", item:"звезда", verb:"звёзды", kind:"add",
+        setup:"На клумбе светилось 4 звёздочки-фонарика. Ляля зажгла ещё 2.", prompt:"Сколько фонариков светится?",
+        initial:4, operand:2, result:6, level:"Задача 7",
+        equationVariants:["4 + 2 = ?"],
+        right:"4 + 2 = 6", wrong:["4 − 2 = 2", "4 + 2 = 5"],
+        hint:"Четыре и ещё два: пять, шесть.",
+        explain:"4 + 2 = 6. До десяти не хватает четырёх — но это уже другая история.",
+        next:"Теперь новое задание, где понадобятся все умения сразу."
+      }
+    ];
+  }
+
+  function storySteps(p){
+    if (p.kind === "add"){
+      return [
+        { text:"Шаг 1 из 2: выложи то, что было сначала — " + p.initial + " " + p.noun + ".", expect:"initial" },
+        { text:"Шаг 2 из 2: выложи всё, что стало — " + p.result + " " + p.noun + ". Нажимай на отмеченные предметы, чтобы добавить их.", expect:"result" }
+      ];
+    }
+    return [
+      { text:"Шаг 1 из 2: выложи то, что было сначала — " + p.initial + " " + p.noun + ".", expect:"initial" },
+      { text:"Шаг 2 из 2: убери " + p.operand + " " + p.noun + " — те, что забрали. Нажми на них, чтобы они стали серыми.", expect:"result" }
+    ];
+  }
+  function movedInfo(p, step){
+    if (p.kind === "add"){
+      return [
+        { moved:p.initial, note:"Отмечено «в истории»: " + p.initial + " " + p.noun + "." },
+        { moved:p.result, note:"Отмечено «в истории»: " + p.result + " " + p.noun + " — это " + p.initial + " + " + p.operand + "." }
+      ][step];
+    }
+    return [
+      { moved:p.initial, note:"Отмечено «в истории»: " + p.initial + " " + p.noun + "." },
+      { moved:p.result, note:"Осталось отмечено: " + p.result + " " + p.noun + " — это " + p.initial + " − " + p.operand + "." }
+    ][step];
+  }
+  function evalStory(p, step, movedCount, chosen){
+    var expected = (step === 0) ? p.initial : p.result;
+    var moved = clamp(Math.round(Number(movedCount) || 0), 0, p.initial + p.operand);
+    var staged = (moved === expected);
+    var eqOk = (chosen === p.right);
+    if (!staged){
+      var kind = "try", title, body;
+      if (moved < expected){
+        kind = "try"; title = "Пока не все предметы выложены";
+        body = (p.kind === "add")
+          ? "Отмечено " + moved + ", а нужно " + expected + ". Нажми ещё на " + (expected - moved) + " " + p.noun + " ниже."
+          : "Серых пока " + (p.initial - moved) + ", а забрали " + p.operand + ". Нажми на " + (expected - moved) + " " + p.noun + ", чтобы они стали серыми.";
+      } else {
+        kind = "try"; title = "Выложено больше, чем нужно";
+        body = "Отмечено " + moved + ", а в истории " + expected + ". Часть предметов можно вернуть: нажми на те, что лишние.";
+      }
+      return { ok:false, kind:kind, title:title, body:body, moved:moved, expected:expected, pending:"items" };
+    }
+    if (!eqOk){
+      return {
+        ok:false, kind:"try", title:"Предметы выложены верно",
+        body:"В ряду " + expected + " " + p.noun + " — правильно. Осталось выбрать подходящую запись: посмотри, предметов стало больше или меньше, и сравни с вариантами.",
+        moved:moved, expected:expected, pending:"equation"
+      };
+    }
+    return {
+      ok:true, kind:"ok", title:"Верно: " + p.right.replace("?", expected),
+      body:p.explain + " Вопрос истории: «" + p.prompt + "» — ответ " + p.result + ".",
+      moved:moved, expected:expected, pending:null
+    };
+  }
+  function hintForStory(p, step, movedCount){
+    var expected = (step === 0) ? p.initial : p.result;
+    var moved = Math.round(Number(movedCount) || 0);
+    if (moved !== expected){
+      return "В истории " + expected + " " + p.noun + ". Сейчас отмечено " + moved + ". " +
+        (p.kind === "add" ? "Нажми на предметы, чтобы их стало больше." : "Нажми на предметы, чтобы убрать лишние.");
+    }
+    return p.hint;
+  }
+  function textAlternative(p){
+    var m = storySteps(p);
+    return "Словами: " + p.setup + " " + p.prompt + " Запись: " + p.right.replace("?", p.result) +
+      ". Действия: " + m[0].text + " " + m[1].text;
+  }
+
+  /* ---- задание «Грядка Ляли»: сочетание умений ---- */
+  function makeFinale(seed){
+    var pairs = allBonds().filter(function(p){ return p[0] >= 2 && p[0] <= 8; });
+    var pick = pairs[Math.abs(Math.round(Number(seed) || 0)) % pairs.length];
+    var flowers = pick[0], suns = pick[1];
+    return {
+      seed:seed,
+      flowers:flowers, suns:suns, total:10,
+      eaten:3, remainder:7,
+      prompt:"Посади на рамку ровно десять семян. Потом посмотри, сколько биби съела, и скажи, сколько осталось.",
+      rightMove:"10 + 0 = 10",
+      rightRemove:"10 − 3 = 7",
+      moveChoices:["10 + 0 = 10", "5 + 5 = 10", "9 + 1 = 10"],
+      removeChoices:["10 − 3 = 7", "10 − 7 = 3", "10 + 3 = 13"],
+      hintMove:"Считай пустые гнёзда: их десять, значит нужно десять семян. Нажимай на гнёзда одно за другим.",
+      hintRemove:"Было десять, съели три — значит вычитаем: 10 − 3. Останется семь.",
+      explain:"10 − 3 = 7. Вычитание уменьшает, а сложение увеличивает: 7 + 3 снова даст десять."
+    };
+  }
+  function evalFinale(f, flags, chosenRemove){
+    var have = countOf(flags);
+    if (have !== FRAME_SIZE){
+      var kind = "try", title, body;
+      if (have < FRAME_SIZE){
+        kind = "try"; title = "Пока меньше десяти";
+        body = "На рамке " + have + " семян. Пустых гнёзд " + (FRAME_SIZE - have) + " — посади ещё столько же.";
+      } else {
+        kind = "try"; title = "Больше десяти не бывает";
+        body = "В рамке десять гнёзд и ни одного лишнего. Убери лишние семена.";
+      }
+      return { ok:false, kind:kind, title:title, body:body, have:have, stage:"move", need:clamp(FRAME_SIZE - have, 0, FRAME_SIZE) };
+    }
+    var eqOk = (chosenRemove === f.rightRemove);
+    if (!eqOk){
+      return { ok:false, kind:"try", title:"Семена посажены верно: 10",
+        body:"Семян ровно десять. Теперь выбери запись для вопроса: съели " + f.eaten + " — предметов стало меньше или больше? Выбери подходящее действие.",
+        have:have, stage:"remove" };
+    }
+    return { ok:true, kind:"ok", title:"Готово: 10 − 3 = 7",
+      body:f.explain + " Ты сам собрал десятку (10 + 0 = 10) и сам вычел часть — это и есть новое задание.", have:have, stage:"done" };
+  }
+  function partOfTen(f, flags){
+    var have = countOf(flags);
+    var left = clamp(f.flowers, 0, FRAME_SIZE);
+    var right = clamp(have - left, 0, FRAME_SIZE);
+    return { left:left, right:right, whole:have };
+  }
+
+  window.NumberAdventureCore = {
+    FRAME_SIZE:FRAME_SIZE,
+    NUMBER_WORDS:NUMBER_WORDS,
+    NUMBER_WORDS_F:NUMBER_WORDS_F,
+    ICONS:ICONS,
+    clamp:clamp,
+    countOn:countOn,
+    frameOfCount:frameOfCount,
+    countOf:countOf,
+    frameSummary:frameSummary,
+    spacingRound:spacingRound,
+    evalCount:evalCount,
+    targetToFind:targetToFind,
+    hintForCount:hintForCount,
+    allBonds:allBonds,
+    partsOfTen:partsOfTen,
+    bondRoundPlan:bondRoundPlan,
+    bondsCovered:bondsCovered,
+    evalMakeTen:evalMakeTen,
+    hintForMakeTen:hintForMakeTen,
+    missingToTen:missingToTen,
+    makeOptions:makeOptions,
+    storyBank:storyBank,
+    storySteps:storySteps,
+    movedInfo:movedInfo,
+    evalStory:evalStory,
+    hintForStory:hintForStory,
+    textAlternative:textAlternative,
+    makeFinale:makeFinale,
+    evalFinale:evalFinale,
+    partOfTen:partOfTen
+  };
+})();
+</script>
+
+<!-- ==========================================================================
+     ИНТЕРФЕЙС: экран, нажатия, клавиатура, озвучка, локальное продвижение.
+     ========================================================================== -->
+<script id="na-ui">
+(function(){
+  "use strict";
+  var C = window.NumberAdventureCore;
+
+  var STEPS = [
+    { key:"welcome",   title:"Шаг 1 из 5: знакомство",                view:"view-welcome" },
+    { key:"activity1", title:"Шаг 2 из 5: собери столько же",        view:"view-activity1" },
+    { key:"activity2", title:"Шаг 3 из 5: дополни до десяти",        view:"view-activity2" },
+    { key:"activity3", title:"Шаг 4 из 5: садовые истории",          view:"view-activity3" },
+    { key:"activity4", title:"Шаг 5 из 5: новое задание и итог",     view:"view-activity4" }
+  ];
+  var SUMMARY_VIEW = "view-summary";
+  var STORE_KEY = "number-adventure-make-ten/v1";
+
+  var state = {
+    step:0,
+    scaffold:"more",
+    sound:false,
+    done:{ welcome:false, activity1:false, activity2:false, activity3:false, activity4:false },
+    bonds:[],
+    storiesSolved:[],
+    lastActivity:1
+  };
+
+  var a1 = { tab:0, target:3, flags:[], demoStep:0, solved:[] };
+  var a2 = { tab:0, round:0, plan:C.bondRoundPlan(), flags:[], start:6, chosen:null, note:"" };
+  var a3 = { step:0, index:0, bank:null, marked:0, pool:[], chosen:null };
+  var a4 = { finale:null, flags:[], chosen:null, removeSolved:false };
+
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+  function wordF(n){ return C.NUMBER_WORDS_F[n] !== undefined ? C.NUMBER_WORDS_F[n] : String(n); }
+  function word(n){ return C.NUMBER_WORDS[n] !== undefined ? C.NUMBER_WORDS[n] : String(n); }
+
+  /* ---------- «звук»: только речевой синтез браузера, он не обязателен ---------- */
+  var speechOk = (typeof window.speechSynthesis !== "undefined" &&
+                  typeof window.SpeechSynthesisUtterance !== "undefined");
+  function say(text){
+    if (!state.sound || !speechOk || !text) return;
+    try{
+      window.speechSynthesis.cancel();
+      var u = new window.SpeechSynthesisUtterance(text);
+      u.lang = "ru-RU";
+      u.rate = 0.92;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* озвучка не обязательна */ }
+  }
+
+  /* ---------- продвижение ---------- */
+  function loadProgress(){
+    try{
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data && typeof data === "object"){
+        if (data.done) state.done = Object.assign(state.done, data.done);
+        if (Array.isArray(data.bonds)) state.bonds = data.bonds;
+        if (Array.isArray(data.storiesSolved)) state.storiesSolved = data.storiesSolved;
+        if (data.scaffold === "less" || data.scaffold === "more") state.scaffold = data.scaffold;
+      }
+    } catch (e) { /* приватный режим — просто без сохранения */ }
+  }
+  function saveProgress(){
+    try{
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({
+        done:state.done, bonds:state.bonds, storiesSolved:state.storiesSolved, scaffold:state.scaffold
+      }));
+      $("sumStorageNote").textContent = "Продвижение хранится только в этом браузере (localStorage) и никуда не отправляется. Кнопка «Начать заново» очищает его.";
+    } catch (e){
+      $("sumStorageNote").textContent = "Браузер запретил локальное сохранение, поэтому продвижение живёт только до перезагрузки страницы.";
+    }
+  }
+  function clearProgress(){
+    try{ window.localStorage.removeItem(STORE_KEY); } catch (e) {}
+  }
+
+  function completedCount(){
+    var n = 0;
+    for (var k in state.done){ if (state.done[k]) n++; }
+    return n;
+  }
+  function renderProgress(){
+    $("stepTitle").textContent = STEPS[state.step].title;
+    var c = completedCount();
+    $("stepCount").textContent = "Пройдено шагов: " + c + " из 5";
+    $("progressFill").style.width = (c / 5 * 100) + "%";
+    var dots = $("stepDots");
+    dots.textContent = "";
+    STEPS.forEach(function(s, i){
+      var li = el("li");
+      li.setAttribute("data-state", state.done[s.key] ? "done" : (i === state.step ? "now" : "todo"));
+      var span = el("span", null, String(i + 1));
+      span.setAttribute("title", s.title);
+      li.appendChild(span);
+      dots.appendChild(li);
+    });
+  }
+  var HASH_TO_STEP = {
+    "#start":0, "#welcome":0,
+    "#activity-1":1, "#activity-2":2, "#activity-3":3, "#activity-4":4,
+    "#summary":5, "#finish":5
+  };
+  var STEP_TO_HASH = ["#start", "#activity-1", "#activity-2", "#activity-3", "#activity-4"];
+  var syncingHash = false;
+
+  function show(stepIndex, opts){
+    opts = opts || {};
+    if (stepIndex >= STEPS.length){
+      state.lastActivity = 4;
+      showSummary(opts);
+      return;
+    }
+    state.step = Math.max(0, Math.min(STEPS.length - 1, stepIndex));
+    STEPS.forEach(function(s){
+      $(s.view).classList.toggle("hidden", s.view !== STEPS[state.step].view);
+    });
+    $(SUMMARY_VIEW).classList.add("hidden");
+    if (state.step === 0) state.done.welcome = state.done.welcome || false;
+    renderProgress();
+    var heading = $(STEPS[state.step].view).querySelector("h1");
+    if (heading) heading.setAttribute("tabindex", "-1");
+    if (!opts.skipScroll){
+      window.scrollTo({ top:0, behavior: state.reduced ? "auto" : "smooth" });
+    }
+    if (!opts.keepHash){
+      syncingHash = true;
+      if (window.location.hash !== STEP_TO_HASH[state.step]) window.location.hash = STEP_TO_HASH[state.step];
+      syncingHash = false;
+    }
+    if (!opts.keepFocus){
+      var view = $(STEPS[state.step].view);
+      var h = view.querySelector("h1");
+      if (h && typeof h.focus === "function"){
+        h.setAttribute("tabindex", "-1");
+        try { h.focus({ preventScroll:true }); } catch (e) { h.focus(); }
+      }
+    }
+    saveProgress();
+  }
+  function showSummary(opts){
+    opts = opts || {};
+    STEPS.forEach(function(s){ $(s.view).classList.add("hidden"); });
+    $(SUMMARY_VIEW).classList.remove("hidden");
+    renderSummary();
+    renderProgress();
+    if (!opts.skipScroll) window.scrollTo({ top:0, behavior:"smooth" });
+    if (!opts.keepHash){
+      syncingHash = true;
+      if (window.location.hash !== "#summary") window.location.hash = "#summary";
+      syncingHash = false;
+    }
+    var h = $(SUMMARY_VIEW).querySelector("h1");
+    if (h && typeof h.focus === "function") h.focus();
+  }
+  // Прямые ссылки: index.html#activity-1 открывает первую активность сразу,
+  // #activity-2 — вторую, #activity-3 — третью, #activity-4 — новое задание,
+  // #summary — итог, #start — начальный экран. Хеш можно менять без перезагрузки.
+  function viewFromHash(){
+    var raw = String(window.location.hash || "").trim().toLowerCase();
+    if (!raw) return null;
+    if (Object.prototype.hasOwnProperty.call(HASH_TO_STEP, raw)) return HASH_TO_STEP[raw];
+    var m = raw.match(/^#activity-(\d+)$/);
+    if (m){
+      var n = parseInt(m[1], 10);
+      if (n >= 1 && n <= STEPS.length) return n;
+    }
+    if (raw === "#summary" || raw === "#finish") return 5;
+    return null;
+  }
+  function applyHash(){
+    var target = viewFromHash();
+    if (target === null) return false;
+    if (target >= STEPS.length) showSummary({ keepHash:true, keepFocus:true });
+    else show(target, { keepHash:true, keepFocus:true });
+    return true;
+  }
+  function markDone(key){
+    if (!state.done[key]){ state.done[key] = true; saveProgress(); renderProgress(); }
+  }
+
+  /* ---------- рисование ten-frame ---------- */
+  function dotSvg(){
+    return '<svg class="slot-glyph" viewBox="0 0 48 48" role="img" aria-hidden="true">' +
+      '<circle cx="24" cy="24" r="17" fill="#F2B705" stroke="#8A5A00" stroke-width="3"/>' +
+      '<ellipse cx="17" cy="24" rx="9" ry="13" fill="#FFF6C9" opacity=".85"/>' +
+      '<circle cx="24" cy="24" r="4" fill="#8A5A00" opacity=".5"/></svg>';
+  }
+  function drawFrame(node, opts){
+    var flags = opts.flags, onToggle = opts.onToggle, fixed = opts.fixed || [],
+        numbers = (state.scaffold === "more"), highlight = opts.highlight || [],
+        label = opts.ariaLabel || "Рамка из десяти гнёзд";
+    node.setAttribute("aria-label", label);
+    node.textContent = "";
+    flags.forEach(function(on, i){
+      var b = el("button", "slot");
+      b.type = "button";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      if (fixed[i]) b.setAttribute("data-fixed", "true");
+      if (highlight.indexOf(i) !== -1) b.setAttribute("data-highlight", "true");
+      var slotWord = (i + 1) + " из 10";
+      b.setAttribute("aria-label", "Гнездо " + slotWord + ": " + (on ? "светлячок на месте" : "пусто") +
+        (fixed[i] ? ", это гнездо уже занято в задании" : (onToggle ? ". Нажми, чтобы убрать светлячка" : ". Нажми, чтобы посадить светлячка")));
+      if (numbers){
+        var tag = el("span", "idx-tag", String(i + 1));
+        tag.setAttribute("aria-hidden", "true");
+        b.appendChild(tag);
+      }
+      if (on) b.insertAdjacentHTML("beforeend", dotSvg());
+      if (!fixed[i] && onToggle){
+        b.addEventListener("click", function(){ onToggle(i); });
+      } else {
+        b.disabled = true;
+      }
+      node.appendChild(b);
+    });
+  }
+  function frameSentence(flags){
+    var have = C.countOf(flags);
+    var empty = C.FRAME_SIZE - have;
+    if (have === 0) return "Все десять гнёзд пустые — это ноль светлячков.";
+    if (empty === 0) return "Все десять гнёзд заняты — это десять светлячков.";
+    return have + " гнезд(о) занято, " + empty + " пустых — всего " + C.FRAME_SIZE + " гнёзд.";
+  }
+
+  /* ==========================================================================
+     ШАГ 2. Упражнение 1 — собери столько же
+     ========================================================================== */
+  function a1Tabs(){
+    [0,1,2].forEach(function(i){
+      var t = $("a1tab" + i);
+      t.setAttribute("aria-selected", i === a1.tab ? "true" : "false");
+      t.onclick = function(){ a1.tab = i; a1StartRound(true); };
+    });
+  }
+  function a1StartRound(redrawOnly){
+    if (a1.tab === 0){ a1DemoStart(); return; }
+    if (a1.tab === 1){
+      a1.target = 4; a1.flags = a1.flags.length ? a1.flags : [];
+      if (!redrawOnly) a1.flags = new Array(C.FRAME_SIZE).fill(false);
+      a1Render("Вместе", "Смотри: я закрасил первые два гнезда. Дальше — твой ход: нажми на третье гнездо.");
+      return;
+    }
+    a1.target = 7;
+    if (!redrawOnly) a1.flags = new Array(C.FRAME_SIZE).fill(false);
+    a1Render("Сам", "Собери ровно семь сам. Подсказка есть, но она появится только по кнопке.");
+    a1NextAfterRound("Сам");
+  }
+  function a1DemoStart(){
+    a1.demoStep = 0;
+    a1.target = 3;
+    a1.flags = new Array(C.FRAME_SIZE).fill(false);
+    a1Render("Показ", "Нажимай на подсвеченное гнездо — так мы вместе посадим три светлячка и увидим число 3.");
+  }
+  function a1Render(modeTitle, intro){
+    var h = [];
+    if (state.scaffold === "more") h = [0,1];
+    drawFrame($("a1Frame"), {
+      flags:a1.flags, highlight:h, ariaLabel:"Рамка упражнения 1, из десяти гнёзд",
+      onToggle:function(i){
+        a1.flags[i] = !a1.flags[i];
+        if (a1.tab === 0){
+          a1.demoStep++;
+          if (a1.demoStep === 1) setFeedback("a1Feedback", "info", "Смотри", "Первый светлячок на месте. Считаем: один.");
+          else if (a1.demoStep === 2) setFeedback("a1Feedback", "info", "Смотри", "Второй светлячок. Считаем: два.");
+          else if (a1.demoStep === 3) setFeedback("a1Feedback", "info", "Смотри", "Третий светлячок. В рамке «3» — три. Число 3 и три светлячка — это одно и то же.");
+        }
+        a1UpdateReadout();
+        drawFrame($("a1Frame"), {
+          flags:a1.flags, highlight:(state.scaffold === "more" && a1.tab === 0) ? [C.countOf(a1.flags)] : [],
+          ariaLabel:"Рамка упражнения 1, из десяти гнёзд",
+          onToggle:function(j){ a1.flags[j] = !a1.flags[j]; a1UpdateReadout(); a1Render(modeTitle, intro); }
+        });
+      }
+    });
+    a1UpdateReadout();
+    setFeedback("a1Feedback", a1.tab === 0 ? "info" : "info", modeTitle, intro);
+    say(intro);
+  }
+  function a1UpdateReadout(){
+    var have = C.countOf(a1.flags);
+    $("a1Target").textContent = String(a1.target);
+    $("a1TargetWord").textContent = word(a1.target);
+    $("a1Have").textContent = have + " — " + wordF(have);
+    var eq = $("a1Equation");
+    eq.textContent = have + (have === a1.target ? " = " : " ≠ ") + a1.target;
+    eq.className = "equation " + (have === a1.target ? "is-true" : "is-false");
+    $("a1Sentence").textContent = have === 0
+      ? "В рамке ноль светлячков, а нужно " + a1.target + " — это число «" + a1.target + "»."
+      : "В рамке " + have + " (" + wordF(have) + "), а нужно " + a1.target + " (" + word(a1.target) + ").";
+    $("a1FrameCaption").textContent = frameSentence(a1.flags);
+  }
+  function a1Check(){
+    var r = C.evalCount(a1.target, a1.flags);
+    setFeedback("a1Feedback", r.kind, r.title, r.body);
+    say(r.title + ". " + r.body);
+    if (r.ok){
+      a1.solved.push(a1.target);
+      if (a1.tab === 2){ markDone("activity1"); a1NextLabel("Дальше: упражнение 2"); }
+      else a1NextLabel("Продолжить");
+    }
+  }
+  function a1NextLabel(t){ $("a1Next").textContent = t; }
+  function a1NextAfterRound(){ }
+  function a1Hint(){
+    var s = C.hintForCount(a1.target, a1.flags);
+    setFeedback("a1Feedback", "hint", "Подсказка", s);
+    say(s);
+  }
+
+  /* ==========================================================================
+     ШАГ 3. Упражнение 2 — дополни до десяти
+     ========================================================================== */
+  function a2Tabs(){
+    [0,1].forEach(function(i){
+      var t = $("a2tab" + i);
+      t.setAttribute("aria-selected", i === a2.tab ? "true" : "false");
+      t.onclick = function(){ a2.tab = i; a2Round = i === 0 ? 0 : 2; a2StartRound(); };
+    });
+  }
+  function a2StartRound(){
+    var group = a2.tab;
+    a2.plan = C.bondRoundPlan();
+    a2.round = a2.tab === 0 ? 0 : 2;
+    a2ApplyRound();
+  }
+  function a2ApplyRound(){
+    var g = a2.plan[a2.round];
+    a2.start = g.starts[0];
+    a2.sub = 0;
+    a2.flags = new Array(C.FRAME_SIZE).fill(false);
+    for (var i = 0; i < a2.start; i++) a2.flags[i] = true;
+    a2.chosen = null;
+    a2QueueChoice();
+    a2Render();
+    var label = g.labels[0];
+    var msg = (a2.round === 0)
+      ? "Показ: в рамке шесть светлячков. Сколько пустых гнёзд? Нажимай на пустые гнёзда, пока не станет десять."
+      : "В рамке " + a2.start + " светлячков. Дополни до десяти сам и выбери ответ, сколько ты добавил.";
+    setFeedback("a2Feedback", "info", label, msg);
+    say(msg);
+  }
+  function a2QueueChoice(){
+    var g = a2.plan[a2.round];
+    a2.subIndex = 0;
+    a2.subStarts = g.starts.slice();
+  }
+  function a2Render(){
+    var start = a2.start;
+    $("a2Start").textContent = start + " — " + wordF(start);
+    var added = C.countOf(a2.flags) - start;
+    if (added < 0) added = 0;
+    $("a2Added").textContent = added + " — " + wordF(added);
+    var total = C.countOf(a2.flags);
+    $("a2Total").textContent = String(total);
+    var eq = $("a2Equation");
+    eq.textContent = start + " + " + added + " = " + total;
+    eq.className = "equation " + (total === C.FRAME_SIZE ? "is-true" : "is-false");
+    $("a2Sentence").textContent = (total === 0)
+      ? "Пустая рамка — это ноль. Ноль и десять вместе дают десять."
+      : "В рамке " + total + " из десяти: " + start + " уже было, " + added + " добавил ты.";
+    var choices = $("a2CounterChoices");
+    var need = C.FRAME_SIZE - start;
+    var pool = [need, C.clamp(need + 1, 0, 10), C.clamp(need - 1, 0, 10), C.clamp(need + 2, 0, 10)]
+      .filter(function(v, i, arr){ return arr.indexOf(v) === i; });
+    choices.textContent = "";
+    pool.forEach(function(v){
+      var b = el("button", "btn ghost", String(v));
+      b.type = "button";
+      b.setAttribute("data-answer", String(v));
+      b.setAttribute("aria-pressed", a2.chosen === v ? "true" : "false");
+      b.onclick = function(){ a2CounterAnswer(b, v); };
+      choices.appendChild(b);
+    });
+    var fixedStart = [];
+    for (var i = 0; i < start; i++) fixedStart.push(true);
+    var flagsToDraw = a2.flags.map(function(on, i){ return on; });
+    drawFrame($("a2Frame"), {
+      flags:flagsToDraw, fixed:fixedStart, ariaLabel:"Рамка упражнения 2, из десяти гнёзд",
+      onToggle:function(i){
+        a2.flags[i] = !a2.flags[i];
+        a2.chosen = null;
+        a2Render();
+      }
+    });
+    $("a2FrameCaption").textContent = "Занято " + start + " гнёзд в начале, " + (C.countOf(a2.flags) - start) + " добавили, пустых осталось " + (C.FRAME_SIZE - C.countOf(a2.flags)) + ".";
+    renderBondLog();
+  }
+  function a2CounterAnswer(btn, value){
+    var need = C.FRAME_SIZE - a2.start;
+    a2.chosen = value;
+    Array.prototype.forEach.call($("a2CounterChoices").children, function(b){
+      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+    });
+    if (value === need){
+      setFeedback("a2Feedback", "ok", "Да: не хватает " + need,
+        a2.start + " и " + need + " вместе дают десять. Теперь сложи это на рамке: добавь " + need + " светлячков.");
+      say("Да. Не хватает " + need + ".");
+    } else {
+      setFeedback("a2Feedback", "try", "Пока другой ответ",
+        "Пустых гнёзд сейчас " + need + " — значит, не хватает " + need + ". Посчитай пустые гнёзда в рамке: они все пустые подряд, их легко сосчитать.");
+    }
+  }
+  function a2AdvanceRound(){
+    var g = a2.plan[a2.round];
+    a2.subIndex = (a2.subIndex || 0) + 1;
+    if (a2.subIndex < g.starts.length){
+      a2.start = g.starts[a2.subIndex];
+      a2.flags = new Array(C.FRAME_SIZE).fill(false);
+      for (var i = 0; i < a2.start; i++) a2.flags[i] = true;
+      a2.chosen = null;
+      a2Render();
+      setFeedback("a2Feedback", "info", g.labels[a2.subIndex] || "Дальше",
+        "В рамке " + a2.start + " (" + wordF(a2.start) + "). Дополни до десяти.");
+      return;
+    }
+    if (a2.round < a2.plan.length - 1){
+      a2.round++;
+      a2ApplyRound();
+      return;
+    }
+    markDone("activity2");
+    setFeedback("a2Feedback", "ok", "Все способы собраны",
+      "Мы собрали: " + state.bonds.join(", ") + ". Каждая пара частей вместе даёт десять.");
+    $("a2Next").textContent = "Дальше: садовые истории";
+    a2.finished = true;
+  }
+  function a2Check(){
+    var r = C.evalMakeTen(a2.start, a2.flags.slice(a2.start));
+    setFeedback("a2Feedback", r.kind, r.title, r.body);
+    say(r.title);
+    if (r.ok){
+      addBond(a2.start, r.need);
+      if (a2.plan[a2.round].starts.length > 1 && !a2.finished){
+        // несколько раундов внутри части — двигаемся дальше по кнопке «Дальше»
+      }
+    }
+  }
+  function a2Hint(){
+    var s = C.hintForMakeTen(a2.start, a2.flags.slice(a2.start));
+    setFeedback("a2Feedback", "hint", "Подсказка", s);
+    say(s);
+  }
+  function addBond(a, b){
+    var key = a + "+" + b;
+    if (state.bonds.indexOf(key) === -1){
+      state.bonds.push(key);
+      state.bonds.sort(function(x, y){ return parseInt(x, 10) - parseInt(y, 10); });
+      saveProgress();
+    }
+    renderBondLog();
+  }
+  function renderBondLog(){
+    var log = $("a2BondLog");
+    log.textContent = "";
+    state.bonds.forEach(function(key){
+      var parts = key.split("+");
+      var li = el("li", null, parts[0] + " и " + parts[1] + " — это 10");
+      log.appendChild(li);
+    });
+  }
+
+  /* ==========================================================================
+     ШАГ 4. Упражнение 3 — садовые истории
+     ========================================================================== */
+  function a3Tabs(){
+    [0,1].forEach(function(i){
+      var t = $("a3tab" + i);
+      t.setAttribute("aria-selected", i === a3.tab ? "true" : "false");
+      t.onclick = function(){ a3.tab = i; a3.index = i === 0 ? 0 : 1; a3Load(); };
+    });
+  }
+  function a3Load(){
+    if (!a3.bank) a3.bank = C.storyBank();
+    var p = a3.bank[a3.index];
+    a3.problem = p;
+    a3.step = 0;
+    a3.marked = 0;
+    a3.chosen = null;
+    a3.render();
+  }
+  function a3Render(){
+    var p = a3.problem;
+    $("a3Prompt").textContent = p.setup + " " + p.prompt;
+    $("a3Index").textContent = p.level;
+    var steps = C.storySteps(p);
+    $("a3StepNote").textContent = steps[a3.step].text;
+    $("a3FrameCaption");
+    // ряд «в истории»
+    var items = $("a3Items");
+    items.textContent = "";
+    var total = p.initial + p.operand;
+    for (var i = 0; i < total; i++){
+      var cell = el("button", "glyph");
+      cell.type = "button";
+      var isNew = (p.kind === "add" && i >= p.initial);
+      var stateName;
+      if (p.kind === "add"){
+        stateName = (i < a3.marked) ? (isNew ? "new" : "out") : "out";
+      } else {
+        stateName = (i < a3.marked) ? "out" : "gone";
+      }
+      cell.setAttribute("data-state", stateName);
+      cell.innerHTML = C.ICONS[p.icon];
+      var badgeText = String(i + 1);
+      var badge = el("span", "badge", badgeText);
+      cell.appendChild(badge);
+      cell.setAttribute("aria-label", wordF(i + 1) + " " + p.item + (stateName === "gone" ? " — уже убрали из истории" : stateName === "new" ? " — новый предмет в истории" : " — в истории"));
+      cell.onclick = (function(idx){
+        return function(){ a3Toggle(idx); };
+      })(i);
+      items.appendChild(cell);
+    }
+    var info = C.movedInfo(p, a3.step);
+    $("a3ItemsNote").textContent = info.note;
+    // пул предметов
+    var pool = $("a3Pool");
+    pool.textContent = "";
+    for (var j = 0; j < total; j++){
+      var pcell = el("button", "glyph");
+      pcell.type = "button";
+      pcell.setAttribute("data-state", j < a3.marked ? "out" : "gone");
+      pcell.innerHTML = C.ICONS[p.icon];
+      pcell.appendChild(el("span", "badge", String(j + 1)));
+      pcell.setAttribute("aria-label", wordF(j + 1) + " " + p.item + (j < a3.marked ? " — отмечен, нажми, чтобы вернуть" : " — не отмечен, нажми, чтобы отметить"));
+      pcell.onclick = (function(idx){
+        return function(){
+          if (idx < a3.marked) a3.marked = idx;
+          else a3.marked = idx + 1;
+          a3.render();
+        };
+      })(j);
+      pool.appendChild(pcell);
+      if (j === a3.marked - 1) pcell.setAttribute("data-highlight", "true");
+    }
+    $("a3Moved").textContent = String(a3.marked);
+    var eq = $("a3Equation");
+    eq.textContent = p.kind === "add"
+      ? p.initial + " + " + p.operand + " = ?"
+      : p.initial + " − " + p.operand + " = ?";
+    if (a3.chosen && a3.chosen === p.right) eq.className = "equation is-true";
+    else eq.className = "equation";
+    // варианты записи
+    var choices = $("a3Choices");
+    choices.textContent = "";
+    var opts = C.makeOptions(p.right, p.wrong);
+    opts.forEach(function(text){
+      var b = el("button", "eq-choice", text);
+      b.type = "button";
+      b.setAttribute("aria-pressed", a3.chosen === text ? "true" : "false");
+      if (a3.chosen === text) b.classList.add(text === p.right ? "is-true" : "is-false");
+      b.onclick = function(){ a3Choose(text); };
+      choices.appendChild(b);
+    });
+    $("a3TextAlt").textContent = C.textAlternative(p);
+    var tbody = $("a3TableBody");
+    tbody.textContent = "";
+    var tr = document.createElement("tr");
+    [p.setup, p.prompt, p.right.replace("?", String(p.result))].forEach(function(cellText){
+      var td = el("td", null, cellText);
+      td.setAttribute("style", "padding:4px 6px 4px 0;vertical-align:top;border-bottom:2px solid #E5ECF4");
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    $("a3Next").disabled = (a3.tab === 0);
+    $("a3Next").textContent = (a3.tab === 0) ? "Дальше: задачи" : "Следующая история";
+  }
+  function a3Toggle(i){
+    var p = a3.problem;
+    // i — индекс предмета; отмечено становится i+1 предметов (или i, если нажали на уже отмеченный последним)
+    a3.marked = (i + 1 === a3.marked) ? i : (i + 1);
+    a3.chosen = null;
+    a3.render();
+  }
+  function a3Choose(text){
+    var p = a3.problem;
+    a3.chosen = text;
+    var r = C.evalStory(p, a3.step, a3.marked, text);
+    if (r.pending === "items"){
+      setFeedback("a3Feedback", r.kind, r.title, r.body);
+      a3.render();
+      return;
+    }
+    if (r.pending === "equation"){
+      setFeedback("a3Feedback", "try", r.title, r.body);
+      a3.render();
+      return;
+    }
+    setFeedback("a3Feedback", "ok", r.title, r.body);
+    say(r.title);
+    if (state.storiesSolved.indexOf(p.id) === -1){
+      state.storiesSolved.push(p.id);
+      saveProgress();
+    }
+    a3.chosen = p.right;
+    if (a3.index >= a3.bank.length - 1){
+      markDone("activity3");
+      markDone("activity4");
+      $("a3Next").textContent = "Дальше: новое задание";
+    }
+    a3.render();
+  }
+  function a3Check(){
+    var p = a3.problem;
+    var r = C.evalStory(p, a3.step, a3.marked, a3.chosen);
+    setFeedback("a3Feedback", r.kind, r.title, r.body);
+    say(r.title + ". " + r.body);
+    if (r.ok && a3.step === 0 && p.kind === "add"){
+      a3.step = 1;
+      a3.render();
+      setFeedback("a3Feedback", "info", "Шаг 2", "Теперь выложи всё, что стало в истории, и выбери запись.");
+    } else if (r.ok && a3.step === 0){
+      a3.step = 1;
+      a3.render();
+      setFeedback("a3Feedback", "info", "Шаг 2", "Теперь убери то, что забрали, и выбери запись.");
+    } else if (r.ok){
+      if (state.storiesSolved.indexOf(p.id) === -1){
+        state.storiesSolved.push(p.id);
+        saveProgress();
+      }
+      if (a3.index >= a3.bank.length - 1){
+        markDone("activity3");
+        markDone("activity4");
+      }
+    }
+  }
+  function a3Hint(){
+    var s = C.hintForStory(a3.problem, a3.step, a3.marked);
+    setFeedback("a3Feedback", "hint", "Подсказка", s);
+    say(s);
+  }
+  function a3Next(){
+    if (a3.tab === 0){
+      a3.tab = 1;
+      a3.index = 1;
+      a3Tabs();
+      a3Load();
+      return;
+    }
+    if (a3.index < a3.bank.length - 1){
+      a3.index++;
+      a3Load();
+      setFeedback("a3Feedback", "info", a3.problem.level, a3.problem.setup + " " + a3.problem.prompt);
+    } else {
+      show(4);
+    }
+  }
+
+  /* ==========================================================================
+     ШАГ 5. Новое задание — грядка Ляли
+     ========================================================================== */
+  function a4Start(){
+    a4.finale = C.makeFinale(state.storiesSolved.length + 3);
+    a4.flags = new Array(C.FRAME_SIZE).fill(false);
+    a4.chosen = null;
+    a4.removeStageShown = false;
+    a4.solved = false;
+    $("a4Eaten").textContent = String(a4.finale.eaten);
+    $("a4Q2").classList.add("hidden");
+    $("a4RemoveChoices").classList.add("hidden");
+    $("a4RemoveChoices").textContent = "";
+    $("a4RemoveNote").textContent = "";
+    $("a4EqMove").textContent = "0 + 0 = 0";
+    $("a4EqMove").className = "equation is-false";
+    $("a4MoveNote").textContent = "Первая запись появится, когда на рамке будет десять семян.";
+    a4Render();
+    setFeedback("a4Feedback", "info", "Новое задание",
+      a4.finale.prompt + " Кнопка «Подсказка» рядом, если понадобится.");
+  }
+  function a4Render(){
+    drawFrame($("a4Frame"), {
+      flags:a4.flags, ariaLabel:"Рамка нового задания, из десяти гнёзд",
+      onToggle:function(i){ a4.flags[i] = !a4.flags[i]; a4Render(); }
+    });
+    var have = C.countOf(a4.flags);
+    $("a4FrameCaption").textContent = have === 0
+      ? "Пока пусто — ноль семян."
+      : (have === C.FRAME_SIZE ? "Десять семян — рамка полная." : have + " семян на рамке, пустых гнёзд " + (C.FRAME_SIZE - have) + ".");
+  }
+  function a4ShowRemoveStage(){
+    if (a4.removeStageShown) return;
+    var parts = C.partOfTen(a4.finale, a4.flags);
+    $("a4EqMove").textContent = "10 + 0 = 10";
+    $("a4EqMove").className = "equation is-true";
+    $("a4MoveNote").textContent = "Ты собрал десятку: 10 + 0 = 10. Две части — " + parts.left + " и " + parts.right +
+      " (например, десять можно разложить и как 5 и 5).";
+    $("a4Q2").classList.remove("hidden");
+    var box = $("a4RemoveChoices");
+    box.classList.remove("hidden");
+    box.textContent = "";
+    a4.finale.removeChoices.forEach(function(text, i){
+      var b = el("button", "eq-choice", text);
+      b.type = "button";
+      b.setAttribute("aria-pressed", "false");
+      if (i === 1) b.setAttribute("data-note", "здесь уменьшаемое и вычитаемое поменялись местами");
+      b.onclick = function(){ a4ChooseRemove(b, text); };
+      box.appendChild(b);
+    });
+    a4.removeStageShown = true;
+    setFeedback("a4Feedback", "info", "Десять собрано",
+      "Теперь второй вопрос: сколько семян осталось, если Биби съела " + a4.finale.eaten + "? Выбери подходящую запись и нажми «Проверить».");
+    say("Десять собрано. Сколько семян осталось, если Биби съела " + a4.finale.eaten + "?");
+  }
+  function a4ChooseRemove(btn, text){
+    a4.chosen = text;
+    Array.prototype.forEach.call($("a4RemoveChoices").children, function(b){
+      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+    });
+    var r = C.evalFinale(a4.finale, a4.flags, text);
+    if (r.ok){
+      setFeedback("a4Feedback", "ok", r.title, r.body + " Проверка: " + a4.finale.remainder + " + " + a4.finale.eaten +
+        " = 10 — оставшиеся и съеденные вместе снова дают десять.");
+      say("Верно. Десять минус три равно семь.");
+      markDone("activity4");
+      renderSummary();
+      window.setTimeout(function(){ showSummary(); }, 1200);
+    } else {
+      setFeedback("a4Feedback", "try", r.title,
+        "Было десять, съели " + a4.finale.eaten + " — значит, стало меньше. Вычитание уменьшает: 10 − " + a4.finale.eaten +
+        " = " + a4.finale.remainder + ". Попробуй другую запись.");
+    }
+  }
+  function a4Check(){
+    if (!a4.finale) a4Start();
+    var have = C.countOf(a4.flags);
+    if (have !== C.FRAME_SIZE){
+      var r0 = C.evalFinale(a4.finale, a4.flags, null);
+      setFeedback("a4Feedback", r0.kind, r0.title, r0.body);
+      say(r0.title);
+      return;
+    }
+    a4ShowRemoveStage();
+    if (a4.chosen){
+      var r = C.evalFinale(a4.finale, a4.flags, a4.chosen);
+      setFeedback("a4Feedback", r.kind, r.title, r.body);
+    }
+  }
+  function a4Hint(){
+    if (!a4.finale) a4Start();
+    if (C.countOf(a4.flags) !== C.FRAME_SIZE){
+      setFeedback("a4Feedback", "hint", "Подсказка", a4.finale.hintMove);
+    } else {
+      setFeedback("a4Feedback", "hint", "Подсказка", a4.finale.hintRemove);
+    }
+  }
+
+  /* ==========================================================================
+     Итог
+     ========================================================================== */
+  function renderSummary(){
+    var bonds = $("sumBonds");
+    bonds.textContent = "";
+    if (state.bonds.length === 0){
+      $("sumBondsNote").textContent = "Пока не собрано ни одного способа. Загляни в упражнение 2 — там собирается десятка.";
+    } else {
+      $("sumBondsNote").textContent = "Собрано способов: " + state.bonds.length + ". Каждый из них можно проверить на рамке заново.";
+      state.bonds.forEach(function(key){
+        var parts = key.split("+");
+        bonds.appendChild(el("li", null, parts[0] + " и " + parts[1] + " — это 10"));
+      });
+    }
+    $("sumStories").textContent = "Решено историй: " + state.storiesSolved.length + " из 8 в наборе";
+    var next = $("sumNext");
+    next.textContent = "";
+    var ideas = [
+      "Собери десятку так: пять и пять, потом шесть и четыре — и найди, чем они похожи.",
+      "Разложи десять на две кучки и назови обе части вслух: «семь и три».",
+      "Придумай свою садовую историю с вычитанием: было меньше десяти, часть забрали.",
+      "Собери на рамке пустую рамку — это ноль, и назови число «ноль» вслух."
+    ];
+    var weakest = null;
+    if (state.storiesSolved.length < 4) weakest = ideas[2];
+    if (state.bonds.length < 3) weakest = ideas[1];
+    if (state.bonds.length >= 3 && state.storiesSolved.length >= 4) weakest = ideas[0];
+    if (weakest) next.appendChild(el("li", null, weakest));
+    ideas.forEach(function(t){ if (t !== weakest) next.appendChild(el("li", null, t)); });
+    var garden = $("sumGarden");
+    garden.textContent = "";
+    var flowers = 0;
+    for (var k in state.done){ if (state.done[k]) flowers++; }
+    for (var i = 0; i < flowers; i++){
+      var wrap = document.createElement("div");
+      wrap.className = "bloom";
+      wrap.setAttribute("aria-hidden", "true");
+      wrap.innerHTML = C.ICONS.flower;
+      garden.appendChild(wrap);
+    }
+    if (flowers === 0) garden.appendChild(el("p", "muted", "Цветы появятся по мере прохождения шагов."));
+    $("sumGardenNote").textContent = "Цветов: " + flowers + " из 5 — по одному за каждый пройденный шаг. Это не оценка и не рейтинг, спокойная отметка пути.";
+    $("sumGarden").setAttribute("aria-label", "Сад: цветов " + flowers + " из 5");
+    saveProgress();
+  }
+
+  /* ---------- обратная связь ---------- */
+  function setFeedback(id, kind, title, body){
+    var node = $(id);
+    if (!node) return;
+    node.setAttribute("data-kind", kind);
+    var mark = node.querySelector(".mark");
+    var t = node.querySelector(".fb-title");
+    var b = node.querySelector(".fb-body");
+    var marks = { ok:"✓", try:"↻", hint:"?", info:"i" };
+    if (mark) mark.textContent = marks[kind] || "i";
+    if (t) t.textContent = title;
+    if (b) b.textContent = body;
+  }
+
+  /* ==========================================================================
+     Инициализация
+     ========================================================================== */
+  function init(){
+    state.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    loadProgress();
+    $("sumStorageNote").textContent = "Продвижение хранится только в этом браузере (localStorage).";
+
+    if (!speechOk){
+      $("btnSound").disabled = true;
+      $("soundLabel").textContent = "Чтение вслух недоступно";
+      $("btnSound").setAttribute("title", "Этот браузер не поддерживает речевой синтез — работа приложения от него не зависит");
+    }
+    $("btnSound").onclick = function(){
+      state.sound = !state.sound;
+      $("btnSound").setAttribute("aria-pressed", state.sound ? "true" : "false");
+      $("soundLabel").textContent = "Читать вслух: " + (state.sound ? "вкл" : "выкл");
+      if (!state.sound && speechOk) window.speechSynthesis.cancel();
+      if (state.sound){
+        say("Читаю вслух. Всё то же самое можно прочитать на экране.");
+      }
+    };
+
+    var dlg = $("resetDialog");
+    $("btnReset").onclick = function(){ if (typeof dlg.showModal === "function") dlg.showModal(); else resetAll(); };
+    $("resetNo").onclick = function(){ if (dlg.close) dlg.close(); };
+    $("resetYes").onclick = function(){ if (dlg.close) dlg.close(); resetAll(); };
+    function resetAll(){
+      clearProgress();
+      state.done = { welcome:false, activity1:false, activity2:false, activity3:false, activity4:false };
+      state.bonds = []; state.storiesSolved = [];
+      a1 = { tab:0, target:3, flags:[], demoStep:0, solved:[] };
+      a2 = { tab:0, round:0, plan:C.bondRoundPlan(), flags:[], start:6, chosen:null, note:"" };
+      a3 = { step:0, index:0, bank:null, marked:0, pool:[], chosen:null };
+      a4 = { finale:null, flags:[], chosen:null, removeSolved:false };
+      a1Tabs(); a1StartRound(); a2Tabs(); a2StartRound(); a3Tabs(); a3Load(); a4Start();
+      renderBondLog();
+      $("a1Next").textContent = "Продолжить";
+      $("a2Next").textContent = "Дальше";
+      $("a3Next").textContent = "Дальше: задачи";
+      a2.finished = false;
+      setFeedback("a1Feedback", "info", "Показ", "Смотри: я нажимаю гнёзда одно за другим и считаю вслух: один, два, три.");
+      show(0);
+      setFeedback("a1Feedback", "info", "Показ", "Смотри: я нажимаю гнёзда одно за другим и считаю вслух: один, два, три.");
+    }
+
+    $("btnScaffoldMore").onclick = function(){ setScaffold("more"); };
+    $("btnScaffoldLess").onclick = function(){ setScaffold("less"); };
+    function setScaffold(level){
+      state.scaffold = level;
+      $("btnScaffoldMore").setAttribute("aria-pressed", level === "more" ? "true" : "false");
+      $("btnScaffoldLess").setAttribute("aria-pressed", level === "less" ? "true" : "false");
+      $("scaffoldExplain").textContent = level === "more"
+        ? "«Больше подсказок»: гнёзда пронумерованы, первые шаги подсвечены, предметы в историях подписаны. Можно переключать в любой момент — это не оценка."
+        : "«Меньше подсказок»: номера гнёзд скрыты, подсказки появляются только по кнопке. Можно переключать в любой момент — это не оценка.";
+      saveProgress();
+      a1Render("Показ", "Нажми на подсвеченное гнездо — посадим светлячков вместе.");
+      a2Render();
+      a3.render();
+      a4Render();
+    }
+    $("btnStart").onclick = function(){ state.done.welcome = true; show(1); };
+
+    // приветственная рамка с пятью светлячками
+    var wf = new Array(C.FRAME_SIZE).fill(false);
+    for (var i = 0; i < 5; i++) wf[i] = true;
+    drawFrame($("welcomeFrame"), { flags:wf, ariaLabel:"Пример: рамка с пятью светлячками из десяти" });
+
+    a1Tabs(); a1StartRound();
+    a2Tabs(); a2StartRound();
+    a3Tabs(); a3Load();
+    a4Start();
+    renderBondLog();
+
+    $("a1Clear").onclick = function(){ a1.flags = new Array(C.FRAME_SIZE).fill(false); a1Render("Ещё раз", "Рамка пустая — ноль светлячков. Собери снова."); };
+    $("a1Hint").onclick = a1Hint;
+    $("a1Check").onclick = a1Check;
+    $("a1Next").onclick = function(){
+      if (a1.tab < 2){
+        a1.tab++;
+        a1Tabs();
+        if (a1.tab === 1){ a1.flags = new Array(C.FRAME_SIZE).fill(false); a1.flags[0] = true; a1.flags[1] = true; a1StartRound(); }
+        else { a1.flags = new Array(C.FRAME_SIZE).fill(false); a1StartRound(); }
+        return;
+      }
+      markDone("activity1");
+      show(2);
+    };
+
+    $("a2Clear").onclick = function(){
+      for (var i = a2.start; i < C.FRAME_SIZE; i++) a2.flags[i] = false;
+      a2.chosen = null;
+      a2Render();
+      setFeedback("a2Feedback", "info", "Ещё раз", "Мои светлячки убраны, а те, что были в рамке сначала, остались.");
+    };
+    $("a2Hint").onclick = a2Hint;
+    $("a2Check").onclick = a2Check;
+    $("a2Next").onclick = function(){
+      if (a2.round === a2.plan.length - 1 && a2.subIndex >= a2.plan[a2.round].starts.length - 1){
+        markDone("activity2");
+        show(3);
+        return;
+      }
+      a2AdvanceRound();
+    };
+
+    $("a3Undo").onclick = function(){ a3.marked = Math.max(0, a3.marked - 1); a3.chosen = null; a3.render(); };
+    $("a3Hint").onclick = a3Hint;
+    $("a3Check").onclick = a3Check;
+    $("a3Next").onclick = a3Next;
+
+    $("a4Clear").onclick = function(){ a4.flags = new Array(C.FRAME_SIZE).fill(false); a4.chosen = null; a4Start(); };
+    $("a4Hint").onclick = a4Hint;
+    $("a4Check").onclick = a4Check;
+
+    $("sumRestart").onclick = function(){ resetAll(); };
+    $("sumBack").onclick = function(){ show(3); };
+
+    // Прямые ссылки и переходы по хешу без перезагрузки страницы.
+    window.addEventListener("hashchange", function(){
+      if (syncingHash) return;
+      applyHash();
+    });
+    var opened = applyHash();
+    if (!opened) show(0, { keepHash:true, skipScroll:true });
+    if (!opened) $("btnStart").focus();
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
