@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Interactive education apps</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body><h1>Interactive education apps</h1><ul id="apps"></ul>
+<script>
+const apps = ["data-detective","probability-detective","living-ecosystem","number-adventure","shapes-garden"];
+document.getElementById("apps").innerHTML = apps.map(a => `<li><a href="./${a}/">${a}</a></li>`).join("");
+</script></body></html>
