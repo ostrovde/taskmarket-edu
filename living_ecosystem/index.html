@@ -697,7 +697,7 @@ dialog.gloss::backdrop { background: rgba(23,37,30,.45); }
               </div>
             </fieldset>
             <fieldset>
-              <legend id="a2-predict-legend">I predict that if I lower <span id="a2-focus-name">water supply</span>, then&hellip;</legend>
+              <legend id="a2-predict-legend">I predict that if I lower water supply, then&hellip;</legend>
               <div id="a2-predictions"></div>
             </fieldset>
             <div class="btn-row">
@@ -835,7 +835,7 @@ dialog.gloss::backdrop { background: rgba(23,37,30,.45); }
   <!-- ====================== SHARED LAB (moved into the active activity) = -->
   <div id="lab" class="stack hidden">
 
-    <section class="panel" aria-labelledby="scene-h">
+    <section class="panel" id="panel-scene" aria-labelledby="scene-h">
       <div class="panel__head">
         <h2 id="scene-h">Your meadow right now</h2>
         <p class="panel__hint">Step <span id="step-counter">0</span> · <span id="scene-status">ready</span></p>
@@ -957,6 +957,9 @@ dialog.gloss::backdrop { background: rgba(23,37,30,.45); }
           </svg>
         </div>
         <ul class="scene-legend" id="chart-legend"></ul>
+        <p class="small muted" id="chart-note">What the lines mean: a plant line is its <strong>cover</strong> (0&ndash;100).
+          An animal line is its <strong>share of the largest number this model allows</strong> for that species &mdash; rabbit 14, butterfly 24,
+          grasshopper 20, fox 4, songbird 5 &mdash; so 100% means the species is at its model maximum. The table below gives the raw numbers.</p>
         <div id="chart-table-wrap"></div>
       </div>
     </section>
@@ -1635,7 +1638,7 @@ function goalStatus(state, goal) {
   var STORAGE_KEY = 'meadowlab.progress.v1';
   var SCREENS = ['welcome', 'activity-1', 'activity-2', 'activity-3', 'free', 'summary'];
   var SLOT = { 'activity-1': 'lab-slot-1', 'activity-2': 'lab-slot-2', 'activity-3': 'lab-slot-3', 'free': 'lab-slot-4' };
-  var BUILD_STEP = { producer: 20, animal: 2 };
+  var BUILD_STEP = { producer: 20, herbivore: 2, predator: 2 };
   var INK = '#17251E', CARD = '#FFFCF3', GREEN = '#1C5B3B', CLAY = '#9C3F17', SKY = '#14556E', PLUM = '#5B3B8C', GOLD = '#7A5A0B';
   var SERIES = [
     { id: 'grass', label: 'Meadow Grass', colour: '#2F7A52', dash: '', width: 3.4, marker: 'circle' },
@@ -1862,6 +1865,14 @@ function goalStatus(state, goal) {
       s += birdArt(150 + ((i2 * 210) % 340), 74 + ((i2 * 27) % 34), 0.95);
     }
     /* number chips */
+    var empty = producerCoverOf(state) + rabbit + butterfly + hopper + fox + bird <= 0;
+    if (empty) {
+      for (i2 = 0; i2 < 6; i2++) {
+        var px = 68 + i2 * 100;
+        s += '<path d="M' + px + ' ' + (ground + 20) + ' q 17 -30 34 0" fill="none" stroke="#7C8A56" stroke-width="2.6" stroke-dasharray="6 5"/>';
+        s += '<path d="M' + px + ' ' + (ground + 20) + ' v 10" stroke="#7C8A56" stroke-width="2.2" stroke-dasharray="4 4"/>';
+      }
+    }
     var chips = [];
     if (gCover > 0) { chips.push('Grass ' + num(gCover)); }
     if (fCover > 0) { chips.push('Flowers ' + num(fCover)); }
@@ -1873,7 +1884,7 @@ function goalStatus(state, goal) {
     if (fox > 0) { chips.push('Foxes ' + num(fox)); }
     if (bird > 0) { chips.push('Songbirds ' + num(bird)); }
     s += '<rect x="8" y="236" width="624" height="26" rx="8" fill="#FFFCF3" stroke="#C6B998" stroke-width="2" opacity="0.94"/>';
-    s += svgLabel(18, 254, chips.length ? chips.join('  ·  ') : 'Nothing has been placed in this meadow yet', 'start', INK);
+    s += svgLabel(18, 254, chips.length ? chips.join('  ·  ') : 'Empty meadow — add plants from the species list', 'start', INK);
     return s;
   }
 
@@ -1947,8 +1958,6 @@ function goalStatus(state, goal) {
       s += svgLabel(R, B + 20, 'step ' + (n - 1), 'end', '#3C4F45');
       s += svgLabel(320, B + 20, 'each step is one turn of the model', 'middle', '#3C4F45');
     }
-    var legendY = 236;
-    s += svgLabel(L, legendY, 'Lines: plants = cover · animals = share of their own maximum (rabbit 14, butterfly 24, grasshopper 20, fox 4, songbird 5)', 'start', '#3C4F45');
     return s;
   }
 
@@ -2278,6 +2287,7 @@ function goalStatus(state, goal) {
       try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
     }
     if (ui.state) { renderAll(); }
+    layoutScene();
     save();
   }
 
@@ -2427,10 +2437,21 @@ function goalStatus(state, goal) {
     ui.state.scenarioId = 'build';
     ui.state.light = clamp(round3(ui.state.light), 0, 100);
     ui.state.water = waterTargetOf(ui.state.light, ui.state.waterSupply, mossCoverOf(ui.state), producerCoverOf(ui.state));
-    renderPalette(); renderTally(); renderLinks(); renderAll();
-    var btn = document.querySelector('[data-pick="' + id + '"] .count-pill');
-    if (btn) { btn.setAttribute('tabindex', '-1'); btn.focus({ preventScroll: true }); }
+    /* Only the pressed card is redrawn, so keyboard focus stays on the button
+       the learner just used and repeated Add presses work without re-tabbing. */
+    updatePickCard(id);
+    renderTally(); renderLinks(); renderAll();
     announce(SPECIES[id].name + ' is now ' + num(next) + ' in your habitat.');
+  }
+  function updatePickCard(id) {
+    var card = document.querySelector('[data-pick="' + id + '"]');
+    if (!card) { renderPalette(); return; }
+    var value = ui.build[id] || 0;
+    card.classList.toggle('pick--in', value > 0);
+    var pill = card.querySelector('.count-pill');
+    if (pill) { pill.textContent = num(value); }
+    var minus = card.querySelector('.pick__actions button');
+    if (minus) { minus.disabled = !(value > 0); }
   }
   function renderTally() {
     var rep = habitatReport(buildCounts());
@@ -2569,11 +2590,17 @@ function goalStatus(state, goal) {
   }
   function renderPredictionForm() {
     var key = focusPair();
-    var focus = key.split(':')[0];
-    $('a2-focus-name').textContent = focus === 'water' ? 'water supply' : 'sunlight';
-    $('a2-focus-name-2').textContent = focus === 'water' ? 'water supply' : 'sunlight';
+    var focus = key.split(':')[0], dir = key.split(':')[1];
+    var focusName = focus === 'water' ? 'water supply' : 'sunlight';
+    var span = $('a2-focus-name-2');
+    if (span) { span.textContent = focusName; }
     var legend = $('a2-predict-legend');
-    if (legend) { legend.textContent = 'I predict that if I ' + (key.split(':')[1] === 'down' ? 'lower ' : 'raise ') + (focus === 'water' ? 'water supply' : 'sunlight') + ', then…'; }
+    if (legend) {
+      /* rebuilt as text rather than by overwriting innerHTML, so no element
+         inside it can be destroyed and then looked up again */
+      clear(legend);
+      legend.appendChild(document.createTextNode('I predict that if I ' + (dir === 'down' ? 'lower ' : 'raise ') + focusName + ', then\u2026'));
+    }
     var box = $('a2-predictions');
     clear(box);
     PREDICTIONS[key].forEach(function (opt, i) {
@@ -2898,6 +2925,41 @@ function goalStatus(state, goal) {
   function show(node) { if (node) { node.classList.remove('hidden'); } }
   function hide(node) { if (node) { node.classList.add('hidden'); } }
 
+  /* On a narrow screen the meadow picture is lifted above the task column so a
+     learner can watch the meadow while choosing species; on wider screens it
+     goes back inside the laboratory column, which sits on the left. */
+  function layoutScene() {
+    var scene = $('panel-scene');
+    var lab = $('lab');
+    if (!scene || !lab) { return; }
+    var narrow = window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
+    var screen = $('screen-' + ui.screen);
+    var layout = screen ? screen.querySelector('.layout') : null;
+    var isTask = ui.screen === 'activity-1' || ui.screen === 'activity-2' || ui.screen === 'activity-3';
+    if (!layout || !isTask) {
+      if (scene.parentNode !== lab) { lab.insertBefore(scene, lab.firstChild); }
+      return;
+    }
+    var labStack = null, taskStack = null;
+    Array.prototype.forEach.call(layout.children, function (child) {
+      if (!child.classList || !child.classList.contains('stack')) { return; }
+      if (child.contains(lab)) { labStack = child; } else { taskStack = child; }
+    });
+    if (!labStack) { return; }
+    if (narrow) {
+      if (taskStack && layout.firstElementChild !== taskStack) { layout.insertBefore(taskStack, labStack); }
+      if (scene.parentNode !== layout) { layout.insertBefore(scene, layout.firstElementChild); }
+    } else {
+      if (scene.parentNode !== lab) { lab.insertBefore(scene, lab.firstChild); }
+      if (labStack.parentNode === layout && layout.firstElementChild !== labStack) {
+        layout.insertBefore(labStack, layout.firstElementChild);
+      }
+      if (taskStack && labStack.nextElementSibling !== taskStack) {
+        layout.insertBefore(taskStack, labStack.nextElementSibling);
+      }
+    }
+  }
+
   /* ============================================================= GLOSSARY */
   function openGloss(termId) {
     var dlg = $('gloss-dialog');
@@ -3011,6 +3073,7 @@ function goalStatus(state, goal) {
       showScreen(target, { noHash: true });
     });
     on(document, 'visibilitychange', function () { if (document.hidden) { stopPlay(); } });
+    on(window, 'resize', function () { layoutScene(); });
     on(window, 'keydown', function (e) {
       if (e.key === 'Escape') { stopPlay(); }
     });

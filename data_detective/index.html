@@ -1,0 +1,2900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Detective — можно ли доверять этому утверждению? · учебное приложение</title>
+<meta name="description" content="Интерактивное учебное занятие для ~15 лет: как оформление графика, смещение выборки и путаница связи с причиной меняют вывод. Данные вымышленные и встроены в файл; сетевых запросов нет.">
+<meta name="robots" content="index,follow">
+<meta name="color-scheme" content="dark light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'">
+<style>
+
+
+:root{
+  --ink:#10141a;
+  --ink-2:#1a2029;
+  --ink-3:#232b36;
+  --paper:#f7f5f0;
+  --paper-2:#eeeae1;
+  --paper-3:#dfd9cd;
+  --text:#171b21;
+  --text-muted:#4e5860;
+  --text-on-ink:#eef2f6;
+  --text-on-ink-muted:#b9c4cf;
+  --accent:#c2410c;
+  --accent-2:#8f2f08;
+  --accent-ink:#ffd9c2;
+  --ok:#0f5132;
+  --ok-bg:#d7efe2;
+  --warn:#7c4a03;
+  --warn-bg:#fbe7c6;
+  --stop:#8b1b12;
+  --stop-bg:#f8d9d5;
+  --line:#c9c2b4;
+  --line-strong:#8d8574;
+  --focus:#0b6fa4;
+  --radius:10px;
+  --radius-sm:6px;
+  --shadow:0 1px 0 rgba(16,20,26,.08), 0 10px 26px -18px rgba(16,20,26,.5);
+  --measure:68ch;
+  --font-sans:"Segoe UI",Tahoma,"Trebuchet MS",Verdana,Arial,sans-serif;
+  --font-serif:Georgia,"Times New Roman","Iowan Old Style",serif;
+  --font-mono:"Cascadia Mono",Consolas,"Liberation Mono",monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  background:var(--ink);
+  background-image:
+    radial-gradient(1200px 600px at 15% -10%, rgba(194,65,12,.16), transparent 60%),
+    radial-gradient(900px 500px at 95% 0%, rgba(11,111,164,.14), transparent 55%);
+  background-attachment:fixed;
+  color:var(--text-on-ink);
+  font-family:var(--font-sans);
+  font-size:17px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+img,canvas,svg,table{max-width:100%}
+
+html,body{max-width:100%;overflow-x:hidden}
+.mono{overflow-wrap:anywhere}
+
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:99;
+  background:var(--paper);color:var(--text);padding:.7rem 1rem;border-radius:0 0 var(--radius) 0;
+  font-weight:700;text-decoration:none;
+}
+.skip:focus{left:0}
+
+.shell{max-width:1180px;margin:0 auto;padding:0 clamp(.75rem,3vw,2rem)}
+
+header.topbar{
+  border-bottom:1px solid rgba(255,255,255,.14);
+  background:rgba(16,20,26,.86);
+  backdrop-filter:blur(6px);
+  position:sticky;top:0;z-index:20;
+}
+.topbar .shell{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:space-between;padding-block:.6rem}
+.brand{display:flex;align-items:center;gap:.65rem;min-width:0}
+.brand-mark{
+  width:38px;height:38px;flex:0 0 38px;border-radius:9px;
+  background:var(--accent);color:#fff;display:grid;place-items:center;
+  font-family:var(--font-serif);font-weight:700;font-size:1.05rem;
+}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand-name{font-family:var(--font-serif);font-size:1.05rem;letter-spacing:.01em;font-weight:700;line-height:1.2}
+.brand-sub{font-size:.76rem;color:var(--text-on-ink-muted);letter-spacing:.06em;text-transform:uppercase}
+
+.topbar-actions{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+
+.progress{margin-top:.15rem}
+.progress-track{
+  height:8px;border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden;
+}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#f59e0b);transition:width .35s ease}
+.progress-label{font-size:.78rem;color:var(--text-on-ink-muted);margin-top:.3rem}
+
+button,.btn{
+  font:inherit;font-size:.95rem;font-weight:650;
+  min-height:46px;padding:.55rem 1.05rem;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--line-strong);
+  background:var(--paper);color:var(--text);
+  cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;justify-content:center;
+  text-align:center;
+}
+button:hover:not([disabled]),.btn:hover{background:var(--paper-2)}
+button:active:not([disabled]){transform:translateY(1px)}
+button[disabled]{opacity:.6;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent-2);color:#fff}
+.btn-primary:hover:not([disabled]){background:var(--accent-2)}
+.btn-ghost{background:transparent;color:var(--text-on-ink);border-color:rgba(255,255,255,.4)}
+.btn-ghost:hover:not([disabled]){background:rgba(255,255,255,.12)}
+.btn-quiet{background:transparent;color:var(--text-on-ink);border-color:transparent;text-decoration:underline;padding-inline:.4rem;min-height:40px}
+.btn-sm{min-height:40px;font-size:.88rem;padding:.35rem .7rem}
+
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.on-ink :focus-visible{outline-color:#7fc4e8}
+
+input[type="text"],input[type="number"],textarea,select{
+  font:inherit;font-size:1rem;color:var(--text);background:var(--paper);
+  border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  padding:.55rem .7rem;width:100%;min-height:46px;
+}
+textarea{min-height:120px;resize:vertical;line-height:1.55}
+input[type="range"]{width:100%;min-height:44px;accent-color:var(--accent);background:transparent}
+input[type="radio"],input[type="checkbox"]{width:22px;height:22px;flex:0 0 22px;accent-color:var(--accent);margin:.15rem 0 0}
+label{display:block}
+
+.card{
+  background:var(--paper);color:var(--text);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:clamp(.9rem,2.6vw,1.6rem);
+  margin-block:1.1rem;
+}
+.card h2,.card h3,.card h4{font-family:var(--font-serif);line-height:1.25;margin:0 0 .55rem}
+.card h2{font-size:clamp(1.25rem,3.4vw,1.65rem)}
+.card h3{font-size:clamp(1.1rem,2.8vw,1.3rem)}
+.card h4{font-size:1.02rem;margin-bottom:.35rem}
+.card p{margin:.5rem 0;max-width:var(--measure)}
+.card ul,.card ol{max-width:var(--measure);padding-left:1.25rem}
+.card li{margin:.3rem 0}
+.lede{font-size:1.06rem}
+.muted{color:var(--text-muted)}
+.small{font-size:.88rem}
+.tiny{font-size:.79rem}
+.mono{font-family:var(--font-mono);font-size:.92em}
+strong{font-weight:700}
+
+.panel{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:.85rem 1rem}
+.panel + .panel{margin-top:.7rem}
+.panel-tight{padding:.6rem .8rem}
+.stack > * + *{margin-top:.8rem}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.row-tight{gap:.4rem}
+.grid-2{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:820px){.grid-2{grid-template-columns:1fr 1fr}}
+.grid-2-wide{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:960px){.grid-2-wide{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+
+.grid-2 > *,.grid-2-wide > *,.row > *,.stack > *{min-width:0}
+.hr{height:1px;background:var(--line);border:0;margin:1rem 0}
+
+.flag{
+  display:block;border-radius:var(--radius-sm);padding:.6rem .75rem;
+  border-left:6px solid var(--line-strong);background:var(--paper-2);
+  font-size:.94rem;
+}
+.flag-title{font-weight:700;display:flex;align-items:center;gap:.45rem}
+.flag-ok{background:var(--ok-bg);border-left-color:var(--ok);color:#0b3d26}
+.flag-warn{background:var(--warn-bg);border-left-color:var(--warn);color:#5a3502}
+.flag-stop{background:var(--stop-bg);border-left-color:var(--stop);color:#6d140c}
+.flag-info{background:#dce8f1;border-left-color:var(--focus);color:#0a4a6b}
+.flag-icon{
+  display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;flex:0 0 1.35rem;
+  border-radius:50%;background:rgba(0,0,0,.14);font-size:.85rem;font-weight:700;
+}
+
+.nav-tabs{
+  display:flex;gap:.4rem;overflow-x:auto;padding:.35rem 0;margin-top:.4rem;
+  scrollbar-width:thin;
+}
+.nav-tab{
+  flex:0 0 auto;background:transparent;border:1px solid rgba(255,255,255,.28);
+  color:var(--text-on-ink);min-height:44px;font-size:.88rem;padding:.4rem .8rem;
+}
+.nav-tab[aria-current="step"]{background:var(--paper);color:var(--text);border-color:var(--paper);font-weight:700}
+.nav-tab .tab-check{color:#8ee0b0;font-weight:800}
+.nav-tab[aria-current="step"] .tab-check{color:var(--ok)}
+
+.chart-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);padding:.5rem;min-width:0}
+
+.chart-wrap canvas{display:block;width:100%;max-width:100%;height:clamp(200px,40vw,300px)}
+.chart-caption{font-size:.85rem;color:var(--text-muted);margin-top:.4rem}
+.legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.86rem;margin-top:.5rem}
+.legend-item{display:flex;align-items:center;gap:.4rem}
+.swatch{width:16px;height:16px;border-radius:3px;flex:0 0 16px;border:1px solid rgba(0,0,0,.35)}
+.swatch-hatch{
+  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.55) 0 2px,transparent 2px 6px);
+}
+
+details.table-alt{margin-top:.6rem;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-2)}
+details.table-alt summary{cursor:pointer;padding:.6rem .75rem;font-weight:650;min-height:44px;display:flex;align-items:center}
+details.table-alt[open] summary{border-bottom:1px solid var(--line)}
+.table-scroll{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.9rem;background:#fff}
+caption{text-align:left;padding:.5rem .6rem;font-weight:650;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:.4rem .55rem;text-align:left;vertical-align:top}
+th{background:var(--paper-3);font-weight:700}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:nth-child(even){background:var(--paper-2)}
+
+.notebook-entry{
+  background:var(--paper-2);border-left:5px solid var(--accent);border-radius:var(--radius-sm);
+  padding:.6rem .8rem;margin-top:.5rem;
+}
+.notebook-entry .nb-head{font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+.notebook-entry .nb-body{white-space:pre-wrap}
+
+.feedback{margin-top:.7rem}
+.feedback:empty{display:none}
+.checklist{list-style:none;padding:0;margin:.5rem 0 0}
+.checklist li{display:flex;gap:.55rem;align-items:flex-start;padding:.35rem 0;border-top:1px dashed var(--line)}
+.checklist li:first-child{border-top:0}
+.check-mark{flex:0 0 1.5rem;font-weight:800;font-size:1rem;line-height:1.5}
+.check-pass .check-mark{color:var(--ok)}
+.check-todo .check-mark{color:var(--stop)}
+
+.scale-row{display:flex;align-items:center;gap:.6rem}
+.scale-row output{font-variant-numeric:tabular-nums;font-weight:700;min-width:6.5ch;text-align:right}
+
+.hint{margin-top:.5rem}
+.hint summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center;color:var(--accent-2)}
+.hint[open] summary{margin-bottom:.3rem}
+
+.report-summary{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:.85rem 1rem}
+.pill{
+  display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--paper-3);color:var(--text);border-radius:99px;padding:.15rem .6rem;
+}
+.pill-ok{background:var(--ok-bg);color:var(--ok)}
+.pill-todo{background:var(--stop-bg);color:var(--stop)}
+
+footer.app-footer{
+  border-top:1px solid rgba(255,255,255,.14);margin-top:2rem;padding-block:1.2rem 2.2rem;
+  color:var(--text-on-ink-muted);font-size:.85rem;
+}
+footer.app-footer p{max-width:var(--measure)}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;
+}
+[hidden]{display:none !important}
+
+@media(max-width:420px){
+  body{font-size:16px}
+  .brand-sub{display:none}
+  .topbar .shell{padding-block:.5rem}
+  button,.btn{font-size:.92rem;padding-inline:.8rem}
+  .card{padding:.85rem}
+  .checklist li{gap:.4rem}
+}
+@media(min-width:768px){
+  .nav-tabs{overflow:visible}
+}
+@media(min-width:1280px){
+  .shell{max-width:1180px}
+}
+
+@media print{
+  body{background:#fff;color:#000}
+  header.topbar,footer.app-footer,.nav-tabs,.topbar-actions{display:none}
+  .card{box-shadow:none;border:1px solid #999;break-inside:avoid}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  .progress-fill{transition:none}
+}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="topbar">
+  <div class="shell">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">DD</span>
+      <span class="brand-text">
+        <span class="brand-name">Бюро расследований данных</span>
+        <span class="brand-sub">Учебный набор · вымышленные данные</span>
+      </span>
+    </div>
+    <nav class="topbar-actions" aria-label="Служебные действия">
+      <button type="button" class="btn-ghost btn-sm" id="btn-notebook" aria-expanded="false" aria-controls="notebook-panel">Блокнот (<span id="notebook-count">0</span>)</button>
+      <button type="button" class="btn-ghost btn-sm" id="btn-reset">Сбросить всё</button>
+    </nav>
+  </div>
+  <div class="shell">
+    <nav class="nav-tabs" id="main-nav" aria-label="Разделы урока">
+      <button type="button" class="nav-tab" data-go="0" aria-current="step">Начало</button>
+      <button type="button" class="nav-tab" data-go="1">Дело 1: рамка графика<span class="tab-check" data-check="1" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="2">Дело 2: выборка<span class="tab-check" data-check="2" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="3">Дело 3: корреляция<span class="tab-check" data-check="3" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="4">Итоговый отчёт</button>
+    </nav>
+    <div class="progress">
+      <div class="progress-track" role="img" aria-label="Прогресс урока" id="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <p class="progress-label" id="progress-label">Шаг 1 из 5 · обязательных дел закрыто: 0 из 3</p>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="shell" tabindex="-1">
+
+  <!-- ══════════════════════════ ЭКРАН 0: НАЧАЛО ══════════════════════════ -->
+  <section id="stage-0" class="stage" aria-labelledby="h-start">
+    <article class="card">
+      <p class="pill">Сессия 10–15 минут</p>
+      <h2 id="h-start">Дело: «Сон и оценки». Кому верить?</h2>
+      <p class="lede">В ленте мелькает заголовок: <strong>«Учёные доказали: кто спит меньше, тот учится лучше»</strong>. Под ним — график, который выглядит убедительно. Ваша работа — проверить, выдерживает ли заголовок проверку данными.</p>
+      <p>Вы получите доступ к тому же набору данных, что и автор заголовка. В нём 240 записей о вымышленных учениках трёх школ: сколько они спят, сколько времени проводят у экрана вечером и как написали тест. Никаких скрытых файлов и «правильного ответа в конце»: вывод придётся собрать самому и защитить.</p>
+
+      <div class="flag flag-info">
+        <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>Что это за данные</span>
+        <p class="small" style="margin:.35rem 0 0">Набор <strong>полностью синтетический</strong>. Ученики, школы и результаты придуманы авторами приложения; числовые закономерности встроены в данные <em>намеренно</em>, чтобы было что расследовать. Это не исследование реальных людей, и по нему нельзя судить о настоящих школьниках. Подробности — в разделе «Происхождение данных» ниже и в файле <span class="mono">README.md</span>.</p>
+      </div>
+
+      <h3>Что вы будете уметь объяснять после занятия</h3>
+      <ul id="goals-list">
+        <li>как оформление графика (в частности, начало оси) меняет <em>впечатление</em> от данных, не меняя сами числа;</li>
+        <li>чем удобная выборка отличается от случайной и почему большой размер не вылечивает смещение;</li>
+        <li>почему заметная связь двух величин ещё не доказывает, что одна из них — причина другой;</li>
+        <li>как собрать осторожный, честный вывод из наблюдений.</li>
+      </ul>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h4>Как устроено занятие</h4>
+          <p class="small">Три дела, в каждом — демонстрация, ваша проба и вывод. Правила простые:</p>
+          <ul class="small">
+            <li>ответ пробуем сколько угодно раз, никто не считает попытки;</li>
+            <li>подсказка доступна в каждом деле — откройте её, если застряли;</li>
+            <li>блокнот вверху собирает ваши наблюдения в один отчёт;</li>
+            <li>если что-то пошло не так — кнопка «Сбросить всё» возвращает чистый старт.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h4>Пригодится (но не обязательно)</h4>
+          <ul class="small">
+            <li>проценты и среднее арифметическое;</li>
+            <li>чтение столбчатых диаграмм и точечных графиков;</li>
+            <li>готовность спорить с формулировкой, а не с человеком.</li>
+          </ul>
+          <p class="small" style="margin-bottom:0">Специальных знаний статистики не требуется: все термины объясняются по ходу дела. Инструмент считает за вас — ваша задача объяснять.</p>
+        </div>
+      </div>
+
+      <p class="row" style="margin-top:1.1rem">
+        <button type="button" class="btn-primary" id="btn-start">Начать расследование</button>
+        <button type="button" class="btn-quiet" data-goto="data-notes">Сначала посмотреть на данные</button>
+      </p>
+    </article>
+
+    <!-- Происхождение данных, словарь и статистика набора -->
+    <article class="card" id="data-notes" aria-labelledby="h-data">
+      <h2 id="h-data">Происхождение данных и словарь</h2>
+      <p>Чтобы расследовать данные, надо знать, откуда они взялись. Здесь это описано честно — вместе с тем, чего в наборе <strong>нет</strong>.</p>
+
+      <div class="grid-2">
+        <div>
+          <h3>Как набор был сделан</h3>
+          <ol class="small">
+            <li>Заданы три вымышленные школы, различающиеся <em>временем начала занятий</em>: 8:00 («Ранний свет»), 10:00 («Полдень»), 12:00 («Вечерний колледж»).</li>
+            <li>Для каждой школы заданы средние значения: сон (ч), вечернее экранное время (ч/сутки), балл за тест (из 100). Чем позже начало занятий, тем меньше сна, больше экрана и выше средний балл.</li>
+            <li>Внутри школы добавлена небольшая индивидуальная вариация («вечерняя нагрузка» ученика) и случайный шум с детерминированным генератором. Из-за этого связь <em>внутри</em> одной школы слабая и почти незаметная.</li>
+            <li>Всего 240 записей: школа A — 96, школа B — 84, школа C — 60. Записи идут блоками школ, а не вперемешку.</li>
+            <li>Один и тот же «сид» генератора всегда даёт один и тот же набор — поэтому результаты занятия воспроизводимы.</li>
+          </ol>
+          <div class="flag flag-warn">
+            <span class="flag-title"><span class="flag-icon" aria-hidden="true">!</span>Чего здесь нет</span>
+            <p class="small" style="margin:.35rem 0 0">Нет реальных учеников, школ, стран и организаций. Нет медицинских, политических или иных чувствительных утверждений. Нет данных о личности: в наборе только идентификатор, школа и три числовых показателя. Сходство имён школ с реальными — случайно, все названия вымышлены.</p>
+          </div>
+        </div>
+        <div>
+          <h3>Словарь данных</h3>
+          <div class="table-scroll">
+            <table>
+              <caption class="sr-only">Описание столбцов набора данных</caption>
+              <thead>
+                <tr><th scope="col">Столбец</th><th scope="col">Тип</th><th scope="col">Единица</th><th scope="col">Что означает</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row" class="mono">id</th><td>текст</td><td>—</td><td>Код записи, <span class="mono">S-001 … S-240</span>. Порядок кодов совпадает с порядком добавления записей в набор.</td></tr>
+                <tr><th scope="row" class="mono">school</th><td>категория</td><td>—</td><td>Школа: <span class="mono">A</span>, <span class="mono">B</span> или <span class="mono">C</span> (см. таблицу школ ниже).</td></tr>
+                <tr><th scope="row" class="mono">sleep</th><td>число</td><td>часы</td><td>Сон в ночь перед тестом, округлён до 0,01 ч.</td></tr>
+                <tr><th scope="row" class="mono">screen</th><td>число</td><td>часы</td><td>Экранное время после 19:00 в тот же вечер.</td></tr>
+                <tr><th scope="row" class="mono">score</th><td>число</td><td>баллы 0–100</td><td>Результат теста по одному предмету.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 style="margin-top:1rem">Школы набора</h3>
+          <div class="table-scroll">
+            <table id="schools-table">
+              <caption class="sr-only">Вымышленные школы набора и их характеристики</caption>
+              <thead>
+                <tr><th scope="col">Код</th><th scope="col">Название (вымышленное)</th><th scope="col">Начало занятий</th><th class="num" scope="col">Записей</th></tr>
+              </thead>
+              <tbody id="schools-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.2rem">Сводка по всему набору</h3>
+      <div class="table-scroll">
+        <table id="population-summary">
+          <caption>Сводные характеристики всех 240 записей. Эти числа не меняются ни от каких настроек графиков.</caption>
+          <thead>
+            <tr><th scope="col">Показатель</th><th class="num" scope="col">Сон, ч</th><th class="num" scope="col">Экран, ч</th><th class="num" scope="col">Балл</th></tr>
+          </thead>
+          <tbody id="population-summary-body"></tbody>
+        </table>
+      </div>
+
+      <details class="table-alt">
+        <summary>Показать первые 12 записей набора (и кнопку «показать все 240»)</summary>
+        <div class="table-scroll">
+          <table id="population-head">
+            <caption>Фрагмент набора данных: первые 12 записей в исходном порядке</caption>
+            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+            <tbody id="population-head-body"></tbody>
+          </table>
+        </div>
+        <p style="padding:.5rem .75rem"><button type="button" class="btn-sm" id="btn-show-all" aria-expanded="false" aria-controls="population-all">Показать все 240 записей</button></p>
+        <div class="table-scroll" id="population-all" hidden>
+          <table>
+            <caption>Полный набор данных (240 записей в исходном порядке)</caption>
+            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+            <tbody id="population-all-body"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <p class="row" style="margin-top:1rem"><button type="button" class="btn-primary" id="btn-start-2">Перейти к делу 1</button></p>
+    </article>
+  </section>
+
+  <!-- ═══════════════════ ЭКРАН 1: РАМКА ГРАФИКА ═══════════════════════ -->
+  <section id="stage-1" class="stage" aria-labelledby="h-a1" hidden>
+    <article class="card">
+      <p class="pill">Дело 1 из 3 · оформление графика</p>
+      <h2 id="h-a1">Одна и та же таблица, два разных впечатления</h2>
+      <p>Автор заголовка нарисовал средний балл трёх школ. Ниже — <strong>тот же самый набор данных</strong>, показанный в двух оформлениях. Переключите вид и сравните сначала <em>картинку</em>, а потом <em>числа</em>.</p>
+
+      <div class="row" role="group" aria-labelledby="framing-switch-label">
+        <span id="framing-switch-label" class="small" style="font-weight:700">Оформление вертикальной оси:</span>
+        <button type="button" class="btn-sm" id="btn-view-zero" aria-pressed="true">Начало оси от нуля</button>
+        <button type="button" class="btn-sm" id="btn-view-zoom" aria-pressed="false">Начало оси с 70</button>
+      </div>
+
+      <div class="grid-2-wide" style="margin-top:.9rem">
+        <div>
+          <div class="chart-wrap">
+            <canvas id="canvas-framing" width="760" height="440" role="img" aria-labelledby="framing-caption"></canvas>
+          </div>
+          <p class="chart-caption" id="framing-caption"></p>
+          <div class="legend" id="framing-legend"></div>
+          <details class="table-alt">
+            <summary>Числовые данные этого графика (таблица-эквивалент)</summary>
+            <div class="table-scroll">
+              <table id="framing-table">
+                <caption>Средний балл теста по школам: числа, которые стоят за столбцами</caption>
+                <thead><tr><th scope="col">Школа</th><th class="num" scope="col">Средний балл</th><th class="num" scope="col">Записей</th><th class="num" scope="col">Высота столбца в текущем виде</th></tr></thead>
+                <tbody id="framing-tbody"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+
+        <div class="stack">
+          <div class="panel">
+            <h3 style="margin-top:0">Настройте ось сами</h3>
+            <div class="stack">
+              <div>
+                <label for="axis-top">Верхняя граница оси: <output id="axis-top-out" for="axis-top">100</output> баллов</label>
+                <input type="range" id="axis-top" min="80" max="100" step="1" value="100"
+                       aria-describedby="axis-top-help">
+                <p class="tiny muted" id="axis-top-help">Двигайте ползунок: допустимый диапазон 80–100 баллов.</p>
+              </div>
+              <div>
+                <label for="axis-bottom">Нижняя граница оси: <output id="axis-bottom-out" for="axis-bottom">0</output> баллов</label>
+                <input type="range" id="axis-bottom" min="0" max="92" step="1" value="0"
+                       aria-describedby="axis-bottom-help">
+                <p class="tiny muted" id="axis-bottom-help">Границы не могут сойтись: приложение автоматически держит между ними не меньше 3 баллов.</p>
+              </div>
+              <p><button type="button" class="btn-sm" id="btn-axis-reset">Вернуть ось от нуля</button></p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 style="margin-top:0">Числа, которые не двигаются</h3>
+            <div class="table-scroll">
+              <table id="invariants-table">
+                <caption>Эти величины считаются по данным и не зависят от оформления оси</caption>
+                <tbody id="invariants-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form id="form-framing" class="panel" style="margin-top:1rem" novalidate>
+        <h3 style="margin-top:0">Гипотеза перед проверкой</h3>
+        <p class="small">Сформулируйте предположение, а потом проверьте его по таблицам выше. Приложение не «угадывает» ваш текст — оно проверит числовые утверждения и даст разбор.</p>
+
+        <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
+          <legend style="font-weight:700;padding:0 .3rem">Что изменится при переходе от оси с нуля к оси с 70?</legend>
+          <div class="stack" id="framing-choices"></div>
+        </fieldset>
+
+        <p class="row" style="margin:.9rem 0 0">
+          <button type="submit" class="btn-primary">Проверить гипотезу</button>
+          <button type="button" class="btn" data-hint="hint-framing">Подсказка</button>
+        </p>
+        <details class="hint" id="hint-framing">
+          <summary>Подсказка к делу 1</summary>
+          <p class="small">Сравните не картинку, а числа. Посмотрите в таблицу «высота столбца» и в таблицу «числа, которые не двигаются». Первое — это рисунок, он зависит от оси. Второе — свойства данных, они одинаковы в любом оформлении. Ещё обратите внимание, во сколько раз самый низкий столбец ниже самого высокого при разных границах оси.</p>
+        </details>
+        <div class="feedback" id="framing-feedback" role="status" aria-live="polite"></div>
+
+        <div id="framing-followup" hidden style="margin-top:.9rem">
+          <hr class="hr">
+          <h3>Ваша запись в блокнот</h3>
+          <label for="framing-notes">Опишите своими словами, что именно изменилось и что осталось тем же.</label>
+          <textarea id="framing-notes" rows="4" aria-describedby="framing-notes-help"></textarea>
+          <p class="tiny muted" id="framing-notes-help">Формулировки свободные: смысл проверяете вы, приложение оценивает только форму ответа.</p>
+          <div class="feedback" id="framing-notes-feedback" role="status" aria-live="polite"></div>
+          <p class="row"><button type="button" class="btn-sm" id="btn-framing-save">Сохранить наблюдение</button></p>
+        </div>
+      </form>
+
+      <p class="row" style="margin-top:1rem">
+        <button type="button" class="btn-primary" id="btn-a1-next" disabled>Перейти к делу 2</button>
+        <span class="small muted" id="a1-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+      </p>
+    </article>
+  </section>
+
+  <!-- ═══════════════════════ ЭКРАН 2: ВЫБОРКА ═══════════════════════ -->
+  <section id="stage-2" class="stage" aria-labelledby="h-a2" hidden>
+    <article class="card">
+      <p class="pill">Дело 2 из 3 · выборка</p>
+      <h2 id="h-a2">240 записей — это ещё не все ученики</h2>
+      <p>Автор заголовка опросил не всех. Ниже четыре задокументированных способа отобрать участников. Выберите способ и размер выборки, сравните её состав с полным набором и посмотрите, к какому выводу она бы привела.</p>
+
+      <div class="grid-2-wide">
+        <div class="stack">
+          <div class="panel">
+            <h3 style="margin-top:0">Способ отбора</h3>
+            <fieldset style="border:0;padding:0;margin:0">
+              <legend class="sr-only">Выберите способ отбора участников</legend>
+              <div class="stack" id="method-choices"></div>
+            </fieldset>
+            <p class="small muted" id="method-definition" style="margin-top:.6rem"></p>
+          </div>
+
+          <div class="panel">
+            <h3 style="margin-top:0">Объём выборки</h3>
+            <div class="scale-row">
+              <input type="range" id="sample-size" min="10" max="200" step="10" value="10"
+                     aria-describedby="sample-size-help">
+              <output id="sample-size-out" for="sample-size">10</output>
+            </div>
+            <p class="tiny muted" id="sample-size-help">От 10 до 200 записей.</p>
+            <div class="row" style="margin-top:.4rem">
+              <button type="button" class="btn-primary btn-sm" id="btn-sample-run">Взять выборку</button>
+              <button type="button" class="btn btn-sm" id="btn-sample-reset">Сбросить выборку</button>
+            </div>
+            <label for="seed-input" style="margin-top:.7rem;font-weight:650" class="small">Сид генератора (одно и то же число — один и тот же результат)</label>
+            <input type="number" id="seed-input" value="7" min="1" max="99999" step="1" inputmode="numeric" style="max-width:9rem">
+          </div>
+
+          <div class="flag flag-info" id="sample-status">
+            <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>Выборка ещё не взята</span>
+            <p class="small" style="margin:.35rem 0 0" id="sample-status-text">Нажмите «Взять выборку» — на графике и в таблице появится сравнение.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="chart-wrap">
+            <canvas id="canvas-sample" width="760" height="440" role="img" aria-labelledby="sample-caption"></canvas>
+          </div>
+          <p class="chart-caption" id="sample-caption"></p>
+          <div class="legend" id="sample-legend"></div>
+          <details class="table-alt">
+            <summary>Состав выборки и популяции (таблица-эквивалент)</summary>
+            <div class="table-scroll">
+              <table id="sample-table">
+                <caption>Доля школ и средние значения: выборка против полного набора</caption>
+                <thead><tr><th scope="col">Показатель</th><th class="num" scope="col">Полный набор (240)</th><th class="num" scope="col">Ваша выборка</th><th class="num" scope="col">Расхождение</th></tr></thead>
+                <tbody id="sample-tbody"></tbody>
+              </table>
+            </div>
+            <div class="table-scroll" style="border-top:1px solid var(--line)">
+              <table id="sample-schools-table">
+                <caption>Доля каждой школы: выборка против популяции</caption>
+                <thead><tr><th scope="col">Школа</th><th class="num" scope="col">В популяции</th><th class="num" scope="col">В выборке</th><th scope="col">Оценка</th></tr></thead>
+                <tbody id="sample-schools-tbody"></tbody>
+              </table>
+            </div>
+            <div class="table-scroll" style="border-top:1px solid var(--line)">
+              <table id="sample-first-table">
+                <caption>Первые 12 записей вашей выборки — чтобы увидеть, кого именно вы опросили</caption>
+                <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+                <tbody id="sample-first-tbody"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <form id="form-sample" class="panel" style="margin-top:1rem" novalidate>
+        <h3 style="margin-top:0">Проверка смещения</h3>
+        <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
+          <legend style="font-weight:700;padding:0 .3rem">Что показывает ваша выборка?</legend>
+          <div class="stack" id="sample-choices"></div>
+        </fieldset>
+        <p class="row" style="margin:.9rem 0 0">
+          <button type="submit" class="btn-primary">Проверить</button>
+          <button type="button" class="btn" data-hint="hint-sample">Подсказка</button>
+        </p>
+        <details class="hint" id="hint-sample">
+          <summary>Подсказка к делу 2</summary>
+          <p class="small">Смотрите не на среднее в выборке, а на её состав. Если в выборке 100% одной школы, то любое её среднее описывает только эту школу — независимо от того, 10 записей вы взяли или 200. Сравните долю каждой школы в выборке с её долей в полном наборе: расхождение и есть смещение. И попробуйте взять выборку размера 200 удобным способом — станет ли она ближе к полному набору?</p>
+        </details>
+        <div class="feedback" id="sample-feedback" role="status" aria-live="polite"></div>
+
+        <div id="sample-followup" hidden style="margin-top:.9rem">
+          <hr class="hr">
+          <h3>Ваша запись в блокнот</h3>
+          <label for="sample-notes">Какой способ отбора исказил бы картину и почему? Ответьте с опорой на числа из таблицы.</label>
+          <textarea id="sample-notes" rows="4" aria-describedby="sample-notes-help"></textarea>
+          <p class="tiny muted" id="sample-notes-help">Назовите конкретный показатель (долю, среднее, расхождение) — так вывод будет проверяемым.</p>
+          <div class="feedback" id="sample-notes-feedback" role="status" aria-live="polite"></div>
+          <p class="row"><button type="button" class="btn-sm" id="btn-sample-save">Сохранить наблюдение</button></p>
+        </div>
+      </form>
+
+      <p class="row" style="margin-top:1rem">
+        <button type="button" class="btn-primary" id="btn-a2-next" disabled>Перейти к делу 3</button>
+        <span class="small muted" id="a2-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+      </p>
+    </article>
+  </section>
+
+  <!-- ═══════════════════════ ЭКРАН 3: КОРРЕЛЯЦИЯ ═══════════════════════ -->
+  <section id="stage-3" class="stage" aria-labelledby="h-a3" hidden>
+    <article class="card">
+      <p class="pill">Дело 3 из 3 · связь и причина</p>
+      <h2 id="h-a3">Связь есть. Причина — не обязательно</h2>
+      <p>На точечном графике ниже 240 точек: по горизонтали — сон, по вертикали — балл. Наведите порядок в данных: посмотрите на все точки сразу, а потом разделите их по школам и по полосам сна. Один и тот же набор данных умеет показывать разные картины — и это ключ к делу.</p>
+
+      <div class="grid-2-wide">
+        <div>
+          <div class="chart-wrap">
+            <canvas id="canvas-corr" width="800" height="520" role="img" aria-labelledby="corr-caption"></canvas>
+          </div>
+          <p class="chart-caption" id="corr-caption"></p>
+          <div class="legend" id="corr-legend"></div>
+          <details class="table-alt">
+            <summary>Числа этого графика (таблица-эквивалент)</summary>
+            <div class="table-scroll">
+              <table id="corr-table">
+                <caption>Связь сна и балла: целиком и внутри групп</caption>
+                <thead><tr><th scope="col">Что считаем</th><th class="num" scope="col">Записей</th><th class="num" scope="col">r (связь сна и балла)</th><th class="num" scope="col">Средний сон, ч</th><th class="num" scope="col">Средний балл</th></tr></thead>
+                <tbody id="corr-tbody"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+
+        <div class="stack">
+          <div class="panel">
+            <h3 style="margin-top:0">Как смотреть на точки</h3>
+            <fieldset style="border:0;padding:0;margin:0">
+              <legend class="sr-only">Выберите способ группировки точек</legend>
+              <div class="stack" id="corr-view-choices"></div>
+            </fieldset>
+            <hr class="hr" style="margin:.7rem 0">
+            <fieldset style="border:0;padding:0;margin:0">
+              <legend style="font-weight:650;padding:0" class="small">Масштаб горизонтальной оси (сон)</legend>
+              <div class="stack" id="corr-scale-choices"></div>
+            </fieldset>
+          </div>
+
+          <div class="panel">
+            <h3 style="margin-top:0">Что показывают группы</h3>
+            <div class="table-scroll">
+              <table id="corr-groups-table">
+                <caption>Средние значения внутри каждой группы</caption>
+                <thead><tr><th scope="col">Группа</th><th class="num" scope="col">Записей</th><th class="num" scope="col">Сон, ч</th><th class="num" scope="col">Экран, ч</th><th class="num" scope="col">Балл</th><th class="num" scope="col">r внутри</th></tr></thead>
+                <tbody id="corr-groups-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 style="margin-top:0">Третья переменная</h3>
+            <p class="small" style="margin-top:0">Обратите внимание на столбец «Экран, ч». Он движется вместе со школой. Проверьте, что произойдёт со связью, если сравнивать учеников <em>из одной школы</em> — то есть с одинаковым расписанием.</p>
+            <p class="row row-tight" style="margin:.5rem 0 0">
+              <button type="button" class="btn-sm" id="btn-corr-strata">Разделить по полосам сна</button>
+              <button type="button" class="btn-sm" id="btn-corr-all">Показать все точки</button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form id="form-corr" class="panel" style="margin-top:1rem" novalidate>
+        <h3 style="margin-top:0">Какой вывод выдерживает проверку?</h3>
+        <p class="small">Сначала посмотрите график в двух-трёх режимах, потом выберите формулировку. Можно менять выбор сколько угодно раз.</p>
+        <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
+          <legend style="font-weight:700;padding:0 .3rem">Выберите вывод</legend>
+          <div class="stack" id="corr-choices"></div>
+        </fieldset>
+        <p class="row" style="margin:.9rem 0 0">
+          <button type="submit" class="btn-primary">Обосновать выбор</button>
+          <button type="button" class="btn" data-hint="hint-corr">Подсказка</button>
+        </p>
+        <details class="hint" id="hint-corr">
+          <summary>Подсказка к делу 3</summary>
+          <p class="small">Связь на смешанных данных может возникать из-за того, что группы различаются сразу по двум признакам. Посмотрите на строку «Все данные» и на строки отдельных школ в таблице: сравните величину r. Если внутри школ связь почти исчезает, значит, её создаёт не сон сам по себе, а то, что различает школы. Ещё посмотрите, как меняется экранное время от школы A к школе C.</p>
+        </details>
+        <div class="feedback" id="corr-feedback" role="status" aria-live="polite"></div>
+
+        <div id="corr-followup" hidden style="margin-top:.9rem">
+          <hr class="hr">
+          <h3>Ваша запись в блокнот</h3>
+          <label for="corr-notes">Назовите третью переменную и объясните, как она создаёт видимую связь.</label>
+          <textarea id="corr-notes" rows="4" aria-describedby="corr-notes-help"></textarea>
+          <p class="tiny muted" id="corr-notes-help">Опирайтесь на числа: r целиком, r внутри школы, средние по школам.</p>
+          <div class="feedback" id="corr-notes-feedback" role="status" aria-live="polite"></div>
+          <p class="row"><button type="button" class="btn-sm" id="btn-corr-save">Сохранить наблюдение</button></p>
+        </div>
+      </form>
+
+      <p class="row" style="margin-top:1rem">
+        <button type="button" class="btn-primary" id="btn-a3-next" disabled>Перейти к итоговому отчёту</button>
+        <span class="small muted" id="a3-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+      </p>
+    </article>
+  </section>
+
+  <!-- ═══════════════════════ ЭКРАН 4: ОТЧЁТ ═══════════════════════ -->
+  <section id="stage-4" class="stage" aria-labelledby="h-a4" hidden>
+    <article class="card">
+      <p class="pill">Финал · свежее применение</p>
+      <h2 id="h-a4">Собственный заголовок из трёх частей</h2>
+      <p>Теперь вы пишете заголовок сами — но не как автор из начала занятия. Хороший заголовок о данных содержит три части, и все три обязательны:</p>
+      <ol>
+        <li><strong>утверждение</strong> — что именно связано или меняется (без слова «доказано»);</li>
+        <li><strong>наблюдение</strong> — конкретное число из данных с единицей измерения;</li>
+        <li><strong>ограничение</strong> — оговорка: при каких условиях это верно и что могло бы объяснить связь иначе.</li>
+      </ol>
+      <p class="small muted">Используйте не меньше двух проблем, которые разбирали: оформление графика, смещение выборки, разницу между связью и причиной.</p>
+
+      <form id="form-final" novalidate>
+        <label for="final-headline" style="font-weight:700">Ваш заголовок</label>
+        <textarea id="final-headline" rows="3" style="min-height:84px" aria-describedby="final-headline-help"></textarea>
+        <p class="tiny muted" id="final-headline-help">Например, по такой схеме: «[Что меняется] связано с [чем], но [ограничение]: в данных видно [число]».</p>
+        <p class="row" style="margin-top:.7rem">
+          <button type="submit" class="btn-primary">Проверить три части</button>
+          <button type="button" class="btn" data-hint="hint-final">Подсказка</button>
+        </p>
+        <details class="hint" id="hint-final">
+          <summary>Подсказка к финальному заголовку</summary>
+          <p class="small">Начните с ограничения — так проще не соврать. Затем добавьте число, которое это ограничение подтверждает: например, разницу средних, долю или величину связи. И только потом сформулируйте сам вывод. Если после этого хочется написать «доказано» — замените на «связано» или «в этих данных видно».</p>
+        </details>
+        <div class="feedback" id="final-feedback" role="status" aria-live="polite"></div>
+      </form>
+
+      <details class="table-alt" id="exemplar-block" open>
+        <summary>Как выглядит сильный заголовок (разбор примера)</summary>
+        <div style="padding:.7rem .8rem">
+          <p class="small"><strong>Пример:</strong> «Ученики трёх вымышленных школ спали тем меньше, чем позже начинались занятия, и балл при этом был выше, но связь внутри одной школы почти исчезает: на всех 240 записях r ≈ −0,33, а внутри школы C — около −0,06».</p>
+          <ul class="small">
+            <li><strong>Утверждение:</strong> «спали меньше, чем позже начинались занятия, и балл выше» — связь названа связью.</li>
+            <li><strong>Наблюдение:</strong> «240 записей», «r ≈ −0,33», «внутри школы C ≈ −0,06» — числа с контекстом.</li>
+            <li><strong>Ограничение:</strong> «но связь внутри одной школы почти исчезает» — прямо указано, что общая картина может объясняться различием школ.</li>
+          </ul>
+          <p class="small muted" style="margin-bottom:0">Это <em>один</em> из возможных сильных заголовков, а не образец для копирования. Заголовок с другим ограничением (например, про смещение выборки) тоже может быть верным — если он опирается на те же данные.</p>
+        </div>
+      </details>
+
+      <div class="report-summary" style="margin-top:1rem">
+        <h3 style="margin-top:0">Самооценка по чек-листу</h3>
+        <p class="small">Отметьте то, что считаете выполненным. Это ваш инструмент, а не оценка: никто, кроме вас, не видит эти отметки, и они никуда не отправляются.</p>
+        <ul class="checklist" id="selfcheck-list"></ul>
+        <p class="small" id="selfcheck-result" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="grid-2" style="margin-top:1rem">
+        <div class="panel">
+          <h3 style="margin-top:0">Итог занятия</h3>
+          <div id="completion-summary"></div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0">Что потренировать дальше</h3>
+          <ul class="small" id="next-practice"></ul>
+          <p class="row" style="margin:.6rem 0 0">
+            <button type="button" class="btn-sm" id="btn-print">Распечатать отчёт</button>
+            <button type="button" class="btn-sm" id="btn-reset-2">Сбросить и пройти заново</button>
+          </p>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<!-- ═══════════════════════ БЛОКНОТ НАБЛЮДЕНИЙ ═══════════════════════ -->
+<section class="shell" aria-labelledby="h-notebook">
+  <article class="card" id="notebook-panel" hidden>
+    <h2 id="h-notebook" tabindex="-1">Блокнот наблюдений</h2>
+    <p class="small muted" id="storage-notice"></p>
+    <div id="notebook-list"></div>
+    <p class="row" style="margin-top:.8rem">
+      <button type="button" class="btn-sm" id="btn-notebook-close">Скрыть блокнот</button>
+    </p>
+  </article>
+</section>
+
+<footer class="app-footer">
+  <div class="shell">
+    <p><strong>Бюро расследований данных</strong> — учебное приложение. Все ученики, школы и числа <strong>вымышлены</strong> и созданы специально для занятия; закономерности встроены в данные намеренно. Приложение не собирает и не отправляет никаких данных о вас, не содержит аналитики, рекламы и внешних запросов.</p>
+    <p class="tiny">Оригинальный код: MIT. Ссылки на внешние источники намеренно не размещены в детском интерфейсе — они собраны в файле <span class="mono">EDUCATOR_GUIDE.md</span> для взрослого. Ход работы и ограничения описаны в <span class="mono">README.md</span> и <span class="mono">TEST_REPORT.md</span>.</p>
+  </div>
+</footer>
+
+<noscript>
+  <div class="shell" style="padding-block:1rem">
+    <div class="card">
+      <h2>Нужен включённый JavaScript</h2>
+      <p>Интерактивные дела (график, выборка, связь и причина) работают на JavaScript внутри этой страницы. Без него текст, словарь данных и таблицы читаются, но проверить гипотезу не получится. Скрипт локальный: никаких внешних загрузок страница не делает.</p>
+    </div>
+  </div>
+</noscript>
+<script>
+  /* ==== CONFIG:EMBEDDED-LOGIC (сгенерировано build.js из logic.js) ==== */
+  var DDLogic = (function () {
+  'use strict';
+  'use strict';
+
+
+
+  function round(v, dp) {
+    var p = Math.pow(10, dp === undefined ? 2 : dp);
+    return Math.round(v * p) / p;
+  }
+
+  function mean(a) {
+    if (!a || !a.length) return NaN;
+    var s = 0;
+    for (var i = 0; i < a.length; i++) s += a[i];
+    return s / a.length;
+  }
+
+  function median(a) {
+    if (!a || !a.length) return NaN;
+    var s = a.slice().sort(function (x, y) { return x - y; });
+    var mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  }
+
+
+  function stdev(a) {
+    if (!a || a.length < 2) return NaN;
+    var m = mean(a), s = 0;
+    for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m);
+    return Math.sqrt(s / (a.length - 1));
+  }
+
+
+  function percentile(sorted, q) {
+    if (!sorted || !sorted.length) return NaN;
+    if (sorted.length === 1) return sorted[0];
+    var pos = (sorted.length - 1) * q;
+    var lo = Math.floor(pos), hi = Math.ceil(pos);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+  }
+
+
+
+  function pearson(xs, ys) {
+    if (!xs || !ys || xs.length !== ys.length || xs.length < 2) return NaN;
+    var mx = mean(xs), my = mean(ys), sxy = 0, sxx = 0, syy = 0;
+    for (var i = 0; i < xs.length; i++) {
+      var dx = xs[i] - mx, dy = ys[i] - my;
+      sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+    }
+    if (sxx === 0 || syy === 0) return NaN;
+    return sxy / Math.sqrt(sxx * syy);
+  }
+
+
+
+
+
+
+  function axisBounds(values, opts) {
+    opts = opts || {};
+    var padFrac = opts.padFrac === undefined ? 0.12 : opts.padFrac;
+    var v = (values || []).filter(function (n) { return typeof n === 'number' && isFinite(n); });
+    if (!v.length) return { min: 0, max: 1, ticks: [0, 1], startAtZero: !!opts.startAtZero };
+    if (opts.startAtZero) {
+
+
+
+
+      var top0 = niceCeil(Math.max.apply(null, v));
+      if (top0 <= 0) top0 = 1;
+      var step0 = niceStep(top0, 5);
+      return { min: 0, max: top0, ticks: ticksBetween(0, top0, step0), startAtZero: true };
+    }
+    var lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
+    if (hi === lo) { hi = hi + 1; lo = Math.max(0, lo - 1); }
+    var pad = (hi - lo) * padFrac;
+    var min = Math.max(0, lo - pad);
+    var max = hi + pad;
+    if (max <= min) max = min + 1;
+    var step = niceStep(max - min, 5);
+    var fmin = Math.max(0, Math.floor(min / step) * step);
+    var fmax = Math.ceil(max / step) * step;
+    return { min: round(fmin, 6), max: round(fmax, 6), ticks: ticksBetween(fmin, fmax, step), startAtZero: false };
+  }
+
+
+  function niceStep(span, targetCount) {
+    var n = Math.max(2, targetCount || 5);
+    var raw = (span || 1) / n;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    var norm = raw / mag;
+    var mult = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+    return mult * mag;
+  }
+
+
+
+
+  function niceCeil(x) {
+    if (!(x > 0)) return 1;
+    var mag = Math.pow(10, Math.floor(Math.log10(x)));
+    var norm = x / mag;
+    var mult = norm <= 1 ? 1 : norm <= 1.5 ? 1.5 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5
+      : norm <= 3 ? 3 : norm <= 4 ? 4 : norm <= 5 ? 5 : norm <= 6 ? 6
+      : norm <= 7.5 ? 7.5 : 10;
+    return mult * mag;
+  }
+
+  function ticksBetween(min, max, step) {
+    var out = [], guard = 0;
+    var v = Math.ceil(min / step) * step;
+    while (v <= max + 1e-9 && guard < 40) { out.push(round(v, 6)); v += step; guard++; }
+    if (out.length < 2) out = [min, max];
+    return out;
+  }
+
+
+  function scaleLinear(value, min, max, outMin, outMax) {
+    if (max === min) return (outMin + outMax) / 2;
+    var t = (value - min) / (max - min);
+    return outMin + t * (outMax - outMin);
+  }
+
+  function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+
+
+
+
+  function barGeometry(values, bounds) {
+    var list = (values || []).filter(function (v) { return typeof v === 'number' && isFinite(v); });
+    var b = bounds || axisBounds(list, { startAtZero: true });
+    var refMax = axisBounds(list, { startAtZero: true }).max;
+    return (values || []).map(function (v) {
+      return {
+        value: v,
+        frac: (b.max - b.min) ? (v - b.min) / (b.max - b.min) : 0,
+        pctOfZeroMax: (refMax && isFinite(v)) ? v / refMax : NaN
+      };
+    });
+  }
+
+
+
+
+
+  function mulberry32(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+
+  function gauss(rand) {
+    var s = 0;
+    for (var i = 0; i < 12; i++) s += rand();
+    return s - 6;
+  }
+
+  var SCHOOLS = [
+
+
+    { code: 'A', label: 'Гимназия «Ранний свет» (вымышленная)', start: '8:00', n: 96, sleep: 7.9, screen: 11, score: 74 },
+    { code: 'B', label: 'Лицей «Полдень» (вымышленный)', start: '10:00', n: 84, sleep: 7.0, screen: 19, score: 80 },
+    { code: 'C', label: 'Школа «Вечерний колледж» (вымышленная)', start: '12:00', n: 60, sleep: 6.3, screen: 28, score: 86 }
+  ];
+
+
+
+
+
+  var LOAD = {
+    sleep: -1.4,
+    screen: 2.8,
+    score: 0.85
+  };
+  var NOISE_SD = { sleep: 0.62, screen: 6.0, score: 6.6 };
+
+
+
+
+  function buildPopulation(seed) {
+    var rand = mulberry32(seed === undefined ? 20240915 : seed);
+    var rows = [], idx = 0;
+    for (var s = 0; s < SCHOOLS.length; s++) {
+      var sc = SCHOOLS[s];
+      for (var i = 0; i < sc.n; i++) {
+        idx++;
+
+
+        var z = gauss(rand);
+        var sleep = sc.sleep + LOAD.sleep * z + gauss(rand) * NOISE_SD.sleep;
+        var screen = Math.max(0, sc.screen + LOAD.screen * z + gauss(rand) * NOISE_SD.screen);
+        var score = clamp(sc.score + LOAD.score * z + gauss(rand) * NOISE_SD.score, 30, 100);
+        rows.push({
+          id: 'S-' + String(idx).padStart(3, '0'),
+          school: sc.code,
+          sleep: round(clamp(sleep, 3, 11), 2),
+          screen: round(screen, 1),
+          score: round(score, 1)
+        });
+      }
+    }
+    return rows;
+  }
+
+
+
+
+  var METHODS = {
+    sms_first: {
+      code: 'sms_first',
+      name: 'Обзвон по алфавитному списку',
+      bias: 'biased',
+      definition: 'Берём первых N учеников из официального списка, отсортированного по алфавиту (фамилия), и звоним им. ' +
+        'В алфавитном списке нет ничего случайного: он не перемешивает признаки сна, а три школы идут блоками. ' +
+        'Поэтому в начало списка попадают почти только ученики одной школы.',
+      why: 'Систематическое смещение отбора (не случайный механизм отбора).'
+    },
+    sms_selfselect: {
+      code: 'sms_selfselect',
+      name: 'Добровольный ночной опрос в чате',
+      bias: 'biased',
+      definition: 'В 23:40 в общий чат класса выкладывается ссылка на опрос; отвечают те, кто сейчас в сети, ' +
+        'то есть в основном ученики с вечерним графиком. Кто спит — тот не отвечает.',
+      why: 'Смещение самоотбора: вероятность попасть в выборку зависит от изучаемого признака (сна).'
+    },
+    random: {
+      code: 'random',
+      name: 'Случайная выборка без возвращения (жеребьёвка)',
+      bias: 'unbiased',
+      definition: 'Каждый ученик получает номер из списка всех 240 и равный шанс попасть в выборку; ' +
+        'после отбора карточка убирается из барабана (без возвращения). Генератор — детерминированный (seeded), ' +
+        'поэтому один и тот же сид даёт один и тот же результат.',
+      why: 'Равные и независимые от признаков шансы попасть в выборку.'
+    },
+    cluster: {
+      code: 'cluster',
+      name: 'Опрос одного потока целиком',
+      bias: 'mixed',
+      definition: 'Опрошен один поток целиком — все 96 учеников школы A («Ранний свет»). Это не случайная выборка учеников, ' +
+        'а случайный (для простоты) выбор одного учебного потока. Объём большой, но внутри потока нет учеников школ B и C.',
+      why: 'Кластерная выборка: много наблюдений, но из одного «кластера».'
+    }
+  };
+
+
+  function drawSample(population, methodCode, size, seed) {
+    var m = METHODS[methodCode];
+    if (!m) throw new Error('Неизвестный метод выборки: ' + methodCode);
+    var pop = population || [];
+    var n = clamp(Math.floor(size || 10), 1, pop.length);
+    var taken;
+
+    if (methodCode === 'sms_first') {
+      taken = pop.slice(0, n);
+    } else if (methodCode === 'sms_selfselect') {
+
+
+
+      var w = { A: 0.25, B: 1.0, C: 2.6 };
+      var rand = mulberry32((seed === undefined ? 7 : seed) + 991);
+      var pool = pop.slice();
+      var picked = [], draws = 0, progress = 0, total = 0;
+      pool.forEach(function (r) { total += w[r.school]; });
+      while (picked.length < n && draws < 20000 && pool.length) {
+        progress = rand() * total;
+        var acc = 0, hit = -1;
+        for (var i = 0; i < pool.length; i++) {
+          acc += w[pool[i].school];
+          if (progress <= acc) { hit = i; break; }
+        }
+        if (hit === -1) hit = pool.length - 1;
+        picked.push(pool[hit]);
+        total -= w[pool[hit].school];
+        pool.splice(hit, 1);
+        draws++;
+      }
+      taken = picked;
+    } else if (methodCode === 'random') {
+      var r2 = mulberry32((seed === undefined ? 7 : seed) + 17);
+      var arr = pop.slice();
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(r2() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      taken = arr.slice(0, n);
+    } else {
+      taken = pop.filter(function (r) { return r.school === 'A'; });
+    }
+
+    return {
+      rows: taken,
+      meta: {
+        method: methodCode,
+        methodName: m.name,
+        bias: m.bias,
+        size: taken.length,
+        requested: n,
+        seed: seed === undefined ? 7 : seed,
+        definition: m.definition
+      }
+    };
+  }
+
+
+  function sampleComposition(sampleRows, population) {
+    var pop = population || [], rows = sampleRows || [];
+    var schools = {};
+    pop.forEach(function (r) { schools[r.school] = true; });
+    rows.forEach(function (r) { schools[r.school] = true; });
+    var codes = Object.keys(schools).sort();
+
+    function sh(row) { return row.sleep < 7; }
+
+    function share(list, pred) {
+      if (!list.length) return NaN;
+      var c = 0;
+      for (var i = 0; i < list.length; i++) if (pred(list[i])) c++;
+      return c / list.length;
+    }
+
+    var bySchool = codes.map(function (c) {
+      var popN = pop.filter(function (r) { return r.school === c; }).length;
+      var samN = rows.filter(function (r) { return r.school === c; }).length;
+      return {
+        school: c,
+        popCount: popN,
+        popShare: pop.length ? popN / pop.length : NaN,
+        sampleCount: samN,
+        sampleShare: rows.length ? samN / rows.length : NaN
+      };
+    });
+
+    var popSleep = pop.map(function (r) { return r.sleep; }),
+        samSleep = rows.map(function (r) { return r.sleep; });
+
+    return {
+      size: rows.length,
+      populationSize: pop.length,
+      bySchool: bySchool,
+      lowSleepShare: { population: share(pop, sh), sample: share(rows, sh) },
+      meanSleep: { population: mean(popSleep), sample: mean(samSleep) },
+      meanScreen: {
+        population: mean(pop.map(function (r) { return r.screen; })),
+        sample: mean(rows.map(function (r) { return r.screen; }))
+      },
+      meanScore: {
+        population: mean(pop.map(function (r) { return r.score; })),
+        sample: mean(rows.map(function (r) { return r.score; }))
+      }
+    };
+  }
+
+
+
+  function biasComparison(population, sizeA, sizeB) {
+    var a = drawSample(population, 'sms_first', sizeA, 7);
+    var b = drawSample(population, 'sms_first', sizeB, 7);
+    var s0 = mean(population.map(function (r) { return r.sleep; }));
+    return {
+      small: { size: a.meta.size, meanSleep: mean(a.rows.map(function (r) { return r.sleep; })) },
+      large: { size: b.meta.size, meanSleep: mean(b.rows.map(function (r) { return r.sleep; })) },
+      populationMeanSleep: s0,
+      smallError: mean(a.rows.map(function (r) { return r.sleep; })) - s0,
+      largeError: mean(b.rows.map(function (r) { return r.sleep; })) - s0
+    };
+  }
+
+
+
+  function corrOfRows(rows) {
+    var r = rows || [];
+    return pearson(
+      r.map(function (x) { return x.sleep; }),
+      r.map(function (x) { return x.score; })
+    );
+  }
+
+  function groupBy(rows, key) {
+    var out = {};
+    (rows || []).forEach(function (r) {
+      var k = r[key];
+      (out[k] = out[k] || []).push(r);
+    });
+    return out;
+  }
+
+
+  function strata(rows, cuts) {
+    var c = cuts || [6.5, 7.5];
+    return (rows || []).map(function (r) {
+      var band = r.sleep < c[0] ? 'A' : (r.sleep < c[1] ? 'B' : 'C');
+      var o = {};
+      for (var k in r) if (Object.prototype.hasOwnProperty.call(r, k)) o[k] = r[k];
+      o.band = band;
+      return o;
+    });
+  }
+
+  function bandLabel(band) {
+    return band === 'A' ? 'Мало сна (< 6,5 ч)' : (band === 'B' ? 'Средне (6,5–7,5 ч)' : 'Больше сна (≥ 7,5 ч)');
+  }
+
+
+
+
+  function correlationReport(rows, groupKeyOrStrata, cuts) {
+    var grouped;
+    if (groupKeyOrStrata === 'strata') grouped = groupBy(strata(rows, cuts), 'band');
+    else grouped = groupBy(rows, groupKeyOrStrata || 'school');
+
+    var groups = Object.keys(grouped).sort().map(function (g) {
+      var rs = grouped[g];
+      return {
+        key: g,
+        label: groupKeyOrStrata === 'strata' ? bandLabel(g) : ('Школа ' + g),
+        n: rs.length,
+        r: corrOfRows(rs),
+        meanSleep: mean(rs.map(function (r) { return r.sleep; })),
+        meanScore: mean(rs.map(function (r) { return r.score; })),
+        meanScreen: mean(rs.map(function (r) { return r.screen; }))
+      };
+    });
+
+    return {
+      overallR: corrOfRows(rows),
+      n: (rows || []).length,
+      groups: groups
+    };
+  }
+
+
+
+
+  function describeR(r) {
+    if (!isFinite(r)) return 'не считается (нет разброса данных)';
+    var a = Math.abs(r);
+    var word = a < 0.2 ? 'почти нет связи' : a < 0.4 ? 'слабая связь' : a < 0.6 ? 'умеренная связь' : a < 0.8 ? 'заметная связь' : 'сильная связь';
+    var dir = r < 0 ? 'отрицательная' : 'положительная';
+    return word + ', ' + dir;
+  }
+
+  function fmt(v, dp) {
+    if (v === null || v === undefined || (typeof v === 'number' && !isFinite(v))) return '—';
+    return Number(v).toFixed(dp === undefined ? 2 : dp).replace('.', ',');
+  }
+
+  function pct(v, dp) {
+    if (!isFinite(v)) return '—';
+    return (v * 100).toFixed(dp === undefined ? 0 : dp).replace('.', ',') + '%';
+  }
+
+
+
+
+
+
+
+
+  var HEDGE_WORDS = ['может', 'возможно', 'похоже', 'связан', 'связь', 'связана', 'склонн', 'частично', 'вероятно', 'не обязательно', 'по-видимому', 'однако'];
+  var CAUSAL_TRAPS = ['доказывает', 'доказано', 'причина', 'приводит к', 'из-за того что', 'заставляет', 'влияет на'];
+
+  function hasNumber(text) {
+    return /-?\d+([.,]\d+)?\s*(ч|час|балл|%|мин|процент)?/i.test(text || '');
+  }
+
+  function reviewText(text, opts) {
+    opts = opts || {};
+    var t = (text || '').trim();
+    var low = t.toLowerCase();
+    var words = t ? t.split(/\s+/).filter(Boolean).length : 0;
+    var hedge = HEDGE_WORDS.filter(function (w) { return low.indexOf(w) !== -1; });
+    var traps = CAUSAL_TRAPS.filter(function (w) { return low.indexOf(w) !== -1; });
+    var minWords = opts.minWords === undefined ? 8 : opts.minWords;
+
+    var checks = [
+      { id: 'len', label: 'Текст достаточно развёрнут (не одна фраза из 2 слов)', pass: words >= minWords, hint: 'Добавьте описание: что именно вы заметили и при каких условиях.' },
+      { id: 'num', label: 'Есть конкретное число или величина из данных', pass: hasNumber(t), hint: 'Назовите число: разницу средних, долю, r, объём выборки.' },
+      { id: 'nuance', label: 'Есть осторожная формулировка (ограничение, «может», «связано»)', pass: hedge.length > 0, hint: 'Добавьте ограничение: «в этих данных», «не доказывает», «возможно».' }
+    ];
+    return {
+      words: words,
+      checks: checks,
+      mechanicalPassed: checks.filter(function (c) { return c.pass; }).length,
+      hedgeFound: hedge,
+      casualClaims: traps,
+      note: 'Это проверка формы и осторожности, а не смысла. Смысл оцените сами по чек-листу ниже.'
+    };
+  }
+
+
+
+
+
+  function reviewHeadline(text) {
+    var t = (text || '').trim();
+    var low = t.toLowerCase();
+    var words = t ? t.split(/\s+/).filter(Boolean).length : 0;
+    var claimMarkers = ['связан', 'связь', 'больше', 'меньше', 'выше', 'ниже', 'растёт', 'падает', 'сильнее', 'слабее'];
+    var limitMarkers = ['но', 'однако', 'если', 'только', 'не доказывает', 'может', 'похоже', 'осторожно', 'при условии', 'среди', 'в этих данных', 'возможно'];
+    var observationMarkers = ['%', 'балл', 'час', 'ч.', 'средн', 'разниц', 'доля', 'выборк'];
+
+    var checks = [
+      { id: 'claim', label: 'Утверждение сформулировано (что именно связано или меняется)', pass: words >= 6 && claimMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
+      { id: 'obs', label: 'Указано наблюдение из данных (число, единица измерения)', pass: observationMarkers.some(function (w) { return low.indexOf(w) !== -1; }) || hasNumber(t) },
+      { id: 'lim', label: 'Добавлено ограничение (оговорка, альтернативное объяснение)', pass: limitMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
+      { id: 'len', label: 'Заголовок читается с одного раза (6–60 слов)', pass: words >= 6 && words <= 60 }
+    ];
+    return { words: words, checks: checks, passed: checks.filter(function (c) { return c.pass; }).length, total: checks.length };
+  }
+
+
+  function rewardFor(passed) {
+    if (passed >= 4) return 'Заголовок собран полностью: утверждение, наблюдение, ограничение.';
+    if (passed === 3) return 'Не хватает одной части. Проверьте подсказки ниже.';
+    if (passed === 2) return 'Есть две части из трёх. Добавьте то, что подсвечено.';
+    return 'Пока это скорее мнение, чем заголовок с доказательством. Ничего страшного — исправьте и отправьте снова.';
+  }
+
+  return {
+
+    round: round, mean: mean, median: median, stdev: stdev, percentile: percentile, pearson: pearson,
+
+    axisBounds: axisBounds, ticksBetween: ticksBetween, scaleLinear: scaleLinear, clamp: clamp, barGeometry: barGeometry,
+    niceStep: niceStep, niceCeil: niceCeil,
+
+    mulberry32: mulberry32, gauss: gauss, buildPopulation: buildPopulation, SCHOOLS: SCHOOLS,
+
+    METHODS: METHODS, drawSample: drawSample, sampleComposition: sampleComposition, biasComparison: biasComparison,
+
+    corrOfRows: corrOfRows, groupBy: groupBy, strata: strata, bandLabel: bandLabel,
+    correlationReport: correlationReport, describeR: describeR, fmt: fmt, pct: pct,
+
+    reviewText: reviewText, reviewHeadline: reviewHeadline, rewardFor: rewardFor,
+    HEDGE_WORDS: HEDGE_WORDS, CAUSAL_TRAPS: CAUSAL_TRAPS
+  };
+
+  })();
+  window.DDLogic = DDLogic;
+  /* ==== /CONFIG:EMBEDDED-LOGIC ==== */
+
+
+
+(function () {
+  'use strict';
+
+  var L = window.DDLogic;
+  var STORE_KEY = 'data-detective-v1';
+  var STAGES = 5;
+  var POP = L.buildPopulation(20240915);
+
+  var framingUI = { top: 100, bottom: 0, zoom: false };
+
+  var state = {
+    stage: 0,
+    framing: { saved: false, choice: null, notes: '', submitted: false },
+    sample: { saved: false, choice: null, notes: '', submitted: false, method: 'sms_first', size: 10, seed: 7, drawn: false },
+    corr: { saved: false, choice: null, notes: '', submitted: false, view: 'all', scale: 'honest' },
+    final: { headline: '', submitted: false },
+    selfcheck: {},
+    notebookOpen: false
+  };
+
+  var storeAvailable = (function () {
+    try {
+      var k = '__dd_probe__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  })();
+
+  var saveTimer = null;
+  function save() {
+    if (!storeAvailable) return;
+    if (saveTimer) window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(function () {
+      try {
+        var payload = JSON.stringify({
+          stage: state.stage, framing: state.framing, sample: state.sample,
+          corr: state.corr, final: state.final, selfcheck: state.selfcheck,
+          framingUI: { top: framingUI.top, bottom: framingUI.bottom, zoom: framingUI.zoom }
+        });
+        window.localStorage.setItem(STORE_KEY, payload);
+      } catch (e) {  }
+    }, 150);
+  }
+
+  function load() {
+    if (!storeAvailable) return;
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var obj = JSON.parse(raw);
+      if (!obj || typeof obj !== 'object') return;
+      ['framing', 'sample', 'corr', 'final', 'selfcheck'].forEach(function (k) {
+        if (obj[k] && typeof obj[k] === 'object') {
+          for (var p in obj[k]) if (Object.prototype.hasOwnProperty.call(obj[k], p)) state[k][p] = obj[k][p];
+        }
+      });
+      if (typeof obj.stage === 'number') state.stage = L.clamp(obj.stage, 0, STAGES - 1);
+      if (obj.framingUI && typeof obj.framingUI === 'object') {
+        if (typeof obj.framingUI.zoom === 'boolean') framingUI.zoom = obj.framingUI.zoom;
+        if (isFinite(obj.framingUI.top)) framingUI.top = L.clamp(obj.framingUI.top, 80, 100);
+        if (isFinite(obj.framingUI.bottom)) framingUI.bottom = L.clamp(obj.framingUI.bottom, 0, 92);
+      }
+    } catch (e) {  }
+  }
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (!Object.prototype.hasOwnProperty.call(attrs, k)) continue;
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k === 'html') n.innerHTML = v;
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    (children || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+
+  function flag(kind, title, body) {
+    var cls = kind === 'ok' ? 'flag-ok' : kind === 'warn' ? 'flag-warn' : kind === 'stop' ? 'flag-stop' : 'flag-info';
+    var ico = kind === 'ok' ? '✓' : kind === 'warn' ? '!' : kind === 'stop' ? '×' : 'i';
+    var box = el('div', { class: 'flag ' + cls });
+    box.appendChild(el('span', { class: 'flag-title' }, [
+      el('span', { class: 'flag-icon', 'aria-hidden': 'true', text: ico }),
+      el('span', { text: title })
+    ]));
+    if (body) {
+      if (typeof body === 'string') box.appendChild(el('p', { class: 'small', text: body, style: 'margin:.35rem 0 0' }));
+      else { body.style.marginTop = '.35rem'; box.appendChild(body); }
+    }
+    return box;
+  }
+
+  function checklist(items, cls) {
+    var ul = el('ul', { class: 'checklist' });
+    items.forEach(function (c) {
+      ul.appendChild(el('li', { class: cls ? cls(c) : (c.pass ? 'check-pass' : 'check-todo') }, [
+        el('span', { class: 'check-mark', 'aria-hidden': 'true', text: c.pass ? '✓' : '○' }),
+        el('span', {}, [
+          el('span', { text: c.label + ' ' }),
+          el('strong', { text: c.pass ? 'выполнено' : 'пока нет' })
+        ])
+      ]));
+    });
+    return ul;
+  }
+
+  var FRAMING_CHOICES = [
+    { id: 'f1', text: 'Изменятся и картинка, и средние баллы: данные пересчитаются под новую ось.', verdict: 'no', why: 'Средние баллы не могут измениться от оформления: они считаются по таблице данных, а не по рисунку. Проверьте блок «Числа, которые не двигаются» — там одни и те же значения в обоих видах.' },
+    { id: 'f2', text: 'Изменятся только столбцы: разница между ними будет выглядеть больше, чем при оси от нуля. Сами баллы останутся теми же.', verdict: 'yes', why: 'Верно. Высота столбца — это рисунок, он зависит от границ оси; средние баллы — это числа, они не зависят ни от чего. Поэтому одна и та же разница в 6 баллов может выглядеть и как «почти ничего», и как «обвал».' },
+    { id: 'f3', text: 'Ничего не изменится: ось влияет только на подписи цифр по бокам.', verdict: 'no', why: 'Ось меняет не только подписи, но и пропорции столбцов: при обрезанной оси разница визуально раздувается. Именно поэтому важно смотреть на числа, а не только на картинку.' },
+    { id: 'f4', text: 'Изменятся средние баллы, потому что ось обрезает часть данных.', verdict: 'no', why: 'Обрезка оси не удаляет данные: она меняет только то, как они нарисованы. Ни одна запись не исчезает, среднее остаётся прежним.' }
+  ];
+
+  var SAMPLE_CHOICES = [
+    { id: 's1', text: 'Чем больше выборка, тем ближе её среднее к полному набору — независимо от способа отбора.', verdict: 'no', why: 'Размер помогает только при честном отборе. Если способ отбора систематически исключает часть учеников, объём не исправляет смещение: возьмите удобным способом все 200 записей и сравните долю школ — она останется перекошенной.' },
+    { id: 's2', text: 'Если способ отбора тянет одну школу, выборка останется смещённой при любом объёме: большая выборка даст большую уверенность в неправильной цифре.', verdict: 'yes', why: 'Именно так. Смещение — свойство процедуры отбора, а не размера. Больший объём сужает случайный разброс, но систематическую ошибку сохраняет и делает её только увереннее.' },
+    { id: 's3', text: 'Смещение есть только у маленьких выборок: выборка в 200 записей уже считается представительной.', verdict: 'no', why: 'Представительность определяется процедурой, а не числом. Опрошенный «поток школы A» из 96 человек не содержит ни одного ученика двух других школ — и никакой размер это не исправит.' },
+    { id: 's4', text: 'Смещение исчезнет, если аккуратно усреднить несколько удобных выборок.', verdict: 'no', why: 'Усреднение нескольких одинаково перекошенных выборок даёт ту же перекошенную картину. Разные смещения могут даже частично гасить друг друга, но результат всё равно непроверяем.' }
+  ];
+
+  var CORR_CHOICES = [
+    { id: 'c1', text: 'Меньше сна — ниже балл: связь заметная, значит сон влияет на результат.', verdict: 'no', why: 'В данных действительно видна заметная отрицательная связь на всех записях. Но проверьте, что произойдёт внутри отдельных школ: там связь почти исчезает. Значит, на смешанных данных её создаёт то, чем школы различаются, а не сон сам по себе.' },
+    { id: 'c2', text: 'Связь на всех записях заметная, но внутри каждой школы она почти исчезает: значит, её создаёт различие между школами (расписание и вечернее экранное время), а не сон отдельного ученика.', verdict: 'yes', why: 'Сильный вывод. Вы сделали главное для этой задачи: сравнили общую картину с картиной внутри групп. Общая связь может возникать из-за третьей переменной — здесь это условия школы, с которыми связаны и сон, и экранное время, и балл.' },
+    { id: 'c3', text: 'Это доказано: данные точно показывают причину низких баллов.', verdict: 'no', why: 'Слово «доказано» здесь не проходит: по наблюдениям нельзя отличить причину от совпадения или от третьей переменной. Такие данные поддерживают осторожную формулировку «связано», а не «причина».' },
+    { id: 'c4', text: 'Никакой связи нет вообще, раз внутри школ r близок к нулю.', verdict: 'no', why: 'Связь есть, и она заметная: посмотрите строку «Все данные». Просто её величина меняется в зависимости от того, сравниваем мы школы между собой или учеников внутри одной школы. Отрицать связь целиком так же неверно, как объявлять её причиной.' }
+  ];
+
+  var FRAMING_CHECK = [
+    { id: 'x1', text: 'Высота столбцов (рисунок) зависит от границ оси' },
+    { id: 'x2', text: 'Средние баллы и число записей не зависят от оформления' },
+    { id: 'x3', text: 'Аккуратный график может начинаться не с нуля — вопрос в том, предупреждён ли читатель' },
+    { id: 'x4', text: 'Разницу в 6 баллов можно показать и как «почти ничего», и как «обвал»' }
+  ];
+
+  var SAMPLE_CHECK = [
+    { id: 'y1', text: 'Смещение — это про процедуру отбора, а не про размер выборки' },
+    { id: 'y2', text: 'Объём выборки уменьшает случайный разброс, но не систематическую ошибку' },
+    { id: 'y3', text: 'Состав выборки проверяется сравнением долей с полным набором' },
+    { id: 'y4', text: 'Один поток целиком — большая выборка, но из одной школы' }
+  ];
+
+  var CORR_CHECK = [
+    { id: 'z1', text: 'Общая связь может создаваться третьей переменной, различающей группы' },
+    { id: 'z2', text: 'Сравнение r целиком и r внутри групп — основной инструмент проверки' },
+    { id: 'z3', text: 'Заметная связь сама по себе не устанавливает причину' },
+    { id: 'z4', text: 'Стратификация (разбиение на группы) меняет вывод, а не данные' }
+  ];
+
+  var STAGE_HASH = ['start', 'activity-1', 'activity-2', 'activity-3', 'report'];
+
+  function redrawActive() {
+    drawFraming();
+    drawSampleChart();
+    drawCorr();
+  }
+
+  function gotoStage(i, opts) {
+    opts = opts || {};
+    state.stage = L.clamp(i, 0, STAGES - 1);
+    $$('.stage').forEach(function (s) { s.classList.remove('stage-active'); s.setAttribute('hidden', ''); });
+    var cur = document.getElementById('stage-' + state.stage);
+    if (cur) { cur.classList.add('stage-active'); cur.removeAttribute('hidden'); }
+    redrawActive();
+    renderNav();
+    renderProgress();
+    save();
+    if (opts.updateHash !== false) {
+      var h = '#' + STAGE_HASH[state.stage];
+      if (window.location.hash !== h) {
+        if (window.history && window.history.replaceState) window.history.replaceState(null, '', h);
+        else window.location.hash = h;
+      }
+    }
+    if (opts.focus !== false) {
+      var h2 = cur && cur.querySelector('h2');
+      if (h2) { h2.setAttribute('tabindex', '-1'); h2.focus({ preventScroll: true }); }
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }
+
+  function renderNav() {
+    $$('#main-nav .nav-tab').forEach(function (b) {
+      var i = Number(b.getAttribute('data-go'));
+      if (i === state.stage) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+      var chk = b.querySelector('.tab-check');
+      if (chk) {
+        var idx = b.getAttribute('data-check');
+        chk.hidden = !(idx && state['framing'] && doneFor(Number(idx)));
+      }
+    });
+  }
+
+  function doneFor(i) {
+    if (i === 1) return state.framing.saved;
+    if (i === 2) return state.sample.saved;
+    if (i === 3) return state.corr.saved;
+    return false;
+  }
+
+  function renderProgress() {
+    var done = (state.framing.saved ? 1 : 0) + (state.sample.saved ? 1 : 0) + (state.corr.saved ? 1 : 0);
+    var frac = done / 3;
+    var fill = $('#progress-fill'), label = $('#progress-label');
+    if (fill) fill.style.width = (frac * 100).toFixed(1) + '%';
+    if (label) {
+      label.textContent = 'Шаг ' + (state.stage + 1) + ' из ' + STAGES +
+        ' · обязательных дел закрыто: ' + done + ' из 3';
+    }
+    var track = $('#progress-track');
+    if (track) track.setAttribute('aria-label', 'Прогресс урока: закрыто ' + done + ' из 3 обязательных дел');
+    $$('#main-nav .nav-tab').forEach(function (b) {
+      var i = Number(b.getAttribute('data-go'));
+      if (i >= 1 && i <= 3 && doneFor(i)) b.classList.add('tab-done');
+    });
+    ['1', '2', '3'].forEach(function (n) {
+      var btn = $('#btn-a' + n + '-next');
+      var lock = $('#a' + n + '-lock');
+      var ok = doneFor(Number(n));
+      if (btn) btn.disabled = !ok;
+      if (lock) { lock.hidden = ok; lock.textContent = ok ? '' : 'Доступно после того, как вы запишете наблюдение в блокнот.'; }
+    });
+    renderNotebook();
+  }
+
+  function notebookEntries() {
+    var out = [];
+    if (state.framing.saved) out.push({ head: 'Дело 1 · оформление графика', body: state.framing.notes });
+    if (state.sample.saved) out.push({ head: 'Дело 2 · ' + L.METHODS[state.sample.method].name + ' (n = ' + state.sample.size + ')', body: state.sample.notes });
+    if (state.corr.saved) out.push({ head: 'Дело 3 · связь и причина', body: state.corr.notes });
+    if (state.final.submitted && state.final.headline.trim()) out.push({ head: 'Итог · собственный заголовок', body: state.final.headline });
+    return out;
+  }
+
+  function renderNotebook() {
+    var list = $('#notebook-list');
+    var cnt = $('#notebook-count');
+    var entries = notebookEntries();
+    if (cnt) cnt.textContent = String(entries.length);
+    if (!list) return;
+    clear(list);
+    if (!entries.length) {
+      list.appendChild(el('p', { class: 'small muted', text: 'Пока пусто. Записи появляются здесь по мере расследования.' }));
+      return;
+    }
+    entries.forEach(function (e) {
+      list.appendChild(el('div', { class: 'notebook-entry' }, [
+        el('p', { class: 'nb-head', text: e.head }),
+        el('p', { class: 'nb-body', text: e.body })
+      ]));
+    });
+  }
+
+  function toggleNotebook(open) {
+    state.notebookOpen = open;
+    var panel = $('#notebook-panel'), btn = $('#btn-notebook');
+    if (!panel) return;
+    if (open) {
+      panel.removeAttribute('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+      var h = $('#h-notebook');
+      if (h) h.focus({ preventScroll: true });
+      panel.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    } else {
+      panel.setAttribute('hidden', '');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.focus({ preventScroll: true });
+    }
+    save();
+  }
+
+  var PAL = {
+    barA: '#9a3412', barB: '#0b6fa4', barC: '#6b6455',
+    grid: '#ded8cc', axis: '#5a5348', ink: '#171b21', muted: '#4e5860',
+    pointA: '#9a3412', pointB: '#0b6fa4', pointC: '#5b6b3a',
+    pop: '#8a8375', sam: '#c2410c', mean: '#8b1b12', white: '#ffffff'
+  };
+
+  function setupCanvas(cv) {
+
+    var parent = cv.parentElement;
+    var cssW = (parent ? parent.clientWidth : 0) || cv.getBoundingClientRect().width || 700;
+    var cssH = parseFloat(window.getComputedStyle(cv).height) || 300;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.max(280, Math.round(cssW * dpr));
+    cv.height = Math.max(200, Math.round(cssH * dpr));
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: cssW, h: cssH };
+  }
+
+  function hatch(ctx, rect, dir) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(0,0,0,.42)';
+    ctx.lineWidth = 1.4;
+    var step = 8;
+    if (dir > 0) {
+      for (var x = rect.x - rect.h; x < rect.x + rect.w; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, rect.y + rect.h); ctx.lineTo(x + rect.h, rect.y); ctx.stroke();
+      }
+    } else {
+      for (var x2 = rect.x; x2 < rect.x + rect.w + rect.h; x2 += step) {
+        ctx.beginPath(); ctx.moveTo(x2, rect.y); ctx.lineTo(x2 - rect.h, rect.y + rect.h); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function plotFrame(ctx, p) {
+    ctx.fillStyle = PAL.white;
+    ctx.fillRect(0, 0, p.w, p.h);
+    ctx.strokeStyle = PAL.axis;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(p.x0, p.y0); ctx.lineTo(p.x0, p.y1); ctx.lineTo(p.x1, p.y1);
+    ctx.stroke();
+  }
+
+  function drawBarChart(cv, cfg) {
+    var s = setupCanvas(cv);
+    var ctx = s.ctx, w = s.w, h = s.h;
+    var p = { w: w, h: h, x0: 62, x1: w - 16, y0: 26, y1: h - 58 };
+    ctx.clearRect(0, 0, w, h);
+    plotFrame(ctx, p);
+
+    var b = cfg.bounds;
+    ctx.font = '12px "Segoe UI",Tahoma,sans-serif';
+    ctx.fillStyle = PAL.muted;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    b.ticks.forEach(function (t) {
+      var y = L.scaleLinear(t, b.min, b.max, p.y1, p.y0);
+      if (y < p.y0 - 2 || y > p.y1 + 2) return;
+      ctx.strokeStyle = PAL.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p.x0, y); ctx.lineTo(p.x1, y); ctx.stroke();
+      ctx.fillStyle = PAL.muted;
+      ctx.fillText(String(t), p.x0 - 6, y);
+    });
+    ctx.fillStyle = PAL.axis;
+    ctx.save();
+    ctx.translate(15, (p.y0 + p.y1) / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cfg.yLabel, 0, 0);
+    ctx.restore();
+
+    var data = cfg.values.map(function (v, i) { return { value: v, label: cfg.labels[i], fill: cfg.fills[i], pattern: cfg.patterns[i] }; });
+    var geo = L.barGeometry(data.map(function (d) { return d.value; }), b);
+    var n = data.length;
+    var slot = (p.x1 - p.x0) / n;
+    var bw = Math.min(92, slot * 0.56);
+
+    data.forEach(function (d, i) {
+      var cx = p.x0 + slot * (i + 0.5);
+      var top = L.scaleLinear(d.value, b.min, b.max, p.y1, p.y0);
+      var rect = { x: cx - bw / 2, y: top, w: bw, h: p.y1 - top };
+      ctx.fillStyle = d.fill;
+      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      if (d.pattern) hatch(ctx, rect, d.pattern);
+      ctx.strokeStyle = PAL.ink;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+      ctx.fillStyle = PAL.ink;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.font = 'bold 13px "Segoe UI",Tahoma,sans-serif';
+      ctx.fillText(cfg.valueText(data[i].value, i), cx, rect.y - 5);
+      ctx.textBaseline = 'top';
+      ctx.font = '12px "Segoe UI",Tahoma,sans-serif';
+      ctx.fillStyle = PAL.muted;
+      var words = String(d.label).split(' ');
+      var lines = [];
+      var cur = '';
+      words.forEach(function (word) {
+        if ((cur + ' ' + word).trim().length > 18) { lines.push(cur.trim()); cur = word; }
+        else cur = (cur + ' ' + word).trim();
+      });
+      if (cur) lines.push(cur);
+      lines.slice(0, 2).forEach(function (ln, li) { ctx.fillText(ln, cx, p.y1 + 8 + li * 14); });
+    });
+
+    if (cfg.note) {
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.font = 'italic 12px "Segoe UI",Tahoma,sans-serif';
+      ctx.fillStyle = PAL.muted;
+      ctx.fillText(cfg.note, p.x0, h - 3);
+    }
+    if (cfg.meanLine !== undefined && isFinite(cfg.meanLine) && cfg.meanBounds) {
+      var my = L.scaleLinear(cfg.meanLine, cfg.meanBounds.min, cfg.meanBounds.max, p.y1, p.y0);
+      ctx.save();
+      ctx.strokeStyle = PAL.mean;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      ctx.beginPath(); ctx.moveTo(p.x0, my); ctx.lineTo(p.x1, my); ctx.stroke();
+      ctx.restore();
+    }
+    return s;
+  }
+
+  function pointShape(ctx, x, y, r, shape, fill, stroke) {
+    ctx.beginPath();
+    if (shape === 'square') ctx.rect(x - r, y - r, r * 2, r * 2);
+    else if (shape === 'triangle') { ctx.moveTo(x, y - r * 1.15); ctx.lineTo(x + r * 1.1, y + r); ctx.lineTo(x - r * 1.1, y + r); ctx.closePath(); }
+    else { ctx.arc(x, y, r, 0, Math.PI * 2); }
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  var SHAPES = ['circle', 'square', 'triangle'];
+
+  function drawScatter(cv, rows, groups, cfg) {
+    var s = setupCanvas(cv);
+    var ctx = s.ctx, w = s.w, h = s.h;
+    var p = { w: w, h: h, x0: 62, x1: w - 16, y0: 24, y1: h - 52 };
+    ctx.clearRect(0, 0, w, h);
+    plotFrame(ctx, p);
+
+    var xs = rows.map(function (r) { return r.sleep; });
+    var ys = rows.map(function (r) { return r.score; });
+    var xb = cfg.honestX ? { min: 0, max: 10, ticks: [0, 2, 4, 6, 8, 10] } : L.axisBounds(xs, { startAtZero: false, roundTo: 0.5, padFrac: 0.08 });
+    var yb = cfg.honestY ? { min: 0, max: 100, ticks: [0, 20, 40, 60, 80, 100] } : L.axisBounds(ys, { startAtZero: false, roundTo: 5, padFrac: 0.08 });
+
+    ctx.font = '12px "Segoe UI",Tahoma,sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    yb.ticks.forEach(function (t) {
+      var y = L.scaleLinear(t, yb.min, yb.max, p.y1, p.y0);
+      if (y < p.y0 - 2 || y > p.y1 + 2) return;
+      ctx.strokeStyle = PAL.grid; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p.x0, y); ctx.lineTo(p.x1, y); ctx.stroke();
+      ctx.fillStyle = PAL.muted; ctx.fillText(String(t), p.x0 - 6, y);
+    });
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    xb.ticks.forEach(function (t) {
+      var x = L.scaleLinear(t, xb.min, xb.max, p.x0, p.x1);
+      if (x < p.x0 - 2 || x > p.x1 + 2) return;
+      ctx.strokeStyle = PAL.grid; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, p.y0); ctx.lineTo(x, p.y1); ctx.stroke();
+      ctx.fillStyle = PAL.muted; ctx.fillText(String(t), x, p.y1 + 6);
+    });
+
+    ctx.fillStyle = PAL.axis;
+    ctx.font = 'bold 12px "Segoe UI",Tahoma,sans-serif';
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'center';
+    ctx.fillText('Сон перед тестом, ч', (p.x0 + p.x1) / 2, h - 4);
+    ctx.save();
+    ctx.translate(14, (p.y0 + p.y1) / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = 'top';
+    ctx.fillText('Балл за тест (0–100)', 0, 0);
+    ctx.restore();
+
+    rows.forEach(function (r) {
+      var x = L.scaleLinear(r.sleep, xb.min, xb.max, p.x0, p.x1);
+      var y = L.scaleLinear(r.score, yb.min, yb.max, p.y1, p.y0);
+      var g = groups ? groups[r.school] : null;
+      var shape = g ? (SHAPES[g.shapeIndex] || 'circle') : 'circle';
+      var fill = g ? g.color : '#6b6455';
+      pointShape(ctx, x, y, 4.6, shape, fill, 'rgba(16,20,26,.55)');
+    });
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'italic 12px "Segoe UI",Tahoma,sans-serif';
+    ctx.fillStyle = PAL.muted;
+    ctx.fillText(cfg.note || '', p.x0, h - 4);
+    return s;
+  }
+
+  var framingUI = { top: 100, bottom: 0, zoom: false };
+
+  function schoolMeanScore() {
+    var rep = L.correlationReport(POP, 'school');
+    var order = ['A', 'B', 'C'];
+    return order.map(function (code) {
+      var g = rep.groups.filter(function (x) { return x.key === code; })[0];
+      return { code: code, mean: g ? g.meanScore : NaN, n: g ? g.n : 0, label: 'Школа ' + code };
+    });
+  }
+
+  function drawFraming() {
+    var data = schoolMeanScore();
+    var values = data.map(function (d) { return d.mean; });
+    var bounds = framingUI.zoom
+      ? (function () {
+        var top = Math.max(framingUI.top, framingUI.bottom + 3);
+        var step = L.niceStep(top - framingUI.bottom, 5);
+        return { min: framingUI.bottom, max: top, ticks: L.ticksBetween(framingUI.bottom, top, step) };
+      })()
+      : L.axisBounds(values, { startAtZero: true });
+
+    var cv = $('#canvas-framing');
+    if (!cv) return;
+    drawBarChart(cv, {
+      values: values,
+      labels: data.map(function (d) { return d.label; }),
+      fills: [PAL.barA, PAL.barB, PAL.barC],
+      patterns: [0, 1, -1],
+      bounds: bounds,
+      yLabel: 'Средний балл (0–100)',
+      valueText: function (v) { return L.fmt(v, 1); },
+      note: framingUI.zoom ? 'Ось начинается с ' + framingUI.bottom + ', а не с нуля' : 'Ось начинается с нуля'
+    });
+
+    var spans = framingUI.zoom
+      ? (Math.max.apply(null, values) - Math.min.apply(null, values)) / (bounds.max - bounds.min)
+      : (Math.max.apply(null, values) - Math.min.apply(null, values)) / bounds.max;
+
+    var cap = $('#framing-caption');
+    if (cap) {
+      cap.textContent = 'Средний балл теста по трём школам (' + (framingUI.zoom ? 'ось ' + framingUI.bottom + '–' + bounds.max : 'ось 0–' + bounds.max) +
+        '). Самая низкая школа отличается от самой высокой на ' + L.fmt(Math.max.apply(null, values) - Math.min.apply(null, values), 1) +
+        ' балла; в текущем оформлении это ' + L.pct(spans, 0) + ' высоты графика.';
+    }
+    var legend = $('#framing-legend');
+    if (legend) {
+      clear(legend);
+
+      var swatchStyle = [
+        'background-color:' + PAL.barA,
+        'background-color:' + PAL.barB + ';background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.42) 0 2px,transparent 2px 8px)',
+        'background-color:' + PAL.barC + ';background-image:repeating-linear-gradient(-45deg,rgba(0,0,0,.42) 0 2px,transparent 2px 8px)'
+      ];
+      data.forEach(function (d, i) {
+        legend.appendChild(el('span', { class: 'legend-item' }, [
+          el('span', { class: 'swatch', style: swatchStyle[i % 3] }),
+          el('span', { text: d.label + ' (' + d.n + ' записей)' })
+        ]));
+      });
+      legend.appendChild(el('span', { class: 'legend-item' }, [
+        el('span', { class: 'swatch', style: 'background:linear-gradient(90deg,' + PAL.barA + ' 0 33%,' + PAL.barB + ' 33% 66%,' + PAL.barC + ' 66% 100%)' }),
+        el('span', { text: 'Школы различаются и цветом, и штриховкой — цвет здесь не единственный признак' })
+      ]));
+    }
+
+    var tb = $('#framing-tbody');
+    if (tb) {
+      clear(tb);
+      data.forEach(function (d, i) {
+        var frac = (d.mean - bounds.min) / (bounds.max - bounds.min);
+        tb.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: d.label }),
+          el('td', { class: 'num', text: L.fmt(d.mean, 1) }),
+          el('td', { class: 'num', text: String(d.n) }),
+          el('td', { class: 'num', text: L.pct(frac, 0) })
+        ]));
+      });
+    }
+
+    var ib = $('#invariants-tbody');
+    if (ib) {
+      clear(ib);
+      var vals = values;
+      var rows = [
+        ['Средний балл самой низкой школы', L.fmt(Math.min.apply(null, vals), 1) + ' балла'],
+        ['Средний балл самой высокой школы', L.fmt(Math.max.apply(null, vals), 1) + ' балла'],
+        ['Разница между ними', L.fmt(Math.max.apply(null, vals) - Math.min.apply(null, vals), 1) + ' балла'],
+        ['Отношение самой высокой к самой низкой', L.fmt(Math.max.apply(null, vals) / Math.min.apply(null, vals), 3) + '×'],
+        ['Всего записей в данных', '240'],
+        ['Текущие границы оси', bounds.min + '–' + bounds.max + ' баллов (это оформление, а не данные)']
+      ];
+      rows.forEach(function (r) {
+        ib.appendChild(el('tr', {}, [el('th', { scope: 'row', text: r[0] }), el('td', { class: 'num', text: r[1] })]));
+      });
+    }
+  }
+
+  function setViewMode(zero) {
+    framingUI.zoom = !zero;
+    var bz = $('#btn-view-zero'), bz2 = $('#btn-view-zoom');
+    if (bz) bz.setAttribute('aria-pressed', zero ? 'true' : 'false');
+    if (bz2) bz2.setAttribute('aria-pressed', zero ? 'false' : 'true');
+    var at = $('#axis-top'), ab = $('#axis-bottom');
+    if (zero) {
+      framingUI.top = 100; framingUI.bottom = 0;
+      if (at) at.value = '100';
+      if (ab) ab.value = '0';
+    } else {
+      if (framingUI.bottom < 60) framingUI.bottom = 70;
+      framingUI.top = Math.max(95, framingUI.bottom + 8);
+      if (at) at.value = String(framingUI.top);
+      if (ab) ab.value = String(framingUI.bottom);
+    }
+    syncAxisOutputs();
+    drawFraming();
+  }
+
+  function syncAxisOutputs() {
+    var at = $('#axis-top'), ab = $('#axis-bottom');
+    var ato = $('#axis-top-out'), abo = $('#axis-bottom-out');
+    if (ato) ato.textContent = String(framingUI.top);
+    if (abo) abo.textContent = String(framingUI.bottom);
+    if (at && Number(at.value) !== framingUI.top) at.value = String(framingUI.top);
+    if (ab && Number(ab.value) !== framingUI.bottom) ab.value = String(framingUI.bottom);
+  }
+
+  var sampleResult = null;
+
+  function currentSample() {
+    if (!sampleResult) return null;
+    return L.drawSample(POP, state.sample.method, state.sample.size, state.sample.seed);
+  }
+
+  function drawSampleChart() {
+    var cv = $('#canvas-sample');
+    if (!cv) return;
+    var comp;
+    if (sampleResult) comp = sampleResult.comp;
+    else comp = L.sampleComposition([], POP);
+
+    var values = [], labels = [], fills = [], patterns = [], texts = [];
+    comp.bySchool.forEach(function (b) {
+      values.push(b.popShare * 100); labels.push('Школа ' + b.school + ' · полный набор');
+      fills.push(PAL.pop); patterns.push(0); texts.push(L.pct(b.popShare, 0));
+    });
+    comp.bySchool.forEach(function (b) {
+      values.push((isFinite(b.sampleShare) ? b.sampleShare : 0) * 100); labels.push('Школа ' + b.school + ' · выборка');
+      fills.push(PAL.sam); patterns.push(1); texts.push(isFinite(b.sampleShare) ? L.pct(b.sampleShare, 0) : '—');
+    });
+
+    var bounds = { min: 0, max: 100, ticks: L.ticksBetween(0, 100, 20) };
+    drawBarChart(cv, {
+      values: values, labels: labels, fills: fills, patterns: patterns, bounds: bounds,
+      yLabel: 'Доля в группе, %',
+      valueText: function (v) { return L.fmt(v, 0) + '%'; },
+      note: sampleResult ? 'Выборка показана штриховкой · n = ' + sampleResult.meta.size + ' из 240' : 'Выборка не взята: показан только полный набор'
+    });
+
+    var cap = $('#sample-caption');
+    if (cap) {
+      if (sampleResult) {
+        var worst = comp.bySchool.slice().sort(function (a, b) {
+          return Math.abs(b.sampleShare - b.popShare) - Math.abs(a.sampleShare - a.popShare);
+        })[0];
+        cap.textContent = 'Состав выборки против полного набора. Способ: ' + sampleResult.meta.methodName + '; объём n = ' + sampleResult.meta.size +
+          '. Наибольшее расхождение — школа ' + worst.school + ': ' + L.pct(worst.popShare, 0) + ' в наборе против ' + L.pct(worst.sampleShare, 0) + ' в выборке.';
+      } else {
+        cap.textContent = 'Пока показан только состав полного набора из 240 записей: школа A — 40%, школа B — 35%, школа C — 25%.';
+      }
+    }
+
+    var legend = $('#sample-legend');
+    if (legend) {
+      clear(legend);
+      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch', style: 'background:' + PAL.pop }), el('span', { text: 'Полный набор (240)' })]));
+      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch swatch-hatch', style: 'background:' + PAL.sam }), el('span', { text: 'Ваша выборка (штриховка)' })]));
+    }
+  }
+
+  function renderSampleTables() {
+    var tbody = $('#sample-tbody');
+    if (tbody) {
+      clear(tbody);
+      var c = sampleResult ? sampleResult.comp : L.sampleComposition([], POP);
+      function row(label, popV, samV, fmtFn, better) {
+        var diff = isFinite(popV) && isFinite(samV) ? fmtFn(samV - popV) : '—';
+        return el('tr', {}, [
+          el('th', { scope: 'row', text: label }),
+          el('td', { class: 'num', text: fmtFn(popV) }),
+          el('td', { class: 'num', text: isFinite(samV) ? fmtFn(samV) : '—' }),
+          el('td', { class: 'num', text: diff })
+        ]);
+      }
+      tbody.appendChild(row('Средний сон, ч', c.meanSleep.population, c.meanSleep.sample, function (v) { return L.fmt(v, 2); }));
+      tbody.appendChild(row('Средний балл', c.meanScore.population, c.meanScore.sample, function (v) { return L.fmt(v, 1); }));
+      tbody.appendChild(row('Среднее экранное время, ч', c.meanScreen.population, c.meanScreen.sample, function (v) { return L.fmt(v, 1); }));
+      tbody.appendChild(row('Доля спящих меньше 7 ч', c.lowSleepShare.population, c.lowSleepShare.sample, function (v) { return L.pct(v, 0); }));
+      tbody.appendChild(el('tr', {}, [
+        el('th', { scope: 'row', text: 'Записей в наборе' }),
+        el('td', { class: 'num', text: String(POP.length) }),
+        el('td', { class: 'num', text: sampleResult ? String(sampleResult.meta.size) : '0' }),
+        el('td', { class: 'num', text: '—' })
+      ]));
+    }
+
+    var st = $('#sample-schools-tbody');
+    if (st) {
+      clear(st);
+      var comp = sampleResult ? sampleResult.comp : L.sampleComposition([], POP);
+      comp.bySchool.forEach(function (b) {
+        var diff = isFinite(b.sampleShare) ? Math.abs(b.sampleShare - b.popShare) : NaN;
+        var verdict = !sampleResult ? '—' : (diff <= 0.05 ? 'Состав совпадает' : diff <= 0.12 ? 'Небольшое расхождение' : 'Заметное расхождение');
+        st.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: 'Школа ' + b.school }),
+          el('td', { class: 'num', text: L.pct(b.popShare, 0) + ' (' + b.popCount + ')' }),
+          el('td', { class: 'num', text: sampleResult ? L.pct(b.sampleShare, 0) + ' (' + b.sampleCount + ')' : '—' }),
+          el('td', { text: verdict })
+        ]));
+      });
+    }
+
+    var ft = $('#sample-first-tbody');
+    if (ft) {
+      clear(ft);
+      var rows = sampleResult ? sampleResult.rows.slice(0, 12) : [];
+      if (!rows.length) ft.appendChild(el('tr', {}, [el('td', { colspan: '5', text: 'Выборка пока не взята.' })]));
+      rows.forEach(function (r) {
+        ft.appendChild(el('tr', {}, [
+          el('td', { class: 'mono', text: r.id }),
+          el('td', { text: r.school }),
+          el('td', { class: 'num', text: L.fmt(r.sleep, 2) }),
+          el('td', { class: 'num', text: L.fmt(r.screen, 1) }),
+          el('td', { class: 'num', text: L.fmt(r.score, 1) })
+        ]));
+      });
+    }
+  }
+
+  function setSampleStatus(kind, title, text) {
+    var box = $('#sample-status');
+    if (!box) return;
+    box.className = 'flag ' + (kind === 'ok' ? 'flag-ok' : kind === 'warn' ? 'flag-warn' : kind === 'stop' ? 'flag-stop' : 'flag-info');
+    clear(box);
+    var ico = kind === 'ok' ? '✓' : kind === 'warn' ? '!' : kind === 'stop' ? '×' : 'i';
+    box.appendChild(el('span', { class: 'flag-title' }, [
+      el('span', { class: 'flag-icon', 'aria-hidden': 'true', text: ico }),
+      el('span', { text: title })
+    ]));
+    box.appendChild(el('p', { class: 'small', style: 'margin:.35rem 0 0', text: text }));
+  }
+
+  function runSample() {
+    sampleResult = L.drawSample(POP, state.sample.method, state.sample.size, state.sample.seed);
+    state.sample.drawn = true;
+    drawSampleChart();
+    renderSampleTables();
+    var m = sampleResult.meta;
+    var comp = sampleResult.comp;
+    var worst = comp.bySchool.slice().sort(function (a, b) {
+      return Math.abs(b.sampleShare - b.popShare) - Math.abs(a.sampleShare - a.popShare);
+    })[0];
+    var dev = Math.abs(worst.sampleShare - worst.popShare);
+    var text = 'Способ: ' + m.methodName + '. Объём: ' + m.size + ' записей. Расхождение по школе ' + worst.school + ': ' + L.pct(dev, 0) + ' пункта.';
+    if (m.bias === 'biased') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Выборка взята · способ систематически смещённый', text + ' Определение способа объясняет, почему именно так.');
+    else if (m.bias === 'mixed') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Выборка взята · способ с частичным смещением', text);
+    else setSampleStatus('ok', 'Выборка взята · способ без систематического смещения', text + ' Жеребьёвка не гарантирует идеального совпадения — она гарантирует равные шансы.');
+    save();
+  }
+
+  function renderMethodChoices() {
+    var box = $('#method-choices');
+    if (!box) return;
+    clear(box);
+    Object.keys(L.METHODS).forEach(function (code, i) {
+      var m = L.METHODS[code];
+      var id = 'method-' + code;
+      var input = el('input', { type: 'radio', name: 'sample-method', id: id, value: code });
+      if (state.sample.method === code) input.checked = true;
+      input.addEventListener('change', function () {
+        state.sample.method = code;
+        sampleResult = null;
+        state.sample.drawn = false;
+        $('#method-definition').textContent = m.definition;
+        setSampleStatus('info', 'Способ изменён: ' + m.name, 'Нажмите «Взять выборку», чтобы увидеть его результат. Тип отбора: ' + (m.bias === 'biased' ? 'систематически смещённый' : m.bias === 'mixed' ? 'частично смещённый' : 'без систематического смещения') + '.');
+        drawSampleChart(); renderSampleTables(); save();
+      });
+      box.appendChild(el('label', { class: 'row', for: id, style: 'align-items:flex-start;gap:.6rem;cursor:pointer;padding:.35rem 0' }, [
+        input,
+        el('span', {}, [
+          el('strong', { text: m.name + ' ' }),
+          el('span', { class: 'pill ' + (m.bias === 'unbiased' ? 'pill-ok' : 'pill-todo'), text: m.bias === 'unbiased' ? 'без смещения' : m.bias === 'biased' ? 'смещённый' : 'частично смещённый' }),
+          el('span', { class: 'tiny muted', style: 'display:block;margin-top:.2rem', text: m.why })
+        ])
+      ]));
+    });
+    var md = $('#method-definition');
+    if (md) md.textContent = L.METHODS[state.sample.method].definition;
+  }
+
+  var GROUP_COLORS = { A: PAL.pointA, B: PAL.pointB, C: PAL.pointC };
+
+  function corrRows() {
+    if (state.corr.view === 'strata') return L.strata(POP, [6.5, 7.5]);
+    return POP;
+  }
+
+  function drawCorr() {
+    var cv = $('#canvas-corr');
+    if (!cv) return;
+    var rows = corrRows();
+    var groups = null;
+    if (state.corr.view === 'school') {
+      groups = { A: { color: PAL.pointA, shapeIndex: 0 }, B: { color: PAL.pointB, shapeIndex: 1 }, C: { color: PAL.pointC, shapeIndex: 2 } };
+    } else if (state.corr.view === 'strata') {
+      groups = { A: { color: '#8b1b12', shapeIndex: 0 }, B: { color: '#0b6fa4', shapeIndex: 1 }, C: { color: '#3f6212', shapeIndex: 2 } };
+    }
+    var rep = L.correlationReport(POP, state.corr.view === 'strata' ? 'strata' : 'school');
+
+    drawScatter(cv, rows, groups, {
+      honestX: state.corr.scale === 'honest',
+      honestY: false,
+      note: state.corr.scale === 'honest' ? 'Ось сна: 0–10 ч (от нуля)' : 'Ось сна: подогнана под данные ' +
+        L.fmt(Math.min.apply(null, POP.map(function (r) { return r.sleep; })), 1) + '–' +
+        L.fmt(Math.max.apply(null, POP.map(function (r) { return r.sleep; })), 1) + ' ч'
+    });
+
+    var cap = $('#corr-caption');
+    if (cap) {
+      var scaleNote = state.corr.scale === 'honest'
+        ? 'Ось сна начинается от нуля — как в честном графике.'
+        : 'Ось сна подогнана под диапазон данных: точки разъехались сильнее, но числа те же.';
+      var viewNote = state.corr.view === 'all' ? 'Все 240 точек одним цветом.'
+        : state.corr.view === 'school' ? 'Точки разделены по трём школам: цвет и форма различают группы.'
+          : 'Точки разделены на три полосы по количеству сна.';
+      cap.textContent = 'Связь сна и балла. ' + viewNote + ' ' + scaleNote +
+        ' Связь на всех записях: r = ' + L.fmt(rep.overallR) + ' (' + L.describeR(rep.overallR) + ').';
+    }
+
+    var legend = $('#corr-legend');
+    if (legend) {
+      clear(legend);
+      if (state.corr.view === 'all') {
+        legend.appendChild(el('span', { class: 'legend-item', text: 'Все точки показаны одним цветом — так видна общая картина.' }));
+      } else if (state.corr.view === 'school') {
+        [['A', 'круг'], ['B', 'квадрат'], ['C', 'треугольник']].forEach(function (p) {
+          legend.appendChild(el('span', { class: 'legend-item' }, [
+            el('span', { class: 'swatch', style: 'background:' + GROUP_COLORS[p[0]] }),
+            el('span', { text: 'Школа ' + p[0] + ' (' + p[1] + ')' })
+          ]));
+        });
+      } else {
+        rep.groups.forEach(function (g) {
+          legend.appendChild(el('span', { class: 'legend-item' }, [
+            el('span', { class: 'swatch', style: 'background:' + (g.key === 'A' ? '#8b1b12' : g.key === 'B' ? '#0b6fa4' : '#3f6212') }),
+            el('span', { text: g.label })
+          ]));
+        });
+      }
+    }
+
+    var tb = $('#corr-tbody');
+    if (tb) {
+      clear(tb);
+      tb.appendChild(el('tr', {}, [
+        el('th', { scope: 'row', text: 'Все данные (240 записей)' }),
+        el('td', { class: 'num', text: String(rep.n) }),
+        el('td', { class: 'num', text: L.fmt(rep.overallR) }),
+        el('td', { class: 'num', text: L.fmt(L.mean(POP.map(function (r) { return r.sleep; })), 2) }),
+        el('td', { class: 'num', text: L.fmt(L.mean(POP.map(function (r) { return r.score; })), 1) })
+      ]));
+      rep.groups.forEach(function (g) {
+        tb.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: g.label + (state.corr.view === 'strata' ? '' : ' (внутри школы)') }),
+          el('td', { class: 'num', text: String(g.n) }),
+          el('td', { class: 'num', text: L.fmt(g.r) }),
+          el('td', { class: 'num', text: L.fmt(g.meanSleep, 2) }),
+          el('td', { class: 'num', text: L.fmt(g.meanScore, 1) })
+        ]));
+      });
+    }
+
+    var gt = $('#corr-groups-tbody');
+    if (gt) {
+      clear(gt);
+      rep.groups.forEach(function (g) {
+        gt.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: g.label }),
+          el('td', { class: 'num', text: String(g.n) }),
+          el('td', { class: 'num', text: L.fmt(g.meanSleep, 2) }),
+          el('td', { class: 'num', text: L.fmt(g.meanScreen, 1) }),
+          el('td', { class: 'num', text: L.fmt(g.meanScore, 1) }),
+          el('td', { class: 'num', text: L.fmt(g.r) })
+        ]));
+      });
+    }
+  }
+
+  function renderCorrViewChoices() {
+    var box = $('#corr-view-choices');
+    if (!box) return;
+    clear(box);
+    var opts = [
+      { id: 'all', label: 'Все точки одним цветом', note: 'Общая картина по 240 записям.' },
+      { id: 'school', label: 'Разделить по школам', note: 'Три группы: цвет и форма различают их.' },
+      { id: 'strata', label: 'Разделить по полосам сна', note: 'Группы по количеству сна, а не по школе.' }
+    ];
+    opts.forEach(function (o) {
+      var id = 'corr-view-' + o.id;
+      var input = el('input', { type: 'radio', name: 'corr-view', id: id, value: o.id });
+      if (state.corr.view === o.id) input.checked = true;
+      input.addEventListener('change', function () {
+        state.corr.view = o.id; drawCorr(); save();
+      });
+      box.appendChild(el('label', { class: 'row', for: id, style: 'align-items:flex-start;gap:.6rem;cursor:pointer;padding:.3rem 0' }, [
+        input, el('span', {}, [el('strong', { text: o.label }), el('span', { class: 'tiny muted', style: 'display:block', text: o.note })])
+      ]));
+    });
+
+    var sbox = $('#corr-scale-choices');
+    if (sbox) {
+      clear(sbox);
+      [{ id: 'honest', label: 'Ось сна от нуля (0–10 ч)' }, { id: 'auto', label: 'Ось сна подогнана под данные' }].forEach(function (o) {
+        var id = 'corr-scale-' + o.id;
+        var input = el('input', { type: 'radio', name: 'corr-scale', id: id, value: o.id });
+        if (state.corr.scale === o.id) input.checked = true;
+        input.addEventListener('change', function () { state.corr.scale = o.id; drawCorr(); save(); });
+        sbox.appendChild(el('label', { class: 'row', for: id, style: 'align-items:center;gap:.6rem;cursor:pointer;padding:.2rem 0' }, [
+          input, el('span', { text: o.label })
+        ]));
+      });
+    }
+  }
+
+  function renderChoices(boxId, choices, name, current, onPick) {
+    var box = document.getElementById(boxId);
+    if (!box) return;
+    clear(box);
+    choices.forEach(function (c) {
+      var id = name + '-' + c.id;
+      var input = el('input', { type: 'radio', name: name, id: id, value: c.id });
+      if (current === c.id) input.checked = true;
+      input.addEventListener('change', function () { onPick(c.id); });
+      box.appendChild(el('label', { class: 'row', for: id, style: 'align-items:flex-start;gap:.6rem;cursor:pointer;padding:.4rem 0;border-top:1px dashed var(--line)' }, [
+        input, el('span', { text: c.text })
+      ]));
+    });
+  }
+
+  function renderChecklistBox(boxId, title, items, checked, onChange) {
+    var box = document.getElementById(boxId);
+    if (!box) return;
+    var wrap = el('div', { class: 'panel' }, [el('h3', { style: 'margin-top:0', text: title })]);
+    var ul = el('ul', { class: 'checklist' });
+    items.forEach(function (it) {
+      var id = boxId + '-' + it.id;
+      var input = el('input', { type: 'checkbox', id: id });
+      input.checked = !!checked[it.id];
+      input.addEventListener('change', function () { checked[it.id] = input.checked; onChange(); });
+      ul.appendChild(el('li', {}, [input, el('label', { for: id, text: it.text, style: 'cursor:pointer' })]));
+    });
+    wrap.appendChild(ul);
+    box.appendChild(wrap);
+  }
+
+  function framingFeedback(choiceId) {
+    var c = FRAMING_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
+    var out = $('#framing-feedback');
+    clear(out);
+    if (!c) { out.appendChild(flag('info', 'Выберите вариант', 'Отметьте одну из формулировок — тогда появится разбор.')); return; }
+    out.appendChild(flag(c.verdict === 'yes' ? 'ok' : 'warn',
+      c.verdict === 'yes' ? 'Верно' : 'Стоит пересмотреть',
+      c.why));
+    out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Попробовать снова можно сколько угодно раз — выберите другой вариант и нажмите «Проверить гипотезу».' }));
+  }
+
+  function sampleFeedback(choiceId) {
+    var c = SAMPLE_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
+    var out = $('#sample-feedback');
+    clear(out);
+    if (!c) { out.appendChild(flag('info', 'Выберите вариант', 'Отметьте одну из формулировок.')); return; }
+    if (c.verdict === 'yes') {
+      out.appendChild(flag('ok', 'Верно', c.why));
+    } else {
+      out.appendChild(flag('warn', 'Стоит пересмотреть', c.why));
+      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Проверить можно так: выберите удобный способ отбора, поставьте ползунок на 200 и нажмите «Взять выборку». Посмотрите на долю школ — смещение останется.' }));
+    }
+  }
+
+  function corrFeedback(choiceId) {
+    var c = CORR_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
+    var out = $('#corr-feedback');
+    clear(out);
+    if (!c) { out.appendChild(flag('info', 'Выберите вывод', 'Отметьте одну из формулировок.')); return; }
+    out.appendChild(flag(c.verdict === 'yes' ? 'ok' : 'warn', c.verdict === 'yes' ? 'Вывод выдерживает проверку' : 'Вывод стоит уточнить', c.why));
+    if (c.verdict !== 'yes') {
+      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Посмотрите в таблицу «Числа этого графика»: строка «Все данные» и строки школ. Сравните величину r. Затем попробуйте другой вывод.' }));
+    }
+  }
+
+  function notesFeedback(text, outId, opts) {
+    var out = document.getElementById(outId);
+    clear(out);
+    var r = L.reviewText(text, opts || {});
+    out.appendChild(flag(r.mechanicalPassed === 3 ? 'ok' : 'info',
+      r.mechanicalPassed === 3 ? 'Ответ записан' : 'Ответ можно усилить',
+      'Слов: ' + r.words + '. Механических признаков выполнено: ' + r.mechanicalPassed + ' из 3.'));
+    out.appendChild(checklist(r.checks));
+    if (r.casualClaims.length) {
+      out.appendChild(flag('warn', 'Замечены «сильные» слова', 'В тексте есть: ' + r.casualClaims.join(', ') + '. Если это утверждение о причине — данных для него недостаточно. Если вы спорите с такой формулировкой, всё в порядке.'));
+    }
+    out.appendChild(el('p', { class: 'tiny muted', style: 'margin-top:.4rem', text: r.note }));
+    return r;
+  }
+
+  function finalFeedback(text) {
+    var out = $('#final-feedback');
+    clear(out);
+    var r = L.reviewHeadline(text);
+    out.appendChild(flag(r.passed >= 3 ? (r.passed === 4 ? 'ok' : 'info') : 'warn',
+      r.passed === 4 ? 'Все три части на месте' : 'Проверка трёх частей',
+      L.rewardFor(r.passed)));
+    out.appendChild(checklist(r.checks.map(function (c) { return { pass: c.pass, label: c.label }; })));
+    out.appendChild(el('p', { class: 'tiny muted', style: 'margin-top:.4rem', text: 'Проверка механическая: наличие утверждения, числа и ограничения. Смысл и убедительность формулировки оцениваете вы — или обсуждаете с учителем. Приложение не оценивает текст автоматически и никуда его не отправляет.' }));
+  }
+
+  var SELFCHECK = [
+    { id: 'sc1', text: 'Я могу объяснить, как оформление графика меняет впечатление, не меняя числа' },
+    { id: 'sc2', text: 'Я могу назвать признак, по которому выборка оказалась непохожей на полный набор' },
+    { id: 'sc3', text: 'Я могу объяснить, почему заметная связь сама по себе не доказывает причину' },
+    { id: 'sc4', text: 'В моём заголовке есть утверждение, число из данных и ограничение' },
+    { id: 'sc5', text: 'Я могу назвать хотя бы одно место, где моя первая версия оказалась неточной' }
+  ];
+
+  function renderSelfCheck() {
+    var wrap = $('#selfcheck-list');
+    if (!wrap) return;
+    clear(wrap);
+    SELFCHECK.forEach(function (it) {
+      var id = 'self-' + it.id;
+      var input = el('input', { type: 'checkbox', id: id });
+      input.checked = !!state.selfcheck[it.id];
+      input.addEventListener('change', function () {
+        state.selfcheck[it.id] = input.checked;
+        updateSelfResult();
+        save();
+      });
+      wrap.appendChild(el('li', {}, [input, el('label', { for: id, text: it.text, style: 'cursor:pointer' })]));
+    });
+    updateSelfResult();
+  }
+
+  function updateSelfResult() {
+    var done = SELFCHECK.filter(function (it) { return state.selfcheck[it.id]; }).length;
+    var out = $('#selfcheck-result');
+    if (!out) return;
+    out.textContent = done === 0 ? 'Отметьте то, в чём уверены. Это ваша памятка, а не оценка: отметки остаются в этом браузере.'
+      : 'Отмечено ' + done + ' из ' + SELFCHECK.length + '. ' + (done === SELFCHECK.length ? 'Список закрыт — можно распечатать отчёт.' : 'Остальные пункты можно добавить, если захотите.');
+  }
+
+  function renderCompletion() {
+    var box = $('#completion-summary');
+    if (!box) return;
+    clear(box);
+    var items = [
+      { t: 'Дело 1 · рамка графика', ok: state.framing.saved, note: state.framing.saved ? 'наблюдение записано' : 'наблюдение ещё не записано' },
+      { t: 'Дело 2 · выборка', ok: state.sample.saved, note: state.sample.saved ? ('наблюдение записано · способ: ' + L.METHODS[state.sample.method].name) : 'наблюдение ещё не записано' },
+      { t: 'Дело 3 · связь и причина', ok: state.corr.saved, note: state.corr.saved ? 'наблюдение записано' : 'наблюдение ещё не записано' },
+      { t: 'Итоговый заголовок', ok: state.final.submitted, note: state.final.submitted ? 'проверен на три части' : 'ещё не проверен' }
+    ];
+    var ul = el('ul', { class: 'checklist' });
+    items.forEach(function (i) {
+      ul.appendChild(el('li', { class: i.ok ? 'check-pass' : 'check-todo' }, [
+        el('span', { class: 'check-mark', 'aria-hidden': 'true', text: i.ok ? '✓' : '○' }),
+        el('span', {}, [el('strong', { text: i.t }), el('span', { class: 'small', text: ' — ' + i.note + (i.ok ? '; выполнено' : '; пока нет') })])
+      ]));
+    });
+    box.appendChild(ul);
+    box.appendChild(el('p', {
+      class: 'small',
+      text: (state.framing.saved && state.sample.saved && state.corr.saved)
+        ? 'Все три обязательных дела закрыты. Это значит, что вы прошли все три проверки — а не то, что приложение признало ваш текст правильным: суждение остаётся за вами.'
+        : 'Можно вернуться к незакрытому делу через вкладки вверху — прогресс не потеряется.'
+    }));
+  }
+
+  function renderNextPractice() {
+    var ul = $('#next-practice');
+    if (!ul) return;
+    clear(ul);
+    var items = [
+      'Возьмите из этого же набора другой вопрос: «У кого больше экранное время — те и спят меньше?» Проверьте связь целиком и внутри каждой школы. Совпадает ли вывод с тем, что вы получили про сон и балл?',
+      'Придумайте сами график, который на одних и тех же числах выглядит убедительнее, чем есть: подберите границы оси и объясните в двух предложениях, что именно вы преувеличили.',
+      'Спросите у взрослого, какую цифру из новостей он считает убедительной, и разберите её по чек-листу: кто выборка, что оформление, где связь подменяет причину.'
+    ];
+    items.forEach(function (t) { ul.appendChild(el('li', { class: 'small', text: t })); });
+  }
+
+  function stageFromHash() {
+    var h = (window.location.hash || '').replace('#', '').toLowerCase();
+    if (!h) return null;
+    if (h === 'start' || h === 'activity-0' || h === 'intro') return 0;
+    for (var i = 1; i <= 3; i++) if (h === 'activity-' + i) return i;
+    if (h === 'report' || h === 'activity-4' || h === 'final') return 4;
+    return null;
+  }
+
+  function applyHashOnLoad() {
+    var idx = stageFromHash();
+    gotoStage(idx === null ? 0 : idx, { updateHash: false, focus: idx !== null });
+    if (idx === null) save();
+  }
+
+  window.addEventListener('hashchange', function () {
+    var idx = stageFromHash();
+    if (idx === null) return;
+    if (idx !== state.stage) gotoStage(idx);
+  });
+
+  function bind() {
+    $$('#main-nav .nav-tab').forEach(function (b) {
+      b.addEventListener('click', function () { gotoStage(Number(b.getAttribute('data-go'))); });
+    });
+    var s1 = $('#btn-start'), s2 = $('#btn-start-2');
+    if (s1) s1.addEventListener('click', function () { gotoStage(1); });
+    if (s2) s2.addEventListener('click', function () { gotoStage(1); });
+    var dn = document.querySelector('[data-goto="data-notes"]');
+    if (dn) dn.addEventListener('click', function () {
+      var t = $('#data-notes');
+      if (t) { t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true }); t.scrollIntoView({ block: 'start' }); }
+    });
+
+    var nb = $('#btn-notebook');
+    if (nb) nb.addEventListener('click', function () { toggleNotebook(!state.notebookOpen); });
+    var nbc = $('#btn-notebook-close');
+    if (nbc) nbc.addEventListener('click', function () { toggleNotebook(false); });
+
+    function doReset() {
+      try { window.localStorage.removeItem(STORE_KEY); } catch (e) {  }
+      state = {
+        stage: 0,
+        framing: { saved: false, choice: null, notes: '', submitted: false },
+        sample: { saved: false, choice: null, notes: '', submitted: false, method: 'sms_first', size: 10, seed: 7, drawn: false },
+        corr: { saved: false, choice: null, notes: '', submitted: false, view: 'all', scale: 'honest' },
+        final: { headline: '', submitted: false },
+        selfcheck: {}, notebookOpen: false
+      };
+      sampleResult = null;
+      framingUI.top = 100; framingUI.bottom = 0; framingUI.zoom = false;
+      var h = $('#final-headline'), t1 = $('#framing-notes'), t2 = $('#sample-notes'), t3 = $('#corr-notes');
+      if (h) h.value = ''; if (t1) t1.value = ''; if (t2) t2.value = ''; if (t3) t3.value = '';
+      var ss = $('#sample-size'), sd = $('#seed-input');
+      if (ss) ss.value = '10'; if (sd) sd.value = '7';
+      ['#framing-feedback', '#framing-notes-feedback', '#sample-feedback', '#sample-notes-feedback', '#corr-feedback', '#corr-notes-feedback', '#final-feedback'].forEach(function (sel) {
+        var n = $(sel); if (n) clear(n);
+      });
+      var fu = $('#framing-followup'); if (fu) fu.setAttribute('hidden', '');
+      var su = $('#sample-followup'); if (su) su.setAttribute('hidden', '');
+      var cu = $('#corr-followup'); if (cu) cu.setAttribute('hidden', '');
+      renderAll();
+      gotoStage(0, { updateHash: true });
+      toggleNotebook(false);
+    }
+    var r1 = $('#btn-reset'), r2 = $('#btn-reset-2');
+    if (r1) r1.addEventListener('click', doReset);
+    if (r2) r2.addEventListener('click', doReset);
+
+    var pr = $('#btn-print');
+    if (pr) pr.addEventListener('click', function () { window.print(); });
+
+    $$('[data-hint]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = document.getElementById(b.getAttribute('data-hint'));
+        if (!d) return;
+        d.open = !d.open;
+        if (d.open) d.scrollIntoView({ block: 'nearest' });
+      });
+    });
+    $$('details.hint').forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        var btn = $$('[data-hint]').filter(function (b) { return b.getAttribute('data-hint') === d.id; })[0];
+        if (!btn) return;
+        btn.setAttribute('aria-expanded', d.open ? 'true' : 'false');
+      });
+    });
+
+    var bz = $('#btn-view-zero'), bzz = $('#btn-view-zoom');
+    if (bz) bz.addEventListener('click', function () { setViewMode(true); });
+    if (bzz) bzz.addEventListener('click', function () { setViewMode(false); });
+    var at = $('#axis-top'), ab = $('#axis-bottom');
+    function applyAxisFromSliders() {
+      var top = Number(at.value), bottom = Number(ab.value);
+      if (top - bottom < 3) {
+
+        if (document.activeElement === at) top = Math.min(100, bottom + 3);
+        else bottom = Math.max(0, top - 3);
+      }
+      framingUI.top = top; framingUI.bottom = bottom; framingUI.zoom = true;
+      at.value = String(top); ab.value = String(bottom);
+      syncAxisOutputs();
+      drawFraming();
+      save();
+    }
+    if (at) at.addEventListener('input', applyAxisFromSliders);
+    if (ab) ab.addEventListener('input', applyAxisFromSliders);
+    var ar = $('#btn-axis-reset');
+    if (ar) ar.addEventListener('click', function () { setViewMode(true); });
+
+    renderChoices('framing-choices', FRAMING_CHOICES, 'framing-choice', state.framing.choice, function (id) {
+      state.framing.choice = id; save();
+      if (state.framing.submitted) framingFeedback(id);
+    });
+    var ff = $('#form-framing');
+    if (ff) ff.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!state.framing.choice) { framingFeedback(null); return; }
+      state.framing.submitted = true;
+      framingFeedback(state.framing.choice);
+      var fu = $('#framing-followup');
+      if (fu) fu.removeAttribute('hidden');
+      save();
+    });
+    var fs = $('#btn-framing-save');
+    if (fs) fs.addEventListener('click', function () {
+      var txt = $('#framing-notes').value.trim();
+      notesFeedback(txt, 'framing-notes-feedback', { minWords: 10 });
+      if (txt.length < 20) {
+        var out = $('#framing-notes-feedback');
+        clear(out);
+        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Нужно хотя бы одно предложение: что изменилось в оформлении и что осталось неизменным в числах. Ваш текущий текст: ' + txt.split(/\s+/).filter(Boolean).length + ' слов.'));
+        return;
+      }
+      state.framing.notes = txt;
+      state.framing.saved = true;
+      notesFeedback(txt, 'framing-notes-feedback', { minWords: 10 });
+      renderProgress();
+      save();
+    });
+
+    renderMethodChoices();
+    var ss2 = $('#sample-size');
+    if (ss2) {
+      ss2.value = String(state.sample.size);
+      $('#sample-size-out').textContent = String(state.sample.size);
+      ss2.addEventListener('input', function () {
+        state.sample.size = Number(ss2.value);
+        $('#sample-size-out').textContent = String(state.sample.size);
+        if (state.sample.drawn) runSample(); else save();
+      });
+    }
+    var sdi = $('#seed-input');
+    if (sdi) {
+      sdi.value = String(state.sample.seed);
+      sdi.addEventListener('input', function () {
+        var v = Number(sdi.value);
+        if (isFinite(v) && v >= 1) { state.sample.seed = Math.floor(v); if (state.sample.drawn) runSample(); else save(); }
+      });
+      sdi.addEventListener('change', function () {
+        var v = Number(sdi.value);
+        if (!isFinite(v) || v < 1) { sdi.value = String(state.sample.seed); }
+      });
+    }
+    var sr = $('#btn-sample-run');
+    if (sr) sr.addEventListener('click', runSample);
+    var srst = $('#btn-sample-reset');
+    if (srst) srst.addEventListener('click', function () {
+      sampleResult = null; state.sample.drawn = false;
+      setSampleStatus('info', 'Выборка сброшена', 'Данные не изменились: сброшена только ваша выборка. Нажмите «Взять выборку» ещё раз — с тем же сидом получится тот же результат.');
+      drawSampleChart(); renderSampleTables(); save();
+    });
+
+    renderChoices('sample-choices', SAMPLE_CHOICES, 'sample-choice', state.sample.choice, function (id) {
+      state.sample.choice = id; save();
+      if (state.sample.submitted) sampleFeedback(id);
+    });
+    var sf = $('#form-sample');
+    if (sf) sf.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!sampleResult) {
+        var out = $('#sample-feedback');
+        clear(out);
+        out.appendChild(flag('info', 'Сначала возьмите выборку', 'Нажмите «Взять выборку» — без данных проверить утверждение нельзя.'));
+        return;
+      }
+      if (!state.sample.choice) { sampleFeedback(null); return; }
+      state.sample.submitted = true;
+      sampleFeedback(state.sample.choice);
+      var fu = $('#sample-followup'); if (fu) fu.removeAttribute('hidden');
+      save();
+    });
+    var ssv = $('#btn-sample-save');
+    if (ssv) ssv.addEventListener('click', function () {
+      var txt = $('#sample-notes').value.trim();
+      if (txt.length < 20) {
+        var out = $('#sample-notes-feedback'); clear(out);
+        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Напишите хотя бы одно предложение с числом из таблицы. Сейчас слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        return;
+      }
+      state.sample.notes = txt;
+      state.sample.saved = true;
+      notesFeedback(txt, 'sample-notes-feedback', { minWords: 12 });
+      renderProgress(); save();
+    });
+
+    renderCorrViewChoices();
+    var bs = $('#btn-corr-strata');
+    if (bs) bs.addEventListener('click', function () {
+      state.corr.view = 'strata';
+      var inp = $('#corr-view-strata'); if (inp) inp.checked = true;
+      drawCorr(); save();
+    });
+    var ba = $('#btn-corr-all');
+    if (ba) ba.addEventListener('click', function () {
+      state.corr.view = 'all';
+      var inp = $('#corr-view-all'); if (inp) inp.checked = true;
+      drawCorr(); save();
+    });
+    renderChoices('corr-choices', CORR_CHOICES, 'corr-choice', state.corr.choice, function (id) {
+      state.corr.choice = id; save();
+      if (state.corr.submitted) corrFeedback(id);
+    });
+    var cf = $('#form-corr');
+    if (cf) cf.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!state.corr.choice) { corrFeedback(null); return; }
+      state.corr.submitted = true;
+      corrFeedback(state.corr.choice);
+      var fu = $('#corr-followup'); if (fu) fu.removeAttribute('hidden');
+      save();
+    });
+    var cs = $('#btn-corr-save');
+    if (cs) cs.addEventListener('click', function () {
+      var txt = $('#corr-notes').value.trim();
+      if (txt.length < 20) {
+        var out = $('#corr-notes-feedback'); clear(out);
+        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Опишите третью переменную одним предложением с числом. Сейчас слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        return;
+      }
+      state.corr.notes = txt;
+      state.corr.saved = true;
+      notesFeedback(txt, 'corr-notes-feedback', { minWords: 12 });
+      renderProgress(); save();
+    });
+
+    var fh = $('#final-headline');
+    if (fh) {
+      fh.value = state.final.headline || '';
+      fh.addEventListener('input', function () { state.final.headline = fh.value; save(); });
+    }
+    var fform = $('#form-final');
+    if (fform) fform.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var txt = (fh ? fh.value : '').trim();
+      state.final.headline = txt;
+      if (txt.length < 10) {
+        var out = $('#final-feedback'); clear(out);
+        out.appendChild(flag('stop', 'Пока это не заголовок', 'Напишите хотя бы одно предложение. Пока слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        return;
+      }
+      state.final.submitted = true;
+      finalFeedback(txt);
+      renderCompletion(); renderNotebook(); save();
+    });
+
+    renderSelfCheck();
+    renderCompletion();
+    renderNextPractice();
+
+    var showAll = $('#btn-show-all');
+    if (showAll) showAll.addEventListener('click', function () {
+      var box = $('#population-all');
+      var open = box.hasAttribute('hidden');
+      if (open) { box.removeAttribute('hidden'); showAll.textContent = 'Скрыть полный список'; }
+      else { box.setAttribute('hidden', ''); showAll.textContent = 'Показать все 240 записей'; }
+      showAll.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    var rt = null;
+    window.addEventListener('resize', function () {
+      if (rt) window.clearTimeout(rt);
+      rt = window.setTimeout(function () {
+        drawFraming();
+        drawSampleChart();
+        drawCorr();
+      }, 180);
+    });
+  }
+
+  function fillStaticTables() {
+    var sb = $('#schools-tbody');
+    if (sb) {
+      clear(sb);
+      L.SCHOOLS.forEach(function (s) {
+        sb.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: s.code }),
+          el('td', { text: s.label }),
+          el('td', { text: s.start }),
+          el('td', { class: 'num', text: String(s.n) })
+        ]));
+      });
+    }
+    var pb = $('#population-summary-body');
+    if (pb) {
+      clear(pb);
+      var sleep = POP.map(function (r) { return r.sleep; }),
+          screen = POP.map(function (r) { return r.screen; }),
+          score = POP.map(function (r) { return r.score; });
+      function srt(a) { return a.slice().sort(function (x, y) { return x - y; }); }
+      var rows = [
+        ['Минимум', Math.min.apply(null, sleep), Math.min.apply(null, screen), Math.min.apply(null, score)],
+        ['Среднее', L.mean(sleep), L.mean(screen), L.mean(score)],
+        ['Медиана', L.median(sleep), L.median(screen), L.median(score)],
+        ['Максимум', Math.max.apply(null, sleep), Math.max.apply(null, screen), Math.max.apply(null, score)],
+        ['Ст. отклонение', L.stdev(sleep), L.stdev(screen), L.stdev(score)],
+        ['1-й процентиль из 10 (10%)', L.percentile(srt(sleep), 0.1), L.percentile(srt(screen), 0.1), L.percentile(srt(score), 0.1)],
+        ['9-й процентиль из 10 (90%)', L.percentile(srt(sleep), 0.9), L.percentile(srt(screen), 0.9), L.percentile(srt(score), 0.9)]
+      ];
+      rows.forEach(function (r) {
+        pb.appendChild(el('tr', {}, [
+          el('th', { scope: 'row', text: r[0] }),
+          el('td', { class: 'num', text: L.fmt(r[1], 2) }),
+          el('td', { class: 'num', text: L.fmt(r[2], 1) }),
+          el('td', { class: 'num', text: L.fmt(r[3], 1) })
+        ]));
+      });
+    }
+    var hb = $('#population-head-body');
+    if (hb) {
+      clear(hb);
+      POP.slice(0, 12).forEach(function (r) { hb.appendChild(popRow(r)); });
+    }
+    var ab2 = $('#population-all-body');
+    if (ab2) {
+      clear(ab2);
+      POP.forEach(function (r) { ab2.appendChild(popRow(r)); });
+    }
+  }
+
+  function popRow(r) {
+    return el('tr', {}, [
+      el('th', { scope: 'row', class: 'mono', text: r.id }),
+      el('td', { text: r.school }),
+      el('td', { class: 'num', text: L.fmt(r.sleep, 2) }),
+      el('td', { class: 'num', text: L.fmt(r.screen, 1) }),
+      el('td', { class: 'num', text: L.fmt(r.score, 1) })
+    ]);
+  }
+
+  function restoreDialogs() {
+    if (state.framing.submitted) { framingFeedback(state.framing.choice); $('#framing-followup').removeAttribute('hidden'); }
+    if (state.framing.notes) $('#framing-notes').value = state.framing.notes;
+    if (state.sample.notes) $('#sample-notes').value = state.sample.notes;
+    if (state.corr.notes) $('#corr-notes').value = state.corr.notes;
+    if (state.sample.choice && state.sample.submitted && state.sample.drawn) {
+      sampleResult = L.drawSample(POP, state.sample.method, state.sample.size, state.sample.seed);
+      sampleFeedback(state.sample.choice);
+      $('#sample-followup').removeAttribute('hidden');
+    }
+    if (state.corr.submitted) { corrFeedback(state.corr.choice); $('#corr-followup').removeAttribute('hidden'); }
+    if (state.final.submitted && state.final.headline) finalFeedback(state.final.headline);
+    if (state.framing.saved) notesFeedback(state.framing.notes, 'framing-notes-feedback', { minWords: 10 });
+    if (state.sample.saved) notesFeedback(state.sample.notes, 'sample-notes-feedback', { minWords: 12 });
+    if (state.corr.saved) notesFeedback(state.corr.notes, 'corr-notes-feedback', { minWords: 12 });
+  }
+
+  function renderAll() {
+    fillStaticTables();
+    renderMethodChoices();
+    syncAxisOutputs();
+    var bz = $('#btn-view-zero'), bzz = $('#btn-view-zoom');
+    if (bz) bz.setAttribute('aria-pressed', framingUI.zoom ? 'false' : 'true');
+    if (bzz) bzz.setAttribute('aria-pressed', framingUI.zoom ? 'true' : 'false');
+    drawFraming();
+    if (state.sample.drawn) {
+      sampleResult = L.drawSample(POP, state.sample.method, state.sample.size, state.sample.seed);
+    }
+    drawSampleChart();
+    renderSampleTables();
+    drawCorr();
+    renderProgress();
+    renderCompletion();
+  }
+
+  function init() {
+    load();
+    if (state.sample.method && !L.METHODS[state.sample.method]) state.sample.method = 'sms_first';
+    bind();
+    renderAll();
+    restoreDialogs();
+    applyHashOnLoad();
+
+    var notice = $('#storage-notice');
+    if (notice) {
+      notice.textContent = storeAvailable
+        ? 'Прогресс сохраняется только в этом браузере (локальное хранилище) и никуда не отправляется. Кнопка «Сбросить всё» удаляет его полностью.'
+        : 'Локальное хранилище недоступно (например, приватный режим): прогресс сохраняется только до перезагрузки страницы.';
+    }
+    setSampleStatus('info', state.sample.drawn ? 'Выборка восстановлена' : 'Выборка ещё не взята',
+      state.sample.drawn ? 'Вы вернулись к сохранённой выборке. Сид и способ можно изменить.' : 'Нажмите «Взять выборку» — на графике и в таблице появится сравнение.');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>

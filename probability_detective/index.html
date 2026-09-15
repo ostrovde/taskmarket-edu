@@ -1390,6 +1390,40 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
     'lab-coin': 'coin', 'lab-dice': 'dice', 'lab-game': 'game',
     'case-1': 'coin', 'case-2': 'dice', 'case-3': 'game'
   };
+  /* A short demo fragment can be appended to a deep link so that a screenshot
+     taken right after load shows a filled table instead of an empty one, for
+     example  index.html#activity-1&demo=1 . It only presses the ordinary
+     on-screen buttons, so nothing is faked and no result is pre-calculated. */
+  function parseHash() {
+    var raw = String(location.hash || '').replace(/^#/, '');
+    var parts = raw.split('&');
+    var demo = false;
+    parts.slice(1).forEach(function (piece) {
+      if (/^demo=(1|true|on)$/i.test(piece.trim())) { demo = true; }
+    });
+    return { view: resolveView(parts[0]), demo: demo, raw: raw };
+  }
+  function runDemo(view) {
+    if (view === 'coin') {
+      var b10 = document.querySelector('[data-trials="10"]');
+      var b1000 = document.querySelector('[data-trials="1000"]');
+      if (b10) { b10.click(); }
+      if (b1000) { b1000.click(); }
+    } else if (view === 'dice') {
+      var r10 = document.querySelector('[data-rolls="10"]');
+      var r1000 = document.querySelector('[data-rolls="1000"]');
+      if (r10) { r10.click(); }
+      if (r1000) { r1000.click(); }
+      var s1000 = document.querySelector('[data-sums="1000"]');
+      if (s1000) { s1000.click(); }
+      var gridTab = document.getElementById('tab-die3');
+      if (gridTab) { gridTab.click(); }
+    } else if (view === 'game') {
+      var run = document.querySelector('[data-gameturns="600"]');
+      if (run) { run.click(); }
+    }
+  }
+  var pendingDemo = null;
   function resolveView(name) {
     var key = String(name || '').replace(/^#/, '').trim().toLowerCase();
     if (VIEW_ALIASES[key]) { return VIEW_ALIASES[key]; }
@@ -1441,11 +1475,18 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
     /* A hash typed by hand, followed from a link or changed by an automated
        run opens the matching section without a reload. */
     window.addEventListener('hashchange', function () {
-      var view = resolveView(location.hash);
-      if (view !== state.view) { showView(view, false); }
+      var parsed = parseHash();
+      if (parsed.demo) { runDemo(parsed.view); }
+      if (parsed.view !== state.view) { showView(parsed.view, false); }
     });
-    /* Opening index.html with no hash starts on the ordinary start screen. */
-    showView(resolveView(location.hash), false);
+    /* Opening index.html with no hash starts on the ordinary start screen.
+       The demo fragment is remembered here and consumed at the end of init(),
+       because showView() normalises the address bar immediately: by then the
+       fragment would already be gone. It is also too early to press anything
+       here — the activities attach their handlers a few lines below in init(). */
+    var initial = parseHash();
+    if (initial.demo) { pendingDemo = initial.view; }
+    showView(initial.view, false);
   }
 
   /* ---------- charts --------------------------------------------------- */
@@ -1462,6 +1503,32 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
     if (!ctx) { return null; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { ctx: ctx, w: Math.max(320, width), h: height };
+  }
+  /* Draws a readable empty state instead of an empty set of axes. */
+  function drawEmptyChart(canvas, headline, guidance) {
+    if (!canvas || !canvas.getContext) { return false; }
+    var frame = prepareCanvas(canvas, 260);
+    if (!frame) { return false; }
+    var ctx = frame.ctx;
+    ctx.clearRect(0, 0, frame.w, frame.h);
+    ctx.fillStyle = '#c3cfe6';
+    ctx.font = '600 15px ui-sans-serif, system-ui, Segoe UI, Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(headline, frame.w / 2, frame.h / 2 - 12);
+    ctx.font = '400 13px ui-sans-serif, system-ui, Segoe UI, Roboto, sans-serif';
+    var words = String(guidance).split(' ');
+    var lines = [];
+    var line = '';
+    words.forEach(function (word) {
+      var candidate = line ? line + ' ' + word : word;
+      if (ctx.measureText(candidate).width > frame.w - 40 && line) { lines.push(line); line = word; }
+      else { line = candidate; }
+    });
+    if (line) { lines.push(line); }
+    lines.forEach(function (text, index) {
+      ctx.fillText(text, frame.w / 2, frame.h / 2 + 14 + index * 20);
+    });
+    return true;
   }
   function drawGroupedBars(canvas, options) {
     var frame = prepareCanvas(canvas, options.height);
@@ -1685,6 +1752,17 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
   }
   function renderCoinChart() {
     var canvas = $('#coinChart');
+    if (canvas && !state.coin.chartTrials.length) {
+      /* Empty state: never leave an axis frame with nothing in it, because an
+         empty grid looks like a result. */
+      drawEmptyChart(canvas, 'No flips yet.',
+        'Press "+ 10 flips" above and this chart will draw the running proportion of heads.');
+      var emptyHost = $('#coinChartFallback');
+      if (emptyHost) { emptyHost.parentNode.removeChild(emptyHost); }
+      seriesTable('coinChartTableBody', ['Flips', 'Observed proportion of heads', 'Bar (10 steps)'],
+        [['no flips yet', '—', '—']]);
+      return;
+    }
     var labels = state.coin.chartTrials.map(function (n) { return group(n); });
     var observed = state.coin.chartProportions.slice();
     var theory = state.coin.chartTrials.map(function () { return state.coin.pHeads; });
@@ -1984,15 +2062,19 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
     var labels = ['1', '2', '3', '4', '5', '6'];
     var observed = [1, 2, 3, 4, 5, 6].map(function (f) { return state.die.counts[f]; });
     var theory = [1, 2, 3, 4, 5, 6].map(function () { return expected; });
-    drawGroupedBars($('#dieChart'), {
-      labels: labels,
-      series: [
-        { values: observed, color: '#ffd166', stroke: '#0b1220' },
-        { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
-      ],
-      xCaption: 'face of the die',
-      height: 260
-    });
+    if (!total) {
+      drawEmptyChart($('#dieChart'), 'No rolls yet.', 'Press "+ 10 rolls" above and this chart will show how often each face came up.');
+    } else {
+      drawGroupedBars($('#dieChart'), {
+        labels: labels,
+        series: [
+          { values: observed, color: '#ffd166', stroke: '#0b1220' },
+          { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
+        ],
+        xCaption: 'face of the die',
+        height: 260
+      });
+    }
     seriesTable('dieChartTableBody', ['Face', 'Observed count', 'Observed proportion', 'Expected count', 'Bar (10 steps)'],
       [1, 2, 3, 4, 5, 6].map(function (f) {
         return [String(f), String(state.die.counts[f]), fmt(total ? state.die.counts[f] / total : 0),
@@ -2049,15 +2131,19 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
         body.innerHTML = html;
       }
     }
-    drawGroupedBars($('#sumChart'), {
-      labels: labels,
-      series: [
-        { values: observed, color: '#ffd166', stroke: '#0b1220' },
-        { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
-      ],
-      xCaption: 'sum of the two dice (observed count next to ways out of 36)',
-      height: 280
-    });
+    if (!total) {
+      drawEmptyChart($('#sumChart'), 'No rolls yet.', 'Press "+ 10 rolls" above and this chart will compare each sum with the number of ways it can be made.');
+    } else {
+      drawGroupedBars($('#sumChart'), {
+        labels: labels,
+        series: [
+          { values: observed, color: '#ffd166', stroke: '#0b1220' },
+          { values: theory, color: '#5ad2f0', stroke: '#0b1220' }
+        ],
+        xCaption: 'sum of the two dice (observed count next to ways out of 36)',
+        height: 280
+      });
+    }
     seriesTable('sumChartTableBody', ['Sum', 'Observed count', 'Observed proportion', 'Ways out of 36', 'Theoretical probability'],
       rows.map(function (row, index) { return [row[0], row[1], row[2], row[3], row[4]]; }));
     /* keep the last block visible as a sentence, so the numbers are never only in a chart */
@@ -2882,6 +2968,21 @@ if (typeof globalThis !== 'undefined') { globalThis.PD = PD; }
     initGlobal();
     renderEvidence();
     renderSummary();
+    /* Now that every activity is wired up, honour a demo fragment if the
+       address bar carries one (used to capture filled screenshots). */
+    var requested = parseHash();
+    if (!pendingDemo && requested.demo) { pendingDemo = requested.view; }
+    if (pendingDemo) {
+      var demoTarget = pendingDemo;
+      pendingDemo = null;
+      try {
+        runDemo(demoTarget);
+      } catch (demoError) {
+        /* A demo fragment is a convenience, never a requirement: if anything
+           goes wrong the lesson must still be complete and usable. */
+        if (window.console && window.console.warn) { window.console.warn('demo fragment skipped:', demoError); }
+      }
+    }
   }
 
   if (document.readyState === 'loading') {
