@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Сад форм, цвета и порядка — занятие для трёх лет</title>
-<meta name="description" content="Короткое занятие для ребёнка 3 лет: подбери такую же форму, разложи фигуры по полянкам, посчитай игрушки до трёх. Работает без сети, без регистрации и без звука.">
+<title>Shapes, Colours and Sorting Garden — an activity for three-year-olds</title>
+<meta name="description" content="Three short activities for a child of about three: match the same shape, sort shapes into meadows and count toys up to three. No reading needed, no ads and no data collected.">
 </head>
 <body>
 <div id="app-root"></div>
 <style>
 /* ===========================================================================
- * Сад форм, цвета и порядка — оформление.
- * Часть 1: токены, сброс, каркас, доступность, адаптив.
- * Никаких внешних шрифтов, картинок и сетевых запросов: вся графика — SVG.
+ * Shapes, Colours and Sorting Garden — presentation.
+ * Part 1: tokens, reset, shell, accessibility, responsive rules.
+ * No external fonts, images or network requests: all the artwork is SVG.
  * =========================================================================== */
 :root{
   --ink:#152B36;
@@ -75,7 +75,7 @@ h3{font-size:1.1rem}
 p{margin:0 0 .9em}
 a{color:#0B4C8C}
 
-/* Только для скринридеров, но не «display:none» */
+/* For screen readers only, but not "display:none" */
 .sr-only{
   position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
@@ -88,7 +88,7 @@ a{color:#0B4C8C}
 }
 .skip-link:focus{top:12px}
 
-/* Видимый фокус у всего, что можно нажать */
+/* A visible focus ring on everything that can be pressed */
 :focus{outline:none}
 :focus-visible{
   outline:5px solid var(--focus);
@@ -104,7 +104,7 @@ a{color:#0B4C8C}
 .wrap{max-width:1140px;margin:0 auto;padding:0 16px}
 .stack>*+*{margin-top:14px}
 
-/* ---------------------------------------------------------------- шапка --- */
+/* ---------------------------------------------------------------- header --- */
 .topbar{
   position:sticky;top:0;z-index:40;
   background:rgba(255,255,255,.94);
@@ -129,7 +129,7 @@ a{color:#0B4C8C}
 .icon-btn:hover{background:#FFF1D8}
 .icon-btn[aria-pressed="true"]{background:var(--sky-deep)}
 
-/* ---------------------------------------------------------------- кнопки --- */
+/* ---------------------------------------------------------------- buttons --- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;
   min-height:var(--tap);padding:16px 26px;
@@ -150,7 +150,7 @@ a{color:#0B4C8C}
 .btn[disabled],.btn[aria-disabled="true"]{opacity:.6;cursor:default;box-shadow:none}
 .btn-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 
-/* ------------------------------------------------------------- карточки --- */
+/* ------------------------------------------------------------- cards --- */
 .card{
   background:var(--card);border:3px solid var(--ink);border-radius:var(--r-lg);
   padding:20px;box-shadow:var(--shadow);
@@ -160,7 +160,7 @@ a{color:#0B4C8C}
   padding:20px;box-shadow:var(--shadow-soft);
 }
 
-/* ------------------------------------------------------------- статусы --- */
+/* ------------------------------------------------------------- status --- */
 .status{
   border:3px solid var(--line);border-left-width:12px;border-radius:var(--r-md);
   background:var(--card);padding:14px 18px;font-weight:700;font-size:1.1rem;
@@ -177,7 +177,7 @@ a{color:#0B4C8C}
   padding:6px 14px;font-weight:700;font-size:.95rem;
 }
 
-/* Служебная плашка «что делать» — крупная, но не давящая */
+/* The "what to do" coach panel — big, but not pushy */
 .coach{
   display:flex;gap:12px;align-items:flex-start;
   background:#FFF6E0;border:2px dashed var(--cross-ink);border-radius:var(--r-md);
@@ -185,22 +185,22 @@ a{color:#0B4C8C}
 }
 .coach strong{color:#5A4300}
 
-/* ------------------------------------------------------------ футер/язык --- */
+/* ------------------------------------------------------------ footer/small print --- */
 .foot-note{color:var(--ink-soft);font-size:.95rem}
 
-/* --------------------------------------------------------- анимации (UX) --- */
+/* --------------------------------------------------------- animation (UX) --- */
 @keyframes pop-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
 @keyframes gentle-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes halo{0%,100%{opacity:.55}50%{opacity:1}}
 .pop-in{animation:pop-in .28s ease-out both}
 .bounce-once{animation:gentle-bounce .6s ease-in-out 1}
 
-/* Полное уважение к prefers-reduced-motion: ни одной обязательной анимации */
+/* Full respect for prefers-reduced-motion: not one required animation */
 @media (prefers-reduced-motion: reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 
-/* ----------------------------------------------------------------- адаптив --- */
+/* ----------------------------------------------------------------- responsive --- */
 @media (max-width:520px){
   :root{--tap:88px}
   body{font-size:18px}
@@ -224,10 +224,10 @@ a{color:#0B4C8C}
 </style>
 <style>
 /* ===========================================================================
- * Часть 2: экраны занятия, элементы активностей, взрослый раздел, печать.
+ * Part 2: activity screens, activity elements, the grown-up section, print.
  * =========================================================================== */
 
-/* ------------------------------------------------------------- активности --- */
+/* ------------------------------------------------------------- activities --- */
 .activity-head{margin-bottom:14px}
 .activity-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .activity-title h1{margin:0}
@@ -241,7 +241,7 @@ a{color:#0B4C8C}
   padding:18px;box-shadow:var(--shadow);margin-bottom:16px;
 }
 
-/* Образец задания */
+/* The task model */
 .target{
   display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   background:var(--cream);border:3px dashed var(--ink);border-radius:var(--r-md);
@@ -250,7 +250,7 @@ a{color:#0B4C8C}
 .target-body{display:flex;flex-direction:column;align-items:center;gap:4px}
 .target-caption{font-size:.95rem;font-weight:700;color:var(--ink-soft)}
 
-/* Ряд вариантов ответа: 2–3 крупных плитки */
+/* The row of answer choices: 2–3 large tiles */
 .choices{
   display:grid;gap:16px;margin-top:16px;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -281,7 +281,7 @@ a{color:#0B4C8C}
 .choice.is-locked{cursor:default;opacity:.85}
 .choice[aria-disabled="true"]{cursor:default}
 
-/* Номера вариантов: подпись, которая различает кнопки без опоры на цвет */
+/* Choice numbers: a label that tells the buttons apart without colour */
 .tile-index{
   position:absolute;top:8px;left:8px;
   min-width:34px;height:34px;padding:0 8px;
@@ -295,7 +295,7 @@ a{color:#0B4C8C}
   padding:2px 12px;margin-top:4px;
 }
 
-/* Демонстрация «покажи пример» */
+/* The "show me" demonstration */
 .demo-ghost{
   position:relative;
 }
@@ -309,7 +309,7 @@ a{color:#0B4C8C}
   padding:6px 14px;font-weight:800;font-size:.95rem;color:#5A4300;
 }
 
-/* -------------------------------------------------- сортировка по полянкам --- */
+/* -------------------------------------------------- sorting into meadows --- */
 .sort-layout{display:grid;gap:18px}
 @media (min-width:768px){
   .sort-layout{grid-template-columns:1fr;gap:22px}
@@ -348,7 +348,7 @@ a{color:#0B4C8C}
   min-height:64px;background:#F3F8FB;border-radius:var(--r-sm);padding:8px;
 }
 
-/* Фишка в лотке или на полянке */
+/* A piece in the tray or in a meadow */
 .piece{
   display:inline-flex;flex-direction:column;align-items:center;gap:2px;
   background:none;border:0;padding:0;font:inherit;cursor:pointer;
@@ -360,11 +360,11 @@ a{color:#0B4C8C}
 .piece-placed{cursor:default}
 .piece-name{font-size:.85rem;font-weight:700;color:var(--ink-soft)}
 
-/* Новые полянки для сортировки — большие мишени */
+/* The extra sorting meadows — large touch targets */
 .bins-inline{display:grid;gap:14px;margin-top:12px}
 @media (min-width:640px){.bins-inline{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
 
-/* --------------------------------------------------------------- счёт --- */
+/* --------------------------------------------------------------- counting --- */
 .shelf{
   display:flex;align-items:flex-end;justify-content:center;gap:14px;flex-wrap:wrap;
   min-height:190px;padding:18px;
@@ -376,7 +376,7 @@ a{color:#0B4C8C}
   width:110px;min-height:150px;justify-content:flex-end;
 }
 @media (max-width:520px){
-  /* На узком экране полка ниже, чтобы кнопка счёта и цифры были видны сразу. */
+  /* On a narrow screen the shelf is lower, so the counting button and the numbers are visible at once. */
   .shelf{min-height:132px;padding:10px 6px;gap:8px}
   .slot{width:76px;min-height:104px}
   .slot-halo{width:76px;height:76px}
@@ -446,7 +446,7 @@ a{color:#0B4C8C}
 .toy-picker{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
 .toy-picker .btn{min-height:80px;padding:12px 20px}
 
-/* --------------------------------------------------------- завершение --- */
+/* --------------------------------------------------------- completion --- */
 .done-hero{
   display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   background:var(--good-tint);border:3px solid var(--good);border-radius:var(--r-lg);
@@ -461,7 +461,7 @@ a{color:#0B4C8C}
 }
 .done-tick.is-off{background:#E7EEF3;color:#3D5566;border:2px solid var(--line)}
 
-/* ------------------------------------------------------ взрослый раздел --- */
+/* ------------------------------------------------------ grown-up section --- */
 .grownup{border:3px solid var(--stripe);border-radius:var(--r-lg);background:var(--card);
   padding:20px;box-shadow:var(--shadow);margin-top:22px}
 .grownup h2{margin-top:0}
@@ -472,7 +472,7 @@ a{color:#0B4C8C}
 .fact ul{margin:0;padding-left:20px}
 .fact li{margin-bottom:6px}
 
-/* ------------------------------------------------------------- печать --- */
+/* ------------------------------------------------------------- print --- */
 @media print{
   body{background:#FFF}
   .topbar,.no-print{display:none!important}
@@ -481,8 +481,8 @@ a{color:#0B4C8C}
 </style>
 <script>
 /* ===========================================================================
- * KERNEL CORE — встроенная копия core.js (единый источник: ../core.js).
- * Сборка: 2026-09-15 23:35. Проверка совпадения копий — тест D в tests/tests.js.
+ * KERNEL CORE — the embedded copy of core.js (single source: ../core.js).
+ * Built: 2026-09-16 00:03. The test that the two copies agree is test D in tests/tests.js.
  * =========================================================================== */
 /* KERNEL_CORE_START */
 /*!
@@ -522,17 +522,17 @@ a{color:#0B4C8C}
   var SHAPES = {
     circle: {
       id: 'circle',
-      label: 'круг',
+      label: 'circle',
       path: 'M50 6 A44 44 0 1 1 49.9 6 Z'
     },
     square: {
       id: 'square',
-      label: 'квадрат',
+      label: 'square',
       path: 'M10 10 H90 V90 H10 Z'
     },
     triangle: {
       id: 'triangle',
-      label: 'треугольник',
+      label: 'triangle',
       path: 'M50 8 L94 88 H6 Z'
     }
   };
@@ -550,7 +550,7 @@ a{color:#0B4C8C}
   var COLORS = {
     red: {
       id: 'red',
-      label: 'красный',
+      label: 'red',
       hex: '#C8382B',
       pattern: 'dots',
       patternStroke: '#FFFFFF',
@@ -558,7 +558,7 @@ a{color:#0B4C8C}
     },
     blue: {
       id: 'blue',
-      label: 'синий',
+      label: 'blue',
       hex: '#1B5FA8',
       pattern: 'stripes',
       patternStroke: '#FFFFFF',
@@ -566,7 +566,7 @@ a{color:#0B4C8C}
     },
     yellow: {
       id: 'yellow',
-      label: 'жёлтый',
+      label: 'yellow',
       hex: '#A87D00',
       pattern: 'crosshatch',
       patternStroke: '#241A00',
@@ -596,7 +596,7 @@ a{color:#0B4C8C}
       {
         id: 's0',
         demo: true,
-        prompt: 'Нажми на такой же круг',
+        prompt: 'Tap the same circle',
         target: { shape: 'circle', color: 'red', pattern: 'dots' },
         choices: [
           { shape: 'circle', color: 'red', pattern: 'dots', ok: true },
@@ -606,7 +606,7 @@ a{color:#0B4C8C}
       {
         id: 's1',
         demo: false,
-        prompt: 'Нажми на такой же квадрат',
+        prompt: 'Tap the same square',
         target: { shape: 'square', color: 'blue', pattern: 'stripes' },
         choices: [
           { shape: 'triangle', color: 'yellow' },
@@ -616,7 +616,7 @@ a{color:#0B4C8C}
       {
         id: 's2',
         demo: false,
-        prompt: 'Нажми на такой же треугольник',
+        prompt: 'Tap the same triangle',
         target: { shape: 'triangle', color: 'yellow', pattern: 'crosshatch' },
         choices: [
           { shape: 'triangle', color: 'yellow', pattern: 'crosshatch', ok: true },
@@ -626,7 +626,7 @@ a{color:#0B4C8C}
       {
         id: 's3',
         demo: false,
-        prompt: 'Тот же квадрат, только маленький',
+        prompt: 'The same square, only small',
         target: { shape: 'square', color: 'blue', pattern: 'stripes' },
         choices: [
           { shape: 'triangle', color: 'yellow', size: 0.8 },
@@ -636,7 +636,7 @@ a{color:#0B4C8C}
       {
         id: 's4',
         demo: false,
-        prompt: 'Тот же треугольник, только повёрнутый',
+        prompt: 'The same triangle, only turned',
         target: { shape: 'triangle', color: 'yellow', pattern: 'crosshatch' },
         choices: [
           { shape: 'triangle', color: 'yellow', pattern: 'crosshatch', rotate: 30, ok: true },
@@ -646,7 +646,7 @@ a{color:#0B4C8C}
       {
         id: 's5',
         demo: false,
-        prompt: 'Новое: маленький повёрнутый круг',
+        prompt: 'New: a small turned circle',
         target: { shape: 'circle', color: 'red', pattern: 'dots' },
         choices: [
           { shape: 'circle', color: 'red', pattern: 'dots', size: 0.7, rotate: -20, ok: true },
@@ -667,11 +667,11 @@ a{color:#0B4C8C}
         id: 'c1',
         mode: 'color',
         demo: true,
-        prompt: 'Разложи по цвету: у каждой полянки свой узор и своя фигура',
+        prompt: 'Sort by colour: each meadow has its own pattern and its own shape',
         groups: [
-          { key: 'red', color: 'red', shape: 'circle', label: 'Красные — круглые, в точку' },
-          { key: 'blue', color: 'blue', shape: 'square', label: 'Синие — квадратные, в полоску' },
-          { key: 'yellow', color: 'yellow', shape: 'triangle', label: 'Жёлтые — треугольные, в клетку' }
+          { key: 'red', color: 'red', shape: 'circle', label: 'Red — round, with dots' },
+          { key: 'blue', color: 'blue', shape: 'square', label: 'Blue — square, with stripes' },
+          { key: 'yellow', color: 'yellow', shape: 'triangle', label: 'Yellow — triangle, with a grid' }
         ],
         items: [
           { id: 'p1', color: 'red', shape: 'circle', group: 'red', demo: true },
@@ -686,10 +686,10 @@ a{color:#0B4C8C}
         id: 'c2',
         mode: 'color',
         demo: false,
-        prompt: 'Ещё раз, по-другому: разложи по цвету',
+        prompt: 'Once more, a little different: sort by colour',
         groups: [
-          { key: 'red', color: 'red', shape: 'triangle', label: 'Красные — треугольные, в точку' },
-          { key: 'blue', color: 'blue', shape: 'circle', label: 'Синие — круглые, в полоску' }
+          { key: 'red', color: 'red', shape: 'triangle', label: 'Red — triangle, with dots' },
+          { key: 'blue', color: 'blue', shape: 'circle', label: 'Blue — round, with stripes' }
         ],
         items: [
           { id: 'q1', color: 'blue', shape: 'circle', group: 'blue' },
@@ -702,11 +702,11 @@ a{color:#0B4C8C}
         id: 'c3',
         mode: 'shape',
         demo: true,
-        prompt: 'Теперь по форме. Форма важнее цвета — все фигуры одного цвета',
+        prompt: 'Now by shape. Shape matters more than colour — all the shapes are the same colour',
         groups: [
-          { key: 'circle', shape: 'circle', label: 'Все круги', neutral: true },
-          { key: 'square', shape: 'square', label: 'Все квадраты', neutral: true },
-          { key: 'triangle', shape: 'triangle', label: 'Все треугольники', neutral: true }
+          { key: 'circle', shape: 'circle', label: 'All the circles', neutral: true },
+          { key: 'square', shape: 'square', label: 'All the squares', neutral: true },
+          { key: 'triangle', shape: 'triangle', label: 'All the triangles', neutral: true }
         ],
         items: [
           { id: 'r1', shape: 'circle', color: 'neutral', group: 'circle', demo: true },
@@ -730,25 +730,25 @@ a{color:#0B4C8C}
       id: 'n1',
       demo: true,
       count: 3,
-      prompt: 'Считаем вместе: нажимай на кнопку со стрелкой'
+      prompt: 'Let us count together: tap the arrow button'
     },
     {
       id: 'n2',
       demo: false,
       count: 2,
-      prompt: 'Сколько теперь? Сначала посчитай, потом выбери цифру'
+      prompt: 'How many now? Count first, then pick the number'
     },
     {
       id: 'n3',
       demo: false,
       count: 3,
-      prompt: 'Новое: три игрушки в другом порядке. Посчитай и выбери цифру'
+      prompt: 'New: three toys in a different order. Count and pick the number'
     },
     {
       id: 'n4',
       demo: false,
       count: 1,
-      prompt: 'А если игрушка одна? Посчитай и выбери цифру'
+      prompt: 'What if there is only one toy? Count and pick the number'
     }
   ];
 
@@ -756,7 +756,7 @@ a{color:#0B4C8C}
      colour carries no information there). */
   var NEUTRAL = {
     id: 'neutral',
-    label: 'серо-зелёный',
+    label: 'grey-green',
     hex: '#8FA08C',
     pattern: 'none',
     patternStroke: '#3B4638',
@@ -892,7 +892,7 @@ a{color:#0B4C8C}
 
   /** Text used for the immediate response — always names the property. */
   function describeItem(item) {
-    if (!item) { return 'фигура'; }
+    if (!item) { return 'shape'; }
     if (item.color === 'neutral') { return shapeOf(item.shape).label; }
     return colorOf(item.color).label + ' ' + shapeOf(item.shape).label;
   }
@@ -914,10 +914,10 @@ a{color:#0B4C8C}
   function place(state, itemId, groupKey) {
     var item = (state.items || []).filter(function (it) { return it.id === itemId; })[0];
     if (!item) {
-      return { ok: false, unknownItem: true, message: 'Эту фигуру уже положили. Возьми другую.', progress: sortProgress(state) };
+      return { ok: false, unknownItem: true, message: 'This shape is already placed. Take another one.', progress: sortProgress(state) };
     }
     if (state.placed[itemId]) {
-      return { ok: false, alreadyPlaced: true, message: 'Эта фигура уже на полянке «' + state.placed[itemId] + '».', progress: sortProgress(state) };
+      return { ok: false, alreadyPlaced: true, message: 'This shape is already in the meadow "' + state.placed[itemId] + '".', progress: sortProgress(state) };
     }
     var expected = groupOf(item, state.mode);
     var ok = expected === groupKey;
@@ -930,7 +930,7 @@ a{color:#0B4C8C}
       res = {
         ok: true,
         groupKey: groupKey,
-        message: describeItem(item) + ' — на полянке «' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '».',
+        message: describeItem(item) + ' — in the meadow "' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '".',
         progress: sortProgress(state),
         complete: state.remaining <= 0
       };
@@ -940,8 +940,8 @@ a{color:#0B4C8C}
       res = {
         ok: false,
         groupKey: groupKey,
-        hint: describeItem(item) + ' — это ' + (state.mode === 'shape' ? 'не по форме' : 'другого цвета') + '. Попробуй другую полянку.',
-        message: 'Посмотри: ' + describeItem(item) + ' подходит к «' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '».',
+        hint: describeItem(item) + ' — that is ' + (state.mode === 'shape' ? 'not the same shape' : 'a different colour') + '. Try another meadow.',
+        message: 'Look: ' + describeItem(item) + ' belongs in "' + expectedGroupLabel({ mode: state.mode, groups: state.groups }, item) + '".',
         progress: sortProgress(state),
         complete: false
       };
@@ -978,26 +978,26 @@ a{color:#0B4C8C}
     if (ok) {
       return {
         ok: true,
-        message: 'Да! Это ' + shapeOf(round.target.shape).label + '.'
+        message: 'Yes! This is a ' + shapeOf(round.target.shape).label + '.'
       };
     }
     return {
       ok: false,
-      hint: 'Посмотри на образец: у него ' + shapeOf(round.target.shape).label +
+      hint: 'Look at the model: it has a ' + shapeOf(round.target.shape).label +
         ' — ' + SHAPE_HINTS[round.target.shape] + '.',
-      message: 'Это ' + (choice && choice.shape ? shapeOf(choice.shape).label : 'другая фигура') +
-        '. Давай посмотрим ещё раз.'
+      message: 'A ' + (choice && choice.shape ? shapeOf(choice.shape).label : 'different shape') +
+        '. Let us look again.'
     };
   }
 
   var SHAPE_HINTS = {
-    circle: 'ровный, круглый, как солнышко',
-    square: 'четыре одинаковые стороны и четыре уголка',
-    triangle: 'три уголка и три стороны'
+    circle: 'even and round, like the sun',
+    square: 'four equal sides and four corners',
+    triangle: 'three corners and three sides'
   };
 
   /* Narrower set of choices for a child who needs less at once (see the
-     educator guide, "адаптация под ребёнка"). */
+     educator guide, "adapting to the child"). */
   function withFewerChoices(round, limit) {
     limit = limit || 2;
     var keep = [];
@@ -1055,36 +1055,36 @@ a{color:#0B4C8C}
         return ACTIVITY_META[ACTIVITY_ORDER[i]].suggest;
       }
     }
-    return 'Всё получилось. Завтра попробуйте посчитать три ложки на столе и разложить их по размеру.';
+    return 'Everything worked out. Tomorrow, count three spoons on the table and sort them by size.';
   }
 
   var ACTIVITY_META = {
     shapes: {
       id: 'shapes',
-      title: 'Формы',
-      aria: 'Активность 1: подбери такую же форму',
+      title: 'Shapes',
+      aria: 'Activity 1: find the same shape',
       icon: 'shapes',
-      intro: 'Найди такую же фигуру.',
-      suggest: 'В следующий раз найдите круги и квадраты в комнате: тарелка, часы, окно, подушка.',
-      minutes: '1–2 минуты'
+      intro: 'Find the same shape.',
+      suggest: 'Next time, find circles and squares in the room: a plate, a clock, a window, a cushion.',
+      minutes: '1–2 minutes'
     },
     sorting: {
       id: 'sorting',
-      title: 'Сортировка',
-      aria: 'Активность 2: разложи фигуры по полянкам',
+      title: 'Sorting',
+      aria: 'Activity 2: sort the shapes into the meadows',
       icon: 'sorting',
-      intro: 'Разложи фигуры по полянкам.',
-      suggest: 'В следующий раз разложите вместе три пары носков по цвету — или три ложки и три вилки.',
-      minutes: '1–3 минуты'
+      intro: 'Sort the shapes into the meadows.',
+      suggest: 'Next time, sort three pairs of socks by colour together — or three spoons and three forks.',
+      minutes: '1–3 minutes'
     },
     counting: {
       id: 'counting',
-      title: 'Счёт до трёх',
-      aria: 'Активность 3: посчитай игрушки от одного до трёх',
+      title: 'Counting to three',
+      aria: 'Activity 3: count the toys from one to three',
       icon: 'counting',
-      intro: 'Посчитай игрушки и выбери цифру.',
-      suggest: 'В следующий раз посчитайте три яблока в вазе: одно, два, три.',
-      minutes: '1–2 минуты'
+      intro: 'Count the toys and pick the number.',
+      suggest: 'Next time, count three apples in a bowl: one, two, three.',
+      minutes: '1–2 minutes'
     }
   };
 
@@ -1219,17 +1219,17 @@ a{color:#0B4C8C}
 </script>
 <script>
 /* ===========================================================================
- * Сад форм, цвета и порядка — приложение.
- * Часть 1: звук (необязательный), состояние, маршрутизация по хешу,
- * постоянная память прогресса, стартовый экран и каркас.
+ * Shapes, Colours and Sorting Garden — the application.
+ * Part 1: sound (optional), state, hash routing, lasting progress memory,
+ * the start screen and the shell.
  *
- * Правила, зашитые в код:
- *  • ни один ответ не блокирует занятие: неверный выбор всегда оставляет
- *    активность рабочей и выдаёт подсказку;
- *  • звук стартует только после действия ребёнка, по умолчанию выключен,
- *    у любого звукового сообщения есть текстовый двойник;
- *  • прогресс хранится только в этом браузере (localStorage) и стирается
- *    кнопкой «Сбросить».
+ * Rules built into the code:
+ *  • no answer ever blocks the activity: a wrong choice always leaves the
+ *    activity usable and gives a hint;
+ *  • sound starts only after the child acts, is off by default, and every
+ *    spoken message has a written twin;
+ *  • progress is kept only in this browser (localStorage) and is erased by
+ *    the "Reset" button.
  * =========================================================================== */
 (function () {
   'use strict';
@@ -1237,7 +1237,7 @@ a{color:#0B4C8C}
   var C = window.Core;
   var app = document.getElementById('app-root');
 
-  /* ------------------------------------------------------------------ звук --- */
+  /* ----------------------------------------------------------------- sound --- */
   var Sound = (function () {
     var ctx = null;
     var available = !!(window.AudioContext || window.webkitAudioContext);
@@ -1273,17 +1273,17 @@ a{color:#0B4C8C}
     }
 
     var MAP = {
-      /* «да» — мягко вверх, без победного фанфарного шума */
+      /* "yes" — softly up, with no winning fanfare noise */
       correct: [[523.25, 0, 0.16], [659.25, 0.14, 0.22]],
-      /* подсказка — один спокойный тон, ничего похожего на ошибку */
+      /* hint — one calm tone, nothing that sounds like a mistake */
       hint: [[392.00, 0, 0.24]],
-      /* счёт — ровные шаги, последний чуть выше */
+      /* counting — even steps, the last one a little higher */
       count1: [[440.00, 0, 0.18]],
       count2: [[493.88, 0, 0.18]],
       count3: [[587.33, 0, 0.26]],
-      /* завершение занятия — три спокойные ноты */
+      /* activity finished — three calm notes */
       done: [[523.25, 0, 0.2], [659.25, 0.18, 0.2], [783.99, 0.36, 0.3]],
-      /* переключение экрана */
+      /* screen change */
       step: [[330.00, 0, 0.12]]
     };
 
@@ -1304,7 +1304,7 @@ a{color:#0B4C8C}
         });
         return true;
       },
-      /* Речь — дополнение; если голоса нет, занятие продолжается молча. */
+      /* Speech is an extra; if there is no voice, the activity goes on silently. */
       say: function (text) {
         if (!enabled || !text) { return false; }
         var sy = window.speechSynthesis;
@@ -1312,15 +1312,15 @@ a{color:#0B4C8C}
         try {
           sy.cancel();
           var u = new window.SpeechSynthesisUtterance(text);
-          u.lang = 'ru-RU';
+          u.lang = 'en-US';
           u.rate = 0.92;
           u.pitch = 1.05;
           var voices = sy.getVoices ? sy.getVoices() : [];
-          var ru = null;
+          var en = null;
           for (var i = 0; i < voices.length; i++) {
-            if (voices[i] && /^ru/i.test(voices[i].lang || '')) { ru = voices[i]; break; }
+            if (voices[i] && /^en/i.test(voices[i].lang || '')) { en = voices[i]; break; }
           }
-          if (ru) { u.voice = ru; }
+          if (en) { u.voice = en; }
           sy.speak(u);
           return true;
         } catch (e) { return false; }
@@ -1333,7 +1333,7 @@ a{color:#0B4C8C}
     };
   }());
 
-  /* --------------------------------------------------------------- прогресс --- */
+  /* --------------------------------------------------------------- progress --- */
   var STORE_KEY = 'shapes-garden-progress-v1';
 
   function storageAvailable() {
@@ -1372,7 +1372,7 @@ a{color:#0B4C8C}
     }
   };
 
-  /* ------------------------------------------------------------------ состояние --- */
+  /* -------------------------------------------------------------------- state --- */
   var S = {
     screen: 'start',
     activity: null,
@@ -1381,7 +1381,7 @@ a{color:#0B4C8C}
     grownupOpen: false,
     textSize: 'normal',   /* normal | large */
     fewerChoices: false,
-    /* состояние активностей */
+    /* activity state */
     shapeRound: 0,
     shapeFeedback: null,
     shapeHinted: false,
@@ -1402,7 +1402,7 @@ a{color:#0B4C8C}
     countAnswered: {},
     countDemoRunning: false,
     countDemoIndex: 0,
-    /* служебное */
+    /* internal */
     uid: 0,
     focusTarget: null,
     timers: [],
@@ -1414,11 +1414,11 @@ a{color:#0B4C8C}
   function uid() { S.uid += 1; return 'u' + S.uid; }
 
   /* ------------------------------------------------------------------ render ---
-   * Логика состояния живёт в этом блоке скрипта, а отрисовка — в следующем.
-   * Между ними ровно один контракт: слой отрисовки при загрузке подставляет
-   * свою функцию в __GARDEN__.render, а этот блок вызывает render() по имени.
-   * Заглушка не даёт упасть, если слой отрисовки почему-то не загрузился:
-   * занятие в этом случае сообщает о себе словами, а не молчит. */
+   * State logic lives in this script block and drawing lives in the next one.
+   * There is exactly one contract between them: on load the drawing layer puts
+   * its function into __GARDEN__.render, and this block calls render() by name.
+   * The stub prevents a crash if the drawing layer has not loaded for some
+   * reason: the activity then reports itself in words instead of staying mute. */
   function render() {
     if (typeof window.__GARDEN__.render === 'function') { window.__GARDEN__.render(); }
   }
@@ -1431,7 +1431,7 @@ a{color:#0B4C8C}
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  /* Меньше движения — короче задержки демонстраций. */
+  /* Less motion — shorter demonstration delays. */
   function reducedMotion() {
     try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
   }
@@ -1449,7 +1449,7 @@ a{color:#0B4C8C}
     return { completed: C.completedCount(S.progress), gained: C.completedCount(S.progress) > before };
   }
 
-  /* ------------------------------------------------------------------ маршрут --- */
+  /* ------------------------------------------------------------------ routing --- */
   var HASH_ROUTES = {
     '#activity-1': { screen: 'activity', activity: 'shapes' },
     '#activity-2': { screen: 'activity', activity: 'sorting' },
@@ -1478,7 +1478,7 @@ a{color:#0B4C8C}
     return HASH_ROUTES[h] || null;
   }
 
-  /* Программная навигация: обновляем хеш, а применяет его один обработчик. */
+  /* Programmatic navigation: we update the hash and one handler applies it. */
   function go(hash) {
     var target = hash || '#home';
     if (window.location.hash === target) {
@@ -1488,7 +1488,7 @@ a{color:#0B4C8C}
     }
   }
 
-  /* Единственное место, где меняется экран по адресу. */
+  /* The only place where the screen changes by address. */
   function applyRoute(hash, fromUrl) {
     var route = routeFromHash(hash);
     if (!route) { return false; }
@@ -1513,7 +1513,7 @@ a{color:#0B4C8C}
     applyRoute(window.location.hash, true);
   });
 
-  /* --------------------------------------------------------------- навигация --- */
+  /* -------------------------------------------------------------- navigation --- */
   function resetActivityState() {
     clearTimers();
     Sound.stopSpeaking();
@@ -1554,7 +1554,7 @@ a{color:#0B4C8C}
     if (!sameActivity) { resetActivityState(); }
     S.screen = 'activity';
     S.activity = id;
-    C.markActivity(S.progress, id, {});   /* visited, но не done */
+    C.markActivity(S.progress, id, {});   /* visited, but not done */
     saveProgress();
     if (id === 'shapes') { initShapeActivity(opts); }
     if (id === 'sorting') { initSortActivity(opts); }
@@ -1564,9 +1564,9 @@ a{color:#0B4C8C}
     render();
   }
 
-  /* =========================================================== активность 1 ===
-   * Подбор формы. Образец — сверху; снизу 2–3 крупных варианта с номерами.
-   * Первый ход показывает приложение (демонстрация), дальше ребёнок ведёт.
+  /* ============================================================= activity 1 ===
+   * Shape matching. The model is above; below are 2–3 large numbered choices.
+   * The first turn is played by the app (demonstration), then the child leads.
    * ========================================================================= */
   function activeShapeRounds() {
     var rounds = C.shapeRounds();
@@ -1594,7 +1594,7 @@ a{color:#0B4C8C}
     S.shapeDemoPlayed = true;
     var correct = round.choices.filter(function (c) { return c.ok; })[0];
     var idx = round.choices.indexOf(correct);
-    setAnnounce('Пример: нажимаем на вариант ' + (idx + 1) + '.', 'polite');
+    setAnnounce('Example: we tap choice ' + (idx + 1) + '.', 'polite');
     render();
     later(function () {
       var node = el('shape-choice-' + idx);
@@ -1604,7 +1604,7 @@ a{color:#0B4C8C}
     later(function () {
       var node = el('shape-choice-' + idx);
       if (node) { node.classList.remove('demo-ghost'); }
-      S.shapeFeedback = { kind: 'good', text: 'Вот так: ' + C.shapeOf(round.target.shape).label + ' — это вариант ' + (idx + 1) + '. Теперь твоя очередь.' };
+      S.shapeFeedback = { kind: 'good', text: 'Here is how: ' + C.shapeOf(round.target.shape).label + ' — that is choice ' + (idx + 1) + '. Now it is your turn.' };
       S.shapeHinted = true;
       setAnnounce(S.shapeFeedback.text, 'polite');
       render();
@@ -1636,11 +1636,11 @@ a{color:#0B4C8C}
         }
       }, stepDelay(1400));
     } else {
-      /* Неверный выбор: занятие остаётся рабочим, даём мягкую подсказку. */
+      /* A wrong choice: the activity stays usable, we give a gentle hint. */
       S.shapeHinted = true;
-      S.shapeFeedback = { kind: 'care', text: res.hint, sub: 'Попробуй ещё раз — попытки не ограничены.' };
+      S.shapeFeedback = { kind: 'care', text: res.hint, sub: 'Try again — you can try as many times as you like.' };
       Sound.play('hint');
-      Sound.say('Посмотри на образец. ' + C.SHAPE_HINTS[round.target.shape] + '.');
+      Sound.say('Look at the model. ' + C.SHAPE_HINTS[round.target.shape] + '.');
       setAnnounce(S.shapeFeedback.text, 'polite');
       render();
       var node = el('shape-choice-' + index);
@@ -1660,8 +1660,8 @@ a{color:#0B4C8C}
     S.shapeHinted = true;
     S.shapeFeedback = {
       kind: 'care',
-      text: 'Подсказка: подходит вариант ' + (idx + 1) + ' — у него ' + C.shapeOf(round.target.shape).label + ', ' + C.SHAPE_HINTS[round.target.shape] + '.',
-      sub: 'Можно нажать на него или послушать ещё раз.'
+      text: 'Hint: choice ' + (idx + 1) + ' fits — it has a ' + C.shapeOf(round.target.shape).label + ', ' + C.SHAPE_HINTS[round.target.shape] + '.',
+      sub: 'You can tap it or listen once more.'
     };
     Sound.play('hint');
     Sound.say(S.shapeFeedback.text);
@@ -1674,13 +1674,13 @@ a{color:#0B4C8C}
     }
   }
 
-  var SHAPE_PRAISE = ['Получилось!', 'Верно!', 'Точно такая же!', 'Да, это она!', 'Молодец!', 'Отлично!'];
+  var SHAPE_PRAISE = ['You did it!', 'That is right!', 'Exactly the same!', 'Yes, that is the one!', 'Well done!', 'Great!'];
 
-  /* =========================================================== активность 2 ===
-   * Сортировка по ОДНОМУ видимому свойству. Сначала по цвету (у каждой
-   * полянки свой узор, своя форма и своя подпись — цвет не единственная
-   * опора), затем новое применение: сортировка по форме, где все фигуры
-   * одного цвета и опора на цвет полностью убрана.
+  /* ============================================================= activity 2 ===
+   * Sorting by ONE visible property. First by colour (each meadow has its own
+   * pattern, its own shape and its own label, so colour is never the only
+   * support), then a fresh application: sorting by shape, where every item is
+   * the same colour and the colour cue is removed completely.
    * ========================================================================= */
   function activeSortRounds() {
     if (S.fewerChoices) {
@@ -1703,8 +1703,8 @@ a{color:#0B4C8C}
     S.sortFeedback = null;
     S.sortDemoPlayed = false;
     S.sortStageMistakes = 0;
-    /* Демонстрационная фишка ставится сама только тогда, когда ребёнок нажал
-       «Покажи пример» — иначе занятие ждёт его хода. */
+    /* The demonstration piece places itself only when the child has pressed
+       "Show me" — otherwise the activity waits for the child's move. */
     S.sortPendingDemo = !!round.demo;
     if (opts.playDemo) { playSortDemo(); S.sortPendingDemo = false; }
     return round;
@@ -1720,7 +1720,7 @@ a{color:#0B4C8C}
     var res = C.place(S.sortState, demoItem.id, C.groupOf(demoItem, round.mode));
     S.sortDemoPlayed = true;
     S.sortSelected = null;
-    S.sortFeedback = { kind: 'good', text: 'Пример: ' + res.message, sub: 'Теперь разложи остальные фигуры.' };
+    S.sortFeedback = { kind: 'good', text: 'Example: ' + res.message, sub: 'Now sort the other shapes.' };
     Sound.play('step');
     setAnnounce(S.sortFeedback.text, 'polite');
     render();
@@ -1758,11 +1758,11 @@ a{color:#0B4C8C}
       }
       return;
     }
-    /* Неверная полянка: фигура остаётся на месте, занятие продолжается. */
+    /* A wrong meadow: the piece stays where it is and the activity goes on. */
     S.sortStageMistakes += 1;
     S.sortFeedback = { kind: 'care', text: res.hint, sub: res.message };
     Sound.play('hint');
-    Sound.say('Попробуй другую полянку.');
+    Sound.say('Try another meadow.');
     setAnnounce(res.hint, 'polite');
     render();
     var node = el('sort-bin-' + groupKey);
@@ -1783,10 +1783,10 @@ a{color:#0B4C8C}
     }
   }
 
-  /* =========================================================== активность 3 ===
-   * Счёт крошечной коллекции. Игрушки открываются по одной и каждая
-   * подсвечивается ровно один раз (это же проверяют автотесты). Ответ
-   * ребёнок подтверждает, нажав на цифру.
+  /* ============================================================= activity 3 ===
+   * Counting a tiny collection. The toys are revealed one at a time and each
+   * one is highlighted exactly once (the automated tests check this too). The
+   * child confirms the answer by pressing a number.
    * ========================================================================= */
   function activeCountRounds() { return C.COUNT_ROUNDS; }
 
@@ -1806,9 +1806,9 @@ a{color:#0B4C8C}
     return round;
   }
 
-  /* Демонстрация счёта: игрушки открываются сами, по одной, каждая ровно один
-     раз, звука нет — только образец порядка «одна, две, три». Затем состояние
-     сбрасывается, и ребёнок считает сам. */
+  /* The counting demonstration: the toys reveal themselves, one at a time,
+     each exactly once, with no sound — just a model of the order "one, two,
+     three". Then the state is reset and the child counts alone. */
   function runCountDemo() {
     clearTimers();
     if (!S.countState) { return; }
@@ -1816,7 +1816,7 @@ a{color:#0B4C8C}
     S.countAnswerNeeded = false;
     S.countDemoIndex = 0;
     S.countDemoRunning = true;
-    S.countFeedback = { kind: 'idle', text: 'Смотрим пример: одна, две, три.' };
+    S.countFeedback = { kind: 'idle', text: 'Watch the example: one, two, three.' };
     render();
     var total = S.countState.sequence.length;
     for (var i = 1; i <= total; i++) {
@@ -1831,7 +1831,7 @@ a{color:#0B4C8C}
             S.countAnswerNeeded = true;
             S.countFeedback = {
               kind: 'good',
-              text: 'Так считают: одна, две, три. Теперь нажми на кнопку со стрелкой и считай сам.'
+              text: 'That is how we count: one, two, three. Now tap the arrow button and count by yourself.'
             };
             C.resetCountState(S.countState);
             setAnnounce(S.countFeedback.text, 'polite');
@@ -1846,7 +1846,7 @@ a{color:#0B4C8C}
     if (!S.countState) { return; }
     if (C.isCountComplete(S.countState)) {
       S.countAnswerNeeded = true;
-      S.countFeedback = { kind: 'care', text: 'Все игрушки посчитаны. Выбери цифру — сколько их?', sub: 'Можно нажать «Начать счёт заново».' };
+      S.countFeedback = { kind: 'care', text: 'All the toys are counted. Pick the number — how many are there?', sub: 'You can tap "Count again".' };
       render();
       return;
     }
@@ -1854,11 +1854,11 @@ a{color:#0B4C8C}
     S.countFeedback = null;
     Sound.play('count' + S.countState.count);
     Sound.say(String(S.countState.count));
-    setAnnounce('Считаем: ' + S.countState.count, 'polite');
+    setAnnounce('Counting: ' + S.countState.count, 'polite');
     if (C.isCountComplete(S.countState)) {
       S.countAnswerNeeded = true;
-      S.countFeedback = { kind: 'good', text: 'Посчитали: ' + S.countState.sequence.length + '. Теперь выбери такую цифру.' };
-      Sound.say('Сколько получилось?');
+      S.countFeedback = { kind: 'good', text: 'We counted: ' + S.countState.sequence.length + '. Now pick that number.' };
+      Sound.say('How many did you count?');
     }
     render();
   }
@@ -1867,7 +1867,7 @@ a{color:#0B4C8C}
     if (!S.countState) { return; }
     C.resetCountState(S.countState);
     S.countAnswerNeeded = false;
-    S.countFeedback = { kind: 'idle', text: 'Считаем заново. Нажимай на кнопку со стрелкой.' };
+    S.countFeedback = { kind: 'idle', text: 'Counting again. Tap the arrow button.' };
     setAnnounce(S.countFeedback.text, 'polite');
     render();
   }
@@ -1879,9 +1879,9 @@ a{color:#0B4C8C}
     var target = S.countState.sequence.length;
     if (n === target) {
       S.countAnswered[round.id] = true;
-      S.countFeedback = { kind: 'good', text: 'Да! Их ' + target + '. ' + COUNT_PRAISE[S.countRound % COUNT_PRAISE.length] };
+      S.countFeedback = { kind: 'good', text: 'Yes! There are ' + target + '. ' + COUNT_PRAISE[S.countRound % COUNT_PRAISE.length] };
       Sound.play('correct');
-      Sound.say('Да, их ' + target);
+      Sound.say('Yes, there are ' + target);
       setAnnounce(S.countFeedback.text, 'polite');
       render();
       later(function () {
@@ -1895,14 +1895,14 @@ a{color:#0B4C8C}
         }
       }, stepDelay(1500));
     } else {
-      /* Мягко: называем то, что ребёнок выбрал, и предлагаем пересчитать. */
+      /* Gently: we name what the child picked and offer to count again. */
       S.countFeedback = {
         kind: 'care',
-        text: 'Ты выбрал ' + n + '. Давай пересчитаем вместе: нажми на кнопку со стрелкой и называй: одна, две, три.',
-        sub: 'Цифру можно выбирать сколько угодно раз.'
+        text: 'You picked ' + n + '. Let us count together again: tap the arrow button and say: one, two, three.',
+        sub: 'You can pick a number as many times as you like.'
       };
       Sound.play('hint');
-      Sound.say('Давай пересчитаем. Нажми на стрелку.');
+      Sound.say('Let us count again. Tap the arrow.');
       setAnnounce(S.countFeedback.text, 'polite');
       render();
       var node = el('count-answer-' + n);
@@ -1913,9 +1913,9 @@ a{color:#0B4C8C}
     }
   }
 
-  var COUNT_PRAISE = ['Ты посчитал сам!', 'Верно!', 'Точно!', 'Отлично посчитал!'];
+  var COUNT_PRAISE = ['You counted by yourself!', 'That is right!', 'Exactly!', 'Great counting!'];
 
-  /* --------------------------------------------------- завершение активности --- */
+  /* --------------------------------------------------- activity completion --- */
   function completeActivity(id) {
     var res = markDone(id, { finished: true });
     Sound.stopSpeaking();
@@ -1931,9 +1931,9 @@ a{color:#0B4C8C}
     render();
   }
 
-  /* Объявление для экранных дикторов. kind='focus' дополнительно переносит
-     фокус на блок состояния: так ребёнок, работающий только клавиатурой,
-     сразу слышит ответ, и фокус не теряется при перерисовке. */
+  /* The announcement for screen readers. kind='focus' additionally moves the
+     focus to the status box: that way a child who works with the keyboard only
+     hears the answer at once, and the focus is not lost on re-render. */
   function setAnnounce(text, kind) {
     S.announceSeq += 1;
     S.announce = text || '';
@@ -1945,22 +1945,22 @@ a{color:#0B4C8C}
     var node = el('storage-note');
     if (!node) { return; }
     node.textContent = storage.ok
-      ? 'Прогресс сохраняется только в этом браузере, на этом устройстве. Кнопка «Сбросить» в разделе для взрослых удаляет его полностью.'
-      : 'Браузер запретил сохранение, поэтому прогресс живёт только пока открыта страница. Занятие от этого не меняется.';
+      ? 'Progress is saved only in this browser, on this device. The "Reset" button in the grown-ups section deletes it completely.'
+      : 'The browser has blocked saving, so progress lasts only while the page is open. The activity itself does not change.';
   }
 
-  /* ------------------------------------------------------------------ экспорт ---
-   * Публичный фасад: единственная точка, через которую слой отрисовки
-   * (часть 2 файла) обращается к состоянию. Никаких «магических» глобалов. */
+  /* ------------------------------------------------------------------- export ---
+   * The public facade: the single point through which the drawing layer (part 2
+   * of the file) reaches the state. No "magic" globals. */
   window.__GARDEN__ = {
     C: C,
     S: S,
     Sound: Sound,
     storage: storage,
     routeFromHash: routeFromHash,
-    /* Загрузка по адресу. Функция НЕ вызывает render() сама: слой отрисовки
-       живёт в следующем блоке скрипта, поэтому загрузку запускает он — уже
-       после того, как определены все экраны. */
+    /* Loading by address. This function does NOT call render() itself: the
+       drawing layer lives in the next script block, so it starts the load —
+       once all the screens are defined. */
     bootFromHash: function () {
       var forced = window.location.hash;
       if (routeFromHash(forced)) { applyRoute(forced, true); return 'routed'; }
@@ -1996,13 +1996,13 @@ a{color:#0B4C8C}
 </script>
 <script>
 /* ===========================================================================
- * Часть 2: отрисовка экранов, обработка нажатий и клавиатуры, инициализация.
- * Здесь же кнопки «звук», «покажи пример», «подсказка», «начать заново»,
- * раздел для взрослых, итог занятия и сброс прогресса.
+ * Part 2: drawing the screens, handling clicks and the keyboard, boot.
+ * Here live the "sound", "show me", "hint" and "start again" buttons, the
+ * grown-up section, the activity summary and the progress reset.
  *
- * Правило фокуса: любая перерисовка возвращает фокус туда, где он был, или на
- * осмысленный соседний элемент. Ребёнок, работающий только клавиатурой, не
- * остаётся без фокуса ни на одном шаге.
+ * The focus rule: any re-render returns the focus to where it was, or to a
+ * meaningful neighbouring element. A child who works with the keyboard only
+ * is never left without focus at any step.
  * =========================================================================== */
 (function () {
   'use strict';
@@ -2021,7 +2021,7 @@ a{color:#0B4C8C}
   }
   function u() { S.uid += 1; return 'u' + S.uid; }
 
-  /* -------------------------------------------------------------- фигурки --- */
+  /* ------------------------------------------------------------------ toys --- */
   function toySvg(kind, color, px) {
     px = px || 84;
     if (kind === 'ball') {
@@ -2072,14 +2072,14 @@ a{color:#0B4C8C}
       '</svg>';
   }
 
-  /* --------------------------------------------------------------- статус --- */
+  /* ---------------------------------------------------------------- status --- */
   function idleText() {
     if (S.screen === 'activity') {
-      if (S.activity === 'shapes') { return 'Выбери фигуру, которая такая же, как образец.'; }
-      if (S.activity === 'sorting') { return 'Сначала нажми на фигуру, потом на её полянку.'; }
-      if (S.activity === 'counting') { return 'Нажимай на кнопку со стрелкой и считай вслух.'; }
+      if (S.activity === 'shapes') { return 'Pick the shape that is the same as the model.'; }
+      if (S.activity === 'sorting') { return 'First tap a shape, then tap its meadow.'; }
+      if (S.activity === 'counting') { return 'Tap the arrow button and count out loud.'; }
     }
-    return 'Выбери занятие.';
+    return 'Pick an activity.';
   }
 
   function feedbackForActivity() {
@@ -2103,7 +2103,7 @@ a{color:#0B4C8C}
       (sub ? '<br><span class="foot-note">' + esc(sub) + '</span>' : '') + '</span></div>';
   }
 
-  /* ---------------------------------------------------------------- шапка --- */
+  /* ---------------------------------------------------------------- header --- */
   function soundIcon(on) {
     return on
       ? '<svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true" focusable="false"><path d="M14 38 H30 L52 20 V80 L30 62 H14 Z" fill="#152B36"/><path d="M62 34 A24 24 0 0 1 62 66" fill="none" stroke="#146B3A" stroke-width="8" stroke-linecap="round"/><path d="M74 24 A38 38 0 0 1 74 76" fill="none" stroke="#146B3A" stroke-width="8" stroke-linecap="round"/></svg>'
@@ -2117,7 +2117,7 @@ a{color:#0B4C8C}
     return '' +
       '<header class="topbar no-print">' +
         '<div class="topbar-in">' +
-          '<button class="icon-btn" data-action="goto-start" data-focus-key="brand" aria-label="Сад форм и порядка. В начало занятия">' +
+          '<button class="icon-btn" data-action="goto-start" data-focus-key="brand" aria-label="Shapes and Sorting Garden. Go to the start of the activity">' +
             '<svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
               '<circle cx="50" cy="82" r="14" fill="#146B3A"/>' +
               '<path d="M50 74 C50 52 36 42 22 40 C26 60 38 70 50 74 Z" fill="#8FA08C" stroke="#123040" stroke-width="4"/>' +
@@ -2125,20 +2125,20 @@ a{color:#0B4C8C}
               '<path d="M50 78 V46" stroke="#123040" stroke-width="5" stroke-linecap="round"/>' +
               '<circle cx="50" cy="34" r="12" fill="#A87D00" stroke="#123040" stroke-width="4"/>' +
             '</svg>' +
-            '<span><span class="brand">Сад форм и порядка</span>' +
-            '<span class="brand-sub">занятие для трёх лет</span></span>' +
+            '<span><span class="brand">Shapes and Sorting Garden</span>' +
+            '<span class="brand-sub">an activity for three-year-olds</span></span>' +
           '</button>' +
           '<button class="icon-btn" data-action="toggle-sound" data-focus-key="sound" aria-pressed="' + (soundOn ? 'true' : 'false') + '">' +
             soundIcon(soundOn) +
-            '<span>' + (soundOn ? 'Звук включён' : 'Звук выключен') + '</span>' +
+            '<span>' + (soundOn ? 'Sound is on' : 'Sound is off') + '</span>' +
           '</button>' +
           '<button class="icon-btn" data-action="toggle-grownup" data-focus-key="grownup" aria-expanded="' + (S.grownupOpen ? 'true' : 'false') + '">' +
-            '<span>Взрослым</span>' +
+            '<span>For grown-ups</span>' +
           '</button>' +
           '<button class="icon-btn" data-action="text-size" data-focus-key="textsize">' +
-            '<span>Буквы: ' + (S.textSize === 'large' ? 'крупные' : 'обычные') + '</span>' +
+            '<span>Letters: ' + (S.textSize === 'large' ? 'large' : 'normal') + '</span>' +
           '</button>' +
-          '<span class="chip" aria-label="Пройдено занятий: ' + done + ' из ' + total + '">Пройдено: ' + done + ' из ' + total + '</span>' +
+          '<span class="chip" aria-label="Activities done: ' + done + ' of ' + total + '">Done: ' + done + ' of ' + total + '</span>' +
         '</div>' +
       '</header>';
   }
@@ -2146,12 +2146,12 @@ a{color:#0B4C8C}
   function footer() {
     return '' +
       '<footer class="foot-note" style="margin-top:26px">' +
-        '<p id="storage-note">Прогресс сохраняется только в этом браузере.</p>' +
-        '<p>Без рекламы, без регистрации, без аналитики и без сбора данных о ребёнке. Код и вся графика созданы для этого задания, лицензия MIT.</p>' +
+        '<p id="storage-note">Progress is saved only in this browser.</p>' +
+        '<p>No ads, no sign-up, no analytics and no collection of data about the child. The code and all the artwork were made for this task, MIT licence.</p>' +
       '</footer>';
   }
 
-  /* ------------------------------------------------------------- карточки --- */
+  /* ----------------------------------------------------------------- cards --- */
   function activityCards() {
     return '<div class="choices" data-count="3" style="margin-top:18px">' +
       C.ACTIVITY_ORDER.map(function (id, i) {
@@ -2162,13 +2162,13 @@ a{color:#0B4C8C}
           '<span class="tile-index">' + (i + 1) + '</span>' +
           activityIcon(meta.icon, 72) +
           '<span class="choice-name">' + esc(meta.title) + '</span>' +
-          '<span class="swatch-label">' + (done ? 'Уже пробовали' : meta.minutes) + '</span>' +
+          '<span class="swatch-label">' + (done ? 'Already tried' : meta.minutes) + '</span>' +
           '</button>';
       }).join('') +
       '</div>';
   }
 
-  /* ================================================================ экраны === */
+  /* ================================================================ screens === */
   function screenStart() {
     return '' +
       '<div class="wrap stack">' +
@@ -2182,24 +2182,24 @@ a{color:#0B4C8C}
               '<path d="M60 46 V90" stroke="#123040" stroke-width="6" stroke-linecap="round"/>' +
             '</svg>' +
             '<div style="flex:1 1 320px">' +
-              '<h1 id="start-heading">Сад форм, цвета и порядка</h1>' +
-              '<p>Три коротких занятия для ребёнка около трёх лет: подобрать такую же фигуру, разложить фигуры по полянкам и посчитать игрушки до трёх. Рядом нужен взрослый, и остановиться можно в любой момент.</p>' +
-              '<p class="foot-note">Читать и писать не нужно: всё делается нажатиями. Звук выключен, пока взрослый не включит его кнопкой в шапке.</p>' +
+              '<h1 id="start-heading">Shapes, Colours and Sorting Garden</h1>' +
+              '<p>Three short activities for a child of about three: match the same shape, sort shapes into meadows and count toys up to three. A grown-up should be nearby, and you can stop at any moment.</p>' +
+              '<p class="foot-note">No reading or writing needed: everything is done by tapping. Sound is off until a grown-up turns it on with the button at the top.</p>' +
             '</div>' +
           '</div>' +
           '<div class="btn-row" style="margin-top:20px">' +
-            '<button class="btn" data-action="begin" data-focus-key="begin">Начать занятие</button>' +
-            '<button class="btn btn-plain" data-action="goto-home">Выбрать занятие</button>' +
-            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым: как заниматься</button>' +
+            '<button class="btn" data-action="begin" data-focus-key="begin">Start the activity</button>' +
+            '<button class="btn btn-plain" data-action="goto-home">Choose an activity</button>' +
+            '<button class="btn btn-plain" data-action="toggle-grownup">For grown-ups: how to use it</button>' +
           '</div>' +
         '</section>' +
         '<section class="card-soft" aria-labelledby="start-how">' +
-          '<h2 id="start-how">Как это работает</h2>' +
+          '<h2 id="start-how">How it works</h2>' +
           '<div class="facts">' +
-            '<div class="fact"><h3>1. Сначала показываем</h3><p>В каждом занятии есть кнопка «Покажи пример»: приложение само показывает первый ход, и пример можно повторять сколько угодно раз.</p></div>' +
-            '<div class="fact"><h3>2. Потом пробуем вместе</h3><p>Взрослый рядом называет вслух: «круг», «синий», «одна, две, три».</p></div>' +
-            '<div class="fact"><h3>3. Затем новое задание</h3><p>В конце каждого занятия есть чуть другое задание: фигура повёрнута или меньше, но форма та же.</p></div>' +
-            '<div class="fact"><h3>Без оценки</h3><p>Нет баллов, таймеров, рейтингов и проигрышных звуков. Неверный выбор — это подсказка и ещё одна попытка.</p></div>' +
+            '<div class="fact"><h3>1. First we show it</h3><p>Every activity has a "Show me" button: the app plays the first move itself, and you can repeat the example as many times as you like.</p></div>' +
+            '<div class="fact"><h3>2. Then we try together</h3><p>The grown-up nearby says it out loud: "circle", "blue", "one, two, three".</p></div>' +
+            '<div class="fact"><h3>3. Then something new</h3><p>At the end of every activity there is a slightly different task: the shape is turned or smaller, but it is still the same shape.</p></div>' +
+            '<div class="fact"><h3>No marking</h3><p>No points, timers, ratings or losing sounds. A wrong choice gives a hint and one more try.</p></div>' +
           '</div>' +
           activityCards() +
         '</section>' +
@@ -2213,14 +2213,14 @@ a{color:#0B4C8C}
     return '' +
       '<div class="wrap stack">' +
         '<section class="card">' +
-          '<h1 id="home-heading">Выбери занятие</h1>' +
-          '<p>Три занятия подряд — примерно 4–6 минут. Начать можно с любого и остановиться в любой момент.</p>' +
+          '<h1 id="home-heading">Choose an activity</h1>' +
+          '<p>Three activities in a row take about 4–6 minutes. You can start with any of them and stop at any moment.</p>' +
           activityCards() +
           '<div class="btn-row" style="margin-top:18px">' +
             '<button class="btn btn-leaf" data-action="open-next" data-focus-key="next">' +
-              (allDone ? 'Пройти занятие ещё раз' : 'Продолжить занятие') + '</button>' +
-            (allDone ? '<button class="btn btn-plain" data-action="goto-done">Итог занятия</button>' : '') +
-            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым</button>' +
+              (allDone ? 'Do the activity again' : 'Continue the activity') + '</button>' +
+            (allDone ? '<button class="btn btn-plain" data-action="goto-done">Summary</button>' : '') +
+            '<button class="btn btn-plain" data-action="toggle-grownup">For grown-ups</button>' +
           '</div>' +
         '</section>' +
         footer() +
@@ -2232,7 +2232,7 @@ a{color:#0B4C8C}
     return '' +
       '<div class="wrap stack">' +
         '<div class="activity-head">' +
-          '<p class="foot-note" style="margin-bottom:6px">Занятие ' + idx + ' из 3</p>' +
+          '<p class="foot-note" style="margin-bottom:6px">Activity ' + idx + ' of 3</p>' +
           '<div class="activity-title">' +
             '<h1 id="' + titleId + '">' + esc(title) + '</h1>' +
             '<span class="step-chip">' + esc(stepText) + '</span>' +
@@ -2249,13 +2249,13 @@ a{color:#0B4C8C}
 
   function activityControls(extra) {
     return '' +
-      '<button class="btn" data-action="demo" data-focus-key="demo">Покажи пример</button>' +
-      '<button class="btn btn-plain" data-action="hint" data-focus-key="hint">Подсказка</button>' +
-      '<button class="btn btn-plain" data-action="restart-activity" data-focus-key="restart">Начать заново</button>' +
+      '<button class="btn" data-action="demo" data-focus-key="demo">Show me</button>' +
+      '<button class="btn btn-plain" data-action="hint" data-focus-key="hint">Hint</button>' +
+      '<button class="btn btn-plain" data-action="restart-activity" data-focus-key="restart">Start again</button>' +
       (extra || '');
   }
 
-  /* --- Занятие 1: формы --- */
+  /* --- Activity 1: shapes --- */
   function screenShapes() {
     var rounds = G.activeShapeRoundsValue();
     var round = rounds[S.shapeRound];
@@ -2264,17 +2264,17 @@ a{color:#0B4C8C}
     var stage = '' +
       '<div class="target">' +
         '<div class="target-body">' +
-          '<span class="target-caption">Образец</span>' +
+          '<span class="target-caption">Model</span>' +
           C.shapeSvg({ shape: target.shape, color: target.color, uid: u(), size: 1.5, label: false }) +
           '<span class="swatch-label">' + esc(C.colorOf(target.color).label + ' ' + C.shapeOf(target.shape).label) + '</span>' +
         '</div>' +
         '<p style="flex:1 1 220px;margin:0"><strong>' + esc(round.prompt) + '</strong><br>' +
-        'У каждой кнопки есть номер. Нажми на ту, у которой такая же форма.</p>' +
+        'Every button has a number. Tap the one with the same shape.</p>' +
       '</div>' +
-      '<div class="choices" data-count="' + Math.min(round.choices.length, 3) + '" role="group" aria-label="Варианты ответа">' +
+      '<div class="choices" data-count="' + Math.min(round.choices.length, 3) + '" role="group" aria-label="Answer choices">' +
       round.choices.map(function (c, i) {
         return '<button class="choice" id="shape-choice-' + i + '" data-action="answer-shape" data-index="' + i + '" ' +
-          'data-focus-key="shape-choice-' + i + '" aria-label="Вариант ' + (i + 1) + ': ' + esc(shapeName(c)) + '">' +
+          'data-focus-key="shape-choice-' + i + '" aria-label="Choice ' + (i + 1) + ': ' + esc(shapeName(c)) + '">' +
           '<span class="tile-index">' + (i + 1) + '</span>' +
           C.shapeSvg({ shape: c.shape, color: c.color, uid: u(), size: c.size || 1, rotate: c.rotate || 0, label: false }) +
           '<span class="choice-name">' + esc(shapeName(c)) + '</span>' +
@@ -2284,22 +2284,22 @@ a{color:#0B4C8C}
     return activityShell(
       'shapes-heading',
       C.ACTIVITY_META.shapes.title,
-      'Шаг ' + (S.shapeRound + 1) + ' из ' + rounds.length,
+      'Step ' + (S.shapeRound + 1) + ' of ' + rounds.length,
       stage,
       activityControls(fewerNote())
     );
   }
 
   function fewerNote() {
-    return S.fewerChoices ? '<span class="chip">Режим: два варианта</span>' : '';
+    return S.fewerChoices ? '<span class="chip">Mode: two choices</span>' : '';
   }
 
   function shapeName(c) {
-    if (!c) { return 'фигура'; }
+    if (!c) { return 'shape'; }
     return C.colorOf(c.color).label + ' ' + C.shapeOf(c.shape).label;
   }
 
-  /* --- Занятие 2: сортировка --- */
+  /* --- Activity 2: sorting --- */
   function screenSorting() {
     var rounds = G.activeSortRoundsValue();
     var round = rounds[S.sortRound];
@@ -2308,45 +2308,45 @@ a{color:#0B4C8C}
     var remaining = st.items.filter(function (it) { return !st.placed[it.id]; });
     var tray = remaining.length
       ? remaining.map(function (it) { return pieceButton(it); }).join('')
-      : '<span class="tray-empty">Все фигуры разложены — можно посмотреть, что получилось.</span>';
+      : '<span class="tray-empty">All the shapes are sorted — you can look at what you made.</span>';
 
     var bins = round.groups.map(function (g) {
       var placedItems = st.items.filter(function (it) { return st.placed[it.id] === g.key; });
       var swatchShape = g.shape || C.COLOR_GROUP_SHAPE[g.key] || 'circle';
       return '<button class="bin" id="sort-bin-' + g.key + '" data-action="drop" data-group="' + g.key + '" ' +
         'data-focus-key="bin-' + g.key + '" ' +
-        'aria-label="Полянка: ' + esc(g.label) + '. Фигур здесь: ' + placedItems.length + '">' +
+        'aria-label="Meadow: ' + esc(g.label) + '. Shapes here: ' + placedItems.length + '">' +
         '<span class="bin-head">' +
           C.shapeSvg({ shape: swatchShape, color: g.neutral ? 'neutral' : g.key, uid: u(), size: 0.62, label: false }) +
           '<span class="bin-title">' +
             '<span class="bin-caption">' + esc(g.label) + '</span>' +
-            '<span class="bin-count">Фигур здесь: ' + placedItems.length + ' из ' + st.items.length + '</span>' +
+            '<span class="bin-count">Shapes here: ' + placedItems.length + ' of ' + st.items.length + '</span>' +
           '</span>' +
         '</span>' +
         '<span class="bin-slot">' + (placedItems.length
           ? placedItems.map(function (it) { return pieceSvgSpan(it, 58); }).join('')
-          : '<span class="foot-note">Пока пусто</span>') + '</span>' +
+          : '<span class="foot-note">Empty for now</span>') + '</span>' +
         '</button>';
     }).join('');
 
     var modeNote = round.mode === 'shape'
-      ? '<div class="coach"><strong>Здесь цвет — не подсказка.</strong> Все фигуры одного цвета, поэтому смотрим только на форму.</div>'
-      : '<div class="coach"><strong>Различаем не только цветом.</strong> У каждой полянки свой узор, своя форма и своя подпись: круглая в точку, квадратная в полоску, треугольная в клетку.</div>';
+      ? '<div class="coach"><strong>Here colour is not a clue.</strong> All the shapes are the same colour, so we look only at the shape.</div>'
+      : '<div class="coach"><strong>We tell them apart by more than colour.</strong> Each meadow has its own pattern, its own shape and its own label: round with dots, square with stripes, triangle with a grid.</div>';
 
     var stage = '' +
       '<p><strong>' + esc(round.prompt) + '</strong></p>' +
-      '<p class="tray-title">Фигуры, которые ждут своей полянки:</p>' +
-      '<div class="tray" role="group" aria-label="Фигуры для сортировки">' + tray + '</div>' +
-      '<div class="bins-inline" role="group" aria-label="Полянки">' + bins + '</div>' +
+      '<p class="tray-title">Shapes waiting for their meadow:</p>' +
+      '<div class="tray" role="group" aria-label="Shapes to sort">' + tray + '</div>' +
+      '<div class="bins-inline" role="group" aria-label="Meadows">' + bins + '</div>' +
       '<div style="margin-top:12px">' + modeNote + '</div>';
 
     return activityShell(
       'sorting-heading',
       C.ACTIVITY_META.sorting.title,
-      'Шаг ' + (S.sortRound + 1) + ' из ' + rounds.length,
+      'Step ' + (S.sortRound + 1) + ' of ' + rounds.length,
       stage,
-      activityControls('<span class="chip" data-focus-key="selected-chip">Выбрано: ' +
-        (S.sortSelected ? esc(pieceName(byId(st, S.sortSelected))) : 'ничего') + '</span>' + fewerNote())
+      activityControls('<span class="chip" data-focus-key="selected-chip">Selected: ' +
+        (S.sortSelected ? esc(pieceName(byId(st, S.sortSelected))) : 'nothing') + '</span>' + fewerNote())
     );
   }
 
@@ -2355,7 +2355,7 @@ a{color:#0B4C8C}
   }
 
   function pieceName(item) {
-    return item ? C.describeItem(item) : 'фигура';
+    return item ? C.describeItem(item) : 'shape';
   }
 
   function pieceButton(item) {
@@ -2363,9 +2363,9 @@ a{color:#0B4C8C}
     return '<button class="piece' + (selected ? ' is-selected' : '') + '" id="piece-' + item.id + '" ' +
       'data-action="select-piece" data-item="' + item.id + '" data-focus-key="piece-' + item.id + '" ' +
       'aria-pressed="' + (selected ? 'true' : 'false') + '" ' +
-      'aria-label="' + esc(pieceName(item)) + (selected ? ', выбрано' : '') + '">' +
+      'aria-label="' + esc(pieceName(item)) + (selected ? ', selected' : '') + '">' +
       pieceSvgSpan(item, 76) +
-      '<span class="piece-name">' + esc(pieceName(item)) + (selected ? ' — выбрано' : '') + '</span>' +
+      '<span class="piece-name">' + esc(pieceName(item)) + (selected ? ' — selected' : '') + '</span>' +
       '</button>';
   }
 
@@ -2375,7 +2375,7 @@ a{color:#0B4C8C}
       '</span>';
   }
 
-  /* --- Занятие 3: счёт --- */
+  /* --- Activity 3: counting --- */
   function screenCounting() {
     var rounds = G.activeCountRoundsValue();
     var round = rounds[S.countRound];
@@ -2397,22 +2397,22 @@ a{color:#0B4C8C}
     var numBtns = [1, 2, 3].map(function (n) {
       return '<button class="num-btn" id="count-answer-' + n + '" ' +
         'data-action="answer-count" data-number="' + n + '" data-focus-key="answer-' + n + '" ' +
-        'aria-label="Цифра ' + n + '"' + (st.count < 1 ? ' aria-disabled="true"' : '') + '>' +
+        'aria-label="Number ' + n + '"' + (st.count < 1 ? ' aria-disabled="true"' : '') + '>' +
         C.numeralCard(n, { uid: u(), px: 64 }) +
-        '<span>Столько же</span>' +
+        '<span>That many</span>' +
         '</button>';
     }).join('');
 
     var arrowLabel = complete
-      ? 'Посчитали: ' + st.sequence.length
-      : 'Считаем: ' + (st.count + 1);
+      ? 'Counted: ' + st.sequence.length
+      : 'Counting: ' + (st.count + 1);
     var arrowAria = complete
-      ? 'Все игрушки посчитаны. Теперь выбери цифру: ' + st.sequence.length + '.'
-      : 'Считаем дальше: нажми, чтобы открыть и посчитать ' + (st.count + 1) + '.';
+      ? 'All the toys are counted. Now pick the number: ' + st.sequence.length + '.'
+      : 'Counting on: tap to reveal and count ' + (st.count + 1) + '.';
 
     var stage = '' +
       '<p><strong>' + esc(round.prompt) + '</strong></p>' +
-      '<div class="shelf" role="group" aria-label="Игрушки на полке">' + slots + '</div>' +
+      '<div class="shelf" role="group" aria-label="Toys on the shelf">' + slots + '</div>' +
       '<div class="counter-panel">' +
         '<button class="arrow-btn" data-action="count-tap" data-focus-key="count-tap" ' +
           'aria-label="' + esc(arrowAria) + '"' + (complete ? ' aria-disabled="true"' : '') + '>' +
@@ -2422,25 +2422,25 @@ a{color:#0B4C8C}
           '</svg>' +
           esc(arrowLabel) +
         '</button>' +
-        '<div class="num-row" role="group" aria-label="Сколько игрушек">' + numBtns + '</div>' +
+        '<div class="num-row" role="group" aria-label="How many toys">' + numBtns + '</div>' +
       '</div>' +
       '<div class="toy-picker">' +
-        '<span class="foot-note">Можно собрать свою коллекцию:</span>' +
-        '<button class="btn btn-plain" data-action="set-count" data-count="1" data-focus-key="set-1">1 игрушка</button>' +
-        '<button class="btn btn-plain" data-action="set-count" data-count="2" data-focus-key="set-2">2 игрушки</button>' +
-        '<button class="btn btn-plain" data-action="set-count" data-count="3" data-focus-key="set-3">3 игрушки</button>' +
+        '<span class="foot-note">You can make your own collection:</span>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="1" data-focus-key="set-1">1 toy</button>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="2" data-focus-key="set-2">2 toys</button>' +
+        '<button class="btn btn-plain" data-action="set-count" data-count="3" data-focus-key="set-3">3 toys</button>' +
       '</div>';
 
     return activityShell(
       'counting-heading',
       C.ACTIVITY_META.counting.title,
-      'Шаг ' + (S.countRound + 1) + ' из ' + rounds.length,
+      'Step ' + (S.countRound + 1) + ' of ' + rounds.length,
       stage,
-      activityControls('<button class="btn btn-plain" data-action="count-reset" data-focus-key="count-reset">Считать заново</button>' + fewerNote())
+      activityControls('<button class="btn btn-plain" data-action="count-reset" data-focus-key="count-reset">Count again</button>' + fewerNote())
     );
   }
 
-  /* -------------------------------------------------- завершение одного шага --- */
+  /* --------------------------------------------------- finishing one step --- */
   function screenActivityDone() {
     var id = S.finishedActivity || S.activity;
     var meta = C.ACTIVITY_META[id] || C.ACTIVITY_META.shapes;
@@ -2457,17 +2457,17 @@ a{color:#0B4C8C}
               '<path d="M28 52 L44 68 L72 34" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>' +
             '</svg>' +
             '<div style="flex:1 1 260px">' +
-              '<h1 id="activity-done-heading">Занятие «' + esc(meta.title) + '» закончено</h1>' +
-              '<p>Получилось. Можно пройти это занятие ещё раз — задания те же, а порядок другой.</p>' +
-              '<p class="foot-note">Следующая практика без экрана: ' + esc(meta.suggest) + '</p>' +
+              '<h1 id="activity-done-heading">Activity "' + esc(meta.title) + '" is finished</h1>' +
+              '<p>You did it. You can do this activity again — the tasks are the same, but in a different order.</p>' +
+              '<p class="foot-note">Next practice away from the screen: ' + esc(meta.suggest) + '</p>' +
             '</div>' +
           '</div>' +
           '<div class="btn-row" style="margin-top:18px">' +
             (nextId
-              ? '<button class="btn btn-leaf" data-action="open-activity" data-activity="' + nextId + '" data-focus-key="next-activity">Следующее занятие: ' + esc(C.ACTIVITY_META[nextId].title) + '</button>'
-              : '<button class="btn btn-leaf" data-action="goto-done" data-focus-key="to-summary">Итог занятия</button>') +
-            '<button class="btn btn-plain" data-action="open-activity" data-activity="' + id + '" data-reset="1">Пройти ещё раз</button>' +
-            '<button class="btn btn-plain" data-action="goto-home">Все занятия</button>' +
+              ? '<button class="btn btn-leaf" data-action="open-activity" data-activity="' + nextId + '" data-focus-key="next-activity">Next activity: ' + esc(C.ACTIVITY_META[nextId].title) + '</button>'
+              : '<button class="btn btn-leaf" data-action="goto-done" data-focus-key="to-summary">Summary</button>') +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="' + id + '" data-reset="1">Do it again</button>' +
+            '<button class="btn btn-plain" data-action="goto-home">All activities</button>' +
           '</div>' +
         '</section>' +
         footer() +
@@ -2480,7 +2480,7 @@ a{color:#0B4C8C}
     var list = C.ACTIVITY_ORDER.map(function (id) {
       var ok = !!(S.progress.done && S.progress.done[id]);
       return '<li><span class="done-tick' + (ok ? '' : ' is-off') + '" aria-hidden="true">' + (ok ? '✓' : '·') + '</span>' +
-        '<span>' + esc(C.ACTIVITY_META[id].title) + ' — ' + (ok ? 'получилось' : 'можно попробовать в другой раз') + '</span></li>';
+        '<span>' + esc(C.ACTIVITY_META[id].title) + ' — ' + (ok ? 'done' : 'you can try another time') + '</span></li>';
     }).join('');
     return '' +
       '<div class="wrap stack">' +
@@ -2492,66 +2492,66 @@ a{color:#0B4C8C}
               '<path d="M44 64 L56 76 L78 50" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>' +
             '</svg>' +
             '<div style="flex:1 1 300px">' +
-              '<h1 id="done-heading">Занятие закончено</h1>' +
-              '<p>Пройдено ' + done + ' из ' + total + '. Это не оценка, а отметка о том, что уже пробовали. Страницу можно закрыть и вернуться позже — прогресс сохранится в этом браузере.</p>' +
+              '<h1 id="done-heading">Activity finished</h1>' +
+              '<p>Done ' + done + ' of ' + total + '. This is not a mark, just a note that it has already been tried. You can close the page and come back later — progress is saved in this browser.</p>' +
             '</div>' +
           '</div>' +
-          '<h2>Что было</h2>' +
+          '<h2>What we did</h2>' +
           '<ul class="done-list">' + list + '</ul>' +
-          '<h2 style="margin-top:18px">Следующая практика</h2>' +
+          '<h2 style="margin-top:18px">Next practice</h2>' +
           '<p>' + esc(C.nextPractice(S.progress)) + '</p>' +
           '<div class="btn-row" style="margin-top:16px">' +
-            '<button class="btn btn-leaf" data-action="goto-home" data-focus-key="back-home">Вернуться к занятиям</button>' +
-            '<button class="btn btn-plain" data-action="open-activity" data-activity="counting" data-reset="1">Ещё раз посчитать</button>' +
-            '<button class="btn btn-plain" data-action="open-activity" data-activity="shapes" data-reset="1">Ещё раз про формы</button>' +
-            '<button class="btn btn-plain" data-action="toggle-grownup">Взрослым</button>' +
-            '<button class="btn btn-plain" data-action="reset-progress" data-focus-key="reset-progress">Сбросить прогресс</button>' +
+            '<button class="btn btn-leaf" data-action="goto-home" data-focus-key="back-home">Back to the activities</button>' +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="counting" data-reset="1">Count again</button>' +
+            '<button class="btn btn-plain" data-action="open-activity" data-activity="shapes" data-reset="1">Shapes again</button>' +
+            '<button class="btn btn-plain" data-action="toggle-grownup">For grown-ups</button>' +
+            '<button class="btn btn-plain" data-action="reset-progress" data-focus-key="reset-progress">Reset progress</button>' +
           '</div>' +
         '</section>' +
         footer() +
       '</div>';
   }
 
-  /* -------------------------------------------------------------- взрослым --- */
+  /* -------------------------------------------------------------- grown-ups --- */
   function grownupPanel() {
     if (!S.grownupOpen) { return ''; }
     return '' +
       '<section class="grownup no-print" aria-labelledby="grownup-heading">' +
-        '<h2 id="grownup-heading">Взрослым</h2>' +
-        '<p>Занятие рассчитано на 4–6 минут: три активности по 1–3 минуты. Остановиться раньше — нормально, занятие ничего не «проваливает».</p>' +
+        '<h2 id="grownup-heading">For grown-ups</h2>' +
+        '<p>The activity is meant to take 4–6 minutes: three activities of 1–3 minutes each. Stopping earlier is fine — nothing is "failed".</p>' +
         '<div class="facts">' +
-          '<div class="fact"><h3>Меньше вариантов</h3>' +
-            '<p>Если ребёнку пока трудно выбирать из трёх, включите режим с двумя вариантами и двумя полянками — задания останутся теми же.</p>' +
+          '<div class="fact"><h3>Fewer choices</h3>' +
+            '<p>If choosing from three is still hard for the child, switch on the mode with two choices and two meadows — the tasks stay the same.</p>' +
             '<button class="btn btn-plain" data-action="toggle-fewer" data-focus-key="fewer" aria-pressed="' + (S.fewerChoices ? 'true' : 'false') + '">' +
-              (S.fewerChoices ? 'Вернуть три варианта' : 'Оставить два варианта') + '</button>' +
+              (S.fewerChoices ? 'Bring back three choices' : 'Keep two choices') + '</button>' +
           '</div>' +
-          '<div class="fact"><h3>Звук и речь</h3>' +
-            '<p>Звук выключен, пока взрослый не включит его кнопкой в шапке. Голос браузера может быть недоступен — тогда занятие идёт молча, и всё важное написано словами на экране.</p>' +
+          '<div class="fact"><h3>Sound and speech</h3>' +
+            '<p>Sound is off until a grown-up turns it on with the button at the top. The browser voice may be unavailable — the activity then runs silently, and everything important is written on the screen.</p>' +
           '</div>' +
-          '<div class="fact"><h3>Что сохраняется</h3>' +
+          '<div class="fact"><h3>What is saved</h3>' +
             '<p>' + (storage.ok
-              ? 'В этом браузере сохраняются только отметки о пройденных занятиях и выбранное число игрушек. Ни имён, ни аналитики, ни запросов в сеть.'
-              : 'Сохранение в браузере недоступно, поэтому отметки живут только до закрытия страницы.') + '</p>' +
-            '<button class="btn btn-plain" data-action="reset-progress">Сбросить прогресс</button>' +
+              ? 'This browser saves only the notes that an activity was finished and the chosen number of toys. No names, no analytics, no network requests.'
+              : 'Saving in the browser is not available, so the notes last only until the page is closed.') + '</p>' +
+            '<button class="btn btn-plain" data-action="reset-progress">Reset progress</button>' +
           '</div>' +
-          '<div class="fact"><h3>Доступность</h3>' +
+          '<div class="fact"><h3>Accessibility</h3>' +
             '<ul>' +
-              '<li>У каждой фигуры и кнопки есть номер и словесное название, поэтому задания не зависят от цветового зрения.</li>' +
-              '<li>Всё управляется клавиатурой: Tab, Enter, пробел, стрелки внутри группы. Фокус всегда видно.</li>' +
-              '<li>Анимация уважает системную настройку «уменьшить движение».</li>' +
-              '<li>Никаких миганий, таймеров и авто-звука.</li>' +
+              '<li>Every shape and button has a number and a written name, so the tasks do not depend on colour vision.</li>' +
+              '<li>Everything works from the keyboard: Tab, Enter, space and the arrow keys inside a group. The focus is always visible.</li>' +
+              '<li>Animation respects the system "reduce motion" setting.</li>' +
+              '<li>No flashing, no timers and no automatic sound.</li>' +
             '</ul>' +
           '</div>' +
         '</div>' +
         '<div class="btn-row" style="margin-top:16px">' +
-          '<button class="btn btn-plain" data-action="goto-start">Сначала</button>' +
-          '<button class="btn btn-plain" data-action="goto-home">К занятиям</button>' +
-          '<button class="btn btn-plain" data-action="toggle-grownup">Свернуть</button>' +
+          '<button class="btn btn-plain" data-action="goto-start">Start</button>' +
+          '<button class="btn btn-plain" data-action="goto-home">To the activities</button>' +
+          '<button class="btn btn-plain" data-action="toggle-grownup">Close</button>' +
         '</div>' +
       '</section>';
   }
 
-  /* ------------------------------------------------------------- рендеринг --- */
+  /* -------------------------------------------------------------- rendering --- */
   function render() {
     var body;
     if (S.screen === 'start') { body = screenStart(); }
@@ -2568,7 +2568,7 @@ a{color:#0B4C8C}
     var prevId = prev && prev.id ? prev.id : null;
 
     app.innerHTML = '' +
-      '<a class="skip-link no-print" href="#main-content">Перейти к занятию</a>' +
+      '<a class="skip-link no-print" href="#main-content">Skip to the activity</a>' +
       topbar() +
       '<main id="main-content" class="' + (S.textSize === 'large' ? 'text-large' : '') + '">' + body + '</main>' +
       grownupPanel();
@@ -2582,7 +2582,7 @@ a{color:#0B4C8C}
     document.documentElement.style.fontSize = S.textSize === 'large' ? '21.5px' : '';
   }
 
-  /* Возврат фокуса: явная цель → прежний элемент → осмысленный сосед. */
+  /* Focus restoration: explicit target → previous element → a sensible neighbour. */
   function restoreFocus(prevKey, prevId) {
     var target = null;
     if (S.focusTarget) {
@@ -2593,7 +2593,7 @@ a{color:#0B4C8C}
     if (!target && prevKey) { target = app.querySelector('[data-focus-key="' + prevKey + '"]'); }
     if (!target) { target = app.querySelector('[data-focus-key]'); }
 
-    /* Внутри полянок и рядов цифр приоритет — сама группа. */
+    /* Inside the meadows and the number rows the group itself takes priority. */
     var groupFocus = app.querySelector('.num-row') || null;
     if (target && !isUsable(target) && groupFocus) { target = groupFocus; }
     if (!target || !isUsable(target)) { return; }
@@ -2604,11 +2604,11 @@ a{color:#0B4C8C}
     return !!(node && node.isConnected && !node.disabled && node.getClientRects && node.getClientRects().length > 0);
   }
 
-  /* Контракт со слоем состояния (первый блок скрипта): он вызывает render()
-     по имени, а этот блок подставляет сюда свою реализацию. */
+  /* The contract with the state layer (the first script block): it calls
+     render() by name, and this block puts its own implementation here. */
   G.render = render;
 
-  /* -------------------------------------------------------------- действия --- */
+  /* --------------------------------------------------------------- actions --- */
   document.addEventListener('click', function (ev) {
     var btn = ev.target && ev.target.closest ? ev.target.closest('[data-action]') : null;
     if (!btn) { return; }
@@ -2634,8 +2634,8 @@ a{color:#0B4C8C}
         if (S.soundOn) { Sound.play('step'); } else { Sound.stopSpeaking(); }
         render();
         announce(S.soundOn
-          ? 'Звук включён. Занятие говорит вслух и всё важное дублирует словами на экране.'
-          : 'Звук выключен. Всё занятие работает без звука.');
+          ? 'Sound is on. The activity speaks out loud and repeats everything important in words on the screen.'
+          : 'Sound is off. The whole activity works without sound.');
         break;
       case 'toggle-grownup':
         S.grownupOpen = !S.grownupOpen;
@@ -2652,8 +2652,8 @@ a{color:#0B4C8C}
         if (S.activity === 'counting') { S.countRound = 0; G.initCountActivity({}); }
         render();
         announce(S.fewerChoices
-          ? 'Режим с двумя вариантами включён. Задания те же, выборов меньше.'
-          : 'Снова по три варианта.');
+          ? 'Two-choice mode is on. The same tasks, with fewer choices.'
+          : 'Three choices again.');
         break;
       case 'open-activity':
         openActivityByButton(btn);
@@ -2690,7 +2690,7 @@ a{color:#0B4C8C}
         G.dropInto(btn.getAttribute('data-group'));
         break;
       case 'count-tap':
-        if (ariaOff) { announce('Все игрушки посчитаны. Выбери цифру под полкой.'); }
+        if (ariaOff) { announce('All the toys are counted. Pick the number under the shelf.'); }
         else { G.countTap(); }
         break;
       case 'count-reset':
@@ -2700,7 +2700,7 @@ a{color:#0B4C8C}
         setCount(parseInt(btn.getAttribute('data-count'), 10));
         break;
       case 'answer-count':
-        if (ariaOff) { announce('Сначала посчитай игрушки: нажми кнопку со стрелкой.'); }
+        if (ariaOff) { announce('First count the toys: tap the arrow button.'); }
         else { G.answerCount(parseInt(btn.getAttribute('data-number'), 10)); }
         break;
       case 'reset-progress':
@@ -2726,8 +2726,8 @@ a{color:#0B4C8C}
     }
   }
 
-  /* Клавиатура: стрелки внутри групп вариантов, полянок и цифр.
-     Enter и пробел работают штатно, потому что все элементы — <button>. */
+  /* The keyboard: arrow keys inside the groups of choices, meadows and
+     numbers. Enter and space work normally because every element is a <button>. */
   document.addEventListener('keydown', function (ev) {
     if (!ev.target || !ev.target.closest) { return; }
     var group = ev.target.closest('[role="group"]');
@@ -2746,7 +2746,7 @@ a{color:#0B4C8C}
     items[nextIdx].focus();
   });
 
-  /* ------------------------------------------------------------ объявления --- */
+  /* ---------------------------------------------------------- announcements --- */
   function announce(text) {
     var box = el('polite-news');
     if (!box) { return; }
@@ -2761,15 +2761,15 @@ a{color:#0B4C8C}
     var item = C.firstRemaining(S.sortState);
     var text;
     if (!item) {
-      text = 'Все фигуры уже разложены.';
+      text = 'All the shapes are already sorted.';
     } else if (round.mode === 'shape') {
-      text = 'Подсказка: у этой фигуры ' + C.SHAPE_HINTS[item.shape] + ' — значит, её полянка «' + C.expectedGroupLabel(round, item) + '».';
+      text = 'Hint: this shape has ' + C.SHAPE_HINTS[item.shape] + ' — so its meadow is "' + C.expectedGroupLabel(round, item) + '".';
     } else {
       var c = C.colorOf(item.color);
-      text = 'Подсказка: эта фигура ' + c.label + ' цвета и ' + C.shapeOf(item.shape).label + ' — её полянка «' +
+      text = 'Hint: this shape is ' + c.label + ' and ' + C.shapeOf(item.shape).label + ' — its meadow is "' +
         C.expectedGroupLabel(round, item) + '».';
     }
-    S.sortFeedback = { kind: 'care', text: text, sub: 'Можно нажать на подсказанную полянку — попытки не ограничены.' };
+    S.sortFeedback = { kind: 'care', text: text, sub: 'You can tap the meadow the hint points to — you can try as many times as you like.' };
     Sound.play('hint');
     Sound.say(text);
     G.setAnnounce(text, 'focus');
@@ -2780,9 +2780,9 @@ a{color:#0B4C8C}
     if (!S.countState) { return; }
     var complete = C.isCountComplete(S.countState);
     var text = complete
-      ? 'Все игрушки посчитаны. Их ' + S.countState.sequence.length + '. Нажми на цифру ' + S.countState.sequence.length + '.'
-      : 'Считаем по одной: нажми на кнопку со стрелкой, это будет ' + Math.min(S.countState.count + 1, S.countState.sequence.length) + '.';
-    S.countFeedback = { kind: 'care', text: text, sub: 'Считать можно сколько угодно раз.' };
+      ? 'All the toys are counted. There are ' + S.countState.sequence.length + '. Tap the number ' + S.countState.sequence.length + '.'
+      : 'We count one at a time: tap the arrow button, this will be ' + Math.min(S.countState.count + 1, S.countState.sequence.length) + '.';
+    S.countFeedback = { kind: 'care', text: text, sub: 'You can count as many times as you like.' };
     Sound.play('hint');
     Sound.say(text);
     G.setAnnounce(text, 'focus');
@@ -2795,7 +2795,7 @@ a{color:#0B4C8C}
     S.countAnswerNeeded = false;
     S.countFeedback = {
       kind: 'idle',
-      text: 'Собрали коллекцию из ' + S.countState.sequence.length + '. Теперь посчитаем её по одной.'
+      text: 'We made a collection of ' + S.countState.sequence.length + '. Now let us count it one by one.'
     };
     Sound.play('step');
     G.setAnnounce(S.countFeedback.text, 'focus');
@@ -2808,10 +2808,10 @@ a{color:#0B4C8C}
     S.grownupOpen = false;
     Sound.stopSpeaking();
     G.showStart({ focus: true });
-    announce('Прогресс сброшен. Занятие начинается с чистого листа.');
+    announce('Progress has been reset. The activity starts from a clean page.');
   }
 
-  /* ------------------------------------------------------------ инициализация --- */
+  /* -------------------------------------------------------------------- boot --- */
   (function boot() {
     var live = document.createElement('div');
     live.id = 'polite-news';
@@ -2820,7 +2820,7 @@ a{color:#0B4C8C}
     live.setAttribute('aria-live', 'polite');
     document.body.appendChild(live);
 
-    /* Все экраны уже определены выше, поэтому загрузку можно запускать. */
+    /* All the screens are defined above, so the load can be started. */
     G.bootFromHash();
   }());
 }());
