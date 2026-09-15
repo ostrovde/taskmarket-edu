@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Data Detective — можно ли доверять этому утверждению? · учебное приложение</title>
-<meta name="description" content="Интерактивное учебное занятие для ~15 лет: как оформление графика, смещение выборки и путаница связи с причиной меняют вывод. Данные вымышленные и встроены в файл; сетевых запросов нет.">
+<title>Data Detective — can you trust this claim? · classroom app</title>
+<meta name="description" content="An interactive classroom lesson for age ~15: how chart framing, sampling bias and mixing up association with cause change the conclusion. The data are fictional and embedded in the file; there are no network requests.">
 <meta name="robots" content="index,follow">
 <meta name="color-scheme" content="dark light">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'">
@@ -288,133 +288,133 @@ footer.app-footer p{max-width:var(--measure)}
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Перейти к содержимому</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="topbar">
   <div class="shell">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">DD</span>
       <span class="brand-text">
-        <span class="brand-name">Бюро расследований данных</span>
-        <span class="brand-sub">Учебный набор · вымышленные данные</span>
+        <span class="brand-name">Data Detectives Bureau</span>
+        <span class="brand-sub">Classroom dataset · fictional data</span>
       </span>
     </div>
-    <nav class="topbar-actions" aria-label="Служебные действия">
-      <button type="button" class="btn-ghost btn-sm" id="btn-notebook" aria-expanded="false" aria-controls="notebook-panel">Блокнот (<span id="notebook-count">0</span>)</button>
-      <button type="button" class="btn-ghost btn-sm" id="btn-reset">Сбросить всё</button>
+    <nav class="topbar-actions" aria-label="Utility actions">
+      <button type="button" class="btn-ghost btn-sm" id="btn-notebook" aria-expanded="false" aria-controls="notebook-panel">Notebook (<span id="notebook-count">0</span>)</button>
+      <button type="button" class="btn-ghost btn-sm" id="btn-reset">Reset everything</button>
     </nav>
   </div>
   <div class="shell">
-    <nav class="nav-tabs" id="main-nav" aria-label="Разделы урока">
-      <button type="button" class="nav-tab" data-go="0" aria-current="step">Начало</button>
-      <button type="button" class="nav-tab" data-go="1">Дело 1: рамка графика<span class="tab-check" data-check="1" hidden> ✓</span></button>
-      <button type="button" class="nav-tab" data-go="2">Дело 2: выборка<span class="tab-check" data-check="2" hidden> ✓</span></button>
-      <button type="button" class="nav-tab" data-go="3">Дело 3: корреляция<span class="tab-check" data-check="3" hidden> ✓</span></button>
-      <button type="button" class="nav-tab" data-go="4">Итоговый отчёт</button>
+    <nav class="nav-tabs" id="main-nav" aria-label="Lesson sections">
+      <button type="button" class="nav-tab" data-go="0" aria-current="step">Start</button>
+      <button type="button" class="nav-tab" data-go="1">Case 1: chart framing<span class="tab-check" data-check="1" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="2">Case 2: sampling<span class="tab-check" data-check="2" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="3">Case 3: correlation<span class="tab-check" data-check="3" hidden> ✓</span></button>
+      <button type="button" class="nav-tab" data-go="4">Final report</button>
     </nav>
     <div class="progress">
-      <div class="progress-track" role="img" aria-label="Прогресс урока" id="progress-track">
+      <div class="progress-track" role="img" aria-label="Lesson progress" id="progress-track">
         <div class="progress-fill" id="progress-fill"></div>
       </div>
-      <p class="progress-label" id="progress-label">Шаг 1 из 5 · обязательных дел закрыто: 0 из 3</p>
+      <p class="progress-label" id="progress-label">Step 1 of 5 · required cases closed: 0 of 3</p>
     </div>
   </div>
 </header>
 
 <main id="main" class="shell" tabindex="-1">
 
-  <!-- ══════════════════════════ ЭКРАН 0: НАЧАЛО ══════════════════════════ -->
+  <!-- ══════════════════════════ SCREEN 0: START ══════════════════════════ -->
   <section id="stage-0" class="stage" aria-labelledby="h-start">
     <article class="card">
-      <p class="pill">Сессия 10–15 минут</p>
-      <h2 id="h-start">Дело: «Сон и оценки». Кому верить?</h2>
-      <p class="lede">В ленте мелькает заголовок: <strong>«Учёные доказали: кто спит меньше, тот учится лучше»</strong>. Под ним — график, который выглядит убедительно. Ваша работа — проверить, выдерживает ли заголовок проверку данными.</p>
-      <p>Вы получите доступ к тому же набору данных, что и автор заголовка. В нём 240 записей о вымышленных учениках трёх школ: сколько они спят, сколько времени проводят у экрана вечером и как написали тест. Никаких скрытых файлов и «правильного ответа в конце»: вывод придётся собрать самому и защитить.</p>
+      <p class="pill">A 10-15 minute session</p>
+      <h2 id="h-start">Case: Sleep and Grades. Who should you believe?</h2>
+      <p class="lede">A headline flashes in your feed: <strong>Scientists proved: the less you sleep, the better you learn</strong>. Under it sits a chart that looks convincing. Your job is to check whether the headline survives contact with the data.</p>
+      <p>You get access to the same dataset the headline writer used: 240 records of fictional students from three schools - how much they sleep, how much time they spend on screens in the evening and how they did on a test. There are no hidden files and no right answer at the end: you have to build the conclusion yourself and defend it.</p>
 
       <div class="flag flag-info">
-        <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>Что это за данные</span>
-        <p class="small" style="margin:.35rem 0 0">Набор <strong>полностью синтетический</strong>. Ученики, школы и результаты придуманы авторами приложения; числовые закономерности встроены в данные <em>намеренно</em>, чтобы было что расследовать. Это не исследование реальных людей, и по нему нельзя судить о настоящих школьниках. Подробности — в разделе «Происхождение данных» ниже и в файле <span class="mono">README.md</span>.</p>
+        <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>What these data are</span>
+        <p class="small" style="margin:.35rem 0 0">The dataset <strong>is fully synthetic</strong>. The students, schools and results were invented by the authors of this app; the numerical patterns were built into the data <em>on purpose</em>, so that there is something to investigate. This is not a study of real people and it says nothing about real schoolchildren. See the section Where the data come from below and the file <span class="mono">README.md</span>.</p>
       </div>
 
-      <h3>Что вы будете уметь объяснять после занятия</h3>
+      <h3>What you will be able to explain afterwards</h3>
       <ul id="goals-list">
-        <li>как оформление графика (в частности, начало оси) меняет <em>впечатление</em> от данных, не меняя сами числа;</li>
-        <li>чем удобная выборка отличается от случайной и почему большой размер не вылечивает смещение;</li>
-        <li>почему заметная связь двух величин ещё не доказывает, что одна из них — причина другой;</li>
-        <li>как собрать осторожный, честный вывод из наблюдений.</li>
+        <li>how chart framing (in particular where the axis starts) changes <em>the impression</em> you get from data without changing the numbers themselves;</li>
+        <li>how a convenient sample differs from a random one and why a large size does not cure bias;</li>
+        <li>why a visible link between two quantities still does not prove that one causes the other;</li>
+        <li>how to build a careful, honest conclusion from observations.</li>
       </ul>
 
       <div class="grid-2">
         <div class="panel">
-          <h4>Как устроено занятие</h4>
-          <p class="small">Три дела, в каждом — демонстрация, ваша проба и вывод. Правила простые:</p>
+          <h4>How the lesson works</h4>
+          <p class="small">Three cases, each with a demonstration, your own attempt and a conclusion. The rules are simple:</p>
           <ul class="small">
-            <li>ответ пробуем сколько угодно раз, никто не считает попытки;</li>
-            <li>подсказка доступна в каждом деле — откройте её, если застряли;</li>
-            <li>блокнот вверху собирает ваши наблюдения в один отчёт;</li>
-            <li>если что-то пошло не так — кнопка «Сбросить всё» возвращает чистый старт.</li>
+            <li>you may try an answer as many times as you like; attempts are not counted;</li>
+            <li>a hint is available in every case - open it if you get stuck;</li>
+            <li>the notebook at the top collects your observations into one report;</li>
+            <li>if something goes wrong, the Reset everything button gives you a clean start.</li>
           </ul>
         </div>
         <div class="panel">
-          <h4>Пригодится (но не обязательно)</h4>
+          <h4>Helpful (but not required)</h4>
           <ul class="small">
-            <li>проценты и среднее арифметическое;</li>
-            <li>чтение столбчатых диаграмм и точечных графиков;</li>
-            <li>готовность спорить с формулировкой, а не с человеком.</li>
+            <li>percentages and averages;</li>
+            <li>reading bar charts and scatter plots;</li>
+            <li>a willingness to argue with a statement, not with a person.</li>
           </ul>
-          <p class="small" style="margin-bottom:0">Специальных знаний статистики не требуется: все термины объясняются по ходу дела. Инструмент считает за вас — ваша задача объяснять.</p>
+          <p class="small" style="margin-bottom:0">No statistics background is needed: every term is explained along the way. The tool does the arithmetic for you - your job is to explain.</p>
         </div>
       </div>
 
       <p class="row" style="margin-top:1.1rem">
-        <button type="button" class="btn-primary" id="btn-start">Начать расследование</button>
-        <button type="button" class="btn-quiet" data-goto="data-notes">Сначала посмотреть на данные</button>
+        <button type="button" class="btn-primary" id="btn-start">Start the investigation</button>
+        <button type="button" class="btn-quiet" data-goto="data-notes">Look at the data first</button>
       </p>
     </article>
 
-    <!-- Происхождение данных, словарь и статистика набора -->
+    <!-- Where the data come from, the data dictionary and dataset statistics -->
     <article class="card" id="data-notes" aria-labelledby="h-data">
-      <h2 id="h-data">Происхождение данных и словарь</h2>
-      <p>Чтобы расследовать данные, надо знать, откуда они взялись. Здесь это описано честно — вместе с тем, чего в наборе <strong>нет</strong>.</p>
+      <h2 id="h-data">Where the data come from, and the data dictionary</h2>
+      <p>To investigate data you need to know where they come from. That is described honestly here, including what the dataset <strong>does not contain</strong>.</p>
 
       <div class="grid-2">
         <div>
-          <h3>Как набор был сделан</h3>
+          <h3>How the dataset was built</h3>
           <ol class="small">
-            <li>Заданы три вымышленные школы, различающиеся <em>временем начала занятий</em>: 8:00 («Ранний свет»), 10:00 («Полдень»), 12:00 («Вечерний колледж»).</li>
-            <li>Для каждой школы заданы средние значения: сон (ч), вечернее экранное время (ч/сутки), балл за тест (из 100). Чем позже начало занятий, тем меньше сна, больше экрана и выше средний балл.</li>
-            <li>Внутри школы добавлена небольшая индивидуальная вариация («вечерняя нагрузка» ученика) и случайный шум с детерминированным генератором. Из-за этого связь <em>внутри</em> одной школы слабая и почти незаметная.</li>
-            <li>Всего 240 записей: школа A — 96, школа B — 84, школа C — 60. Записи идут блоками школ, а не вперемешку.</li>
-            <li>Один и тот же «сид» генератора всегда даёт один и тот же набор — поэтому результаты занятия воспроизводимы.</li>
+            <li>Three fictional schools are defined, differing in <em>their school start time</em>: 8:00 (Early Light), 10:00 (Midday), 12:00 (Evening College).</li>
+            <li>Each school is given averages: sleep (h), evening screen time (h/day) and test score (out of 100). The later the lessons start, the less sleep, the more screen time and the higher the average score.</li>
+            <li>A small individual variation (the evening load of each student) and random noise from a deterministic generator are added within a school. As a result the link <em>inside</em> a single school is weak and barely visible.</li>
+            <li>240 records in total: school A - 96, school B - 84, school C - 60. The records are stored in school blocks, not shuffled together.</li>
+            <li>The same generator seed always produces the same dataset, so the results of the lesson are reproducible.</li>
           </ol>
           <div class="flag flag-warn">
-            <span class="flag-title"><span class="flag-icon" aria-hidden="true">!</span>Чего здесь нет</span>
-            <p class="small" style="margin:.35rem 0 0">Нет реальных учеников, школ, стран и организаций. Нет медицинских, политических или иных чувствительных утверждений. Нет данных о личности: в наборе только идентификатор, школа и три числовых показателя. Сходство имён школ с реальными — случайно, все названия вымышлены.</p>
+            <span class="flag-title"><span class="flag-icon" aria-hidden="true">!</span>What is not here</span>
+            <p class="small" style="margin:.35rem 0 0">There are no real students, schools, countries or organisations. There are no medical, political or otherwise sensitive claims. There are no personal data: the dataset holds only an id, a school and three numbers. Any resemblance of the school names to real ones is accidental; all names are invented.</p>
           </div>
         </div>
         <div>
-          <h3>Словарь данных</h3>
+          <h3>Data dictionary</h3>
           <div class="table-scroll">
             <table>
-              <caption class="sr-only">Описание столбцов набора данных</caption>
+              <caption class="sr-only">Description of the dataset columns</caption>
               <thead>
-                <tr><th scope="col">Столбец</th><th scope="col">Тип</th><th scope="col">Единица</th><th scope="col">Что означает</th></tr>
+                <tr><th scope="col">Column</th><th scope="col">Type</th><th scope="col">Unit</th><th scope="col">Meaning</th></tr>
               </thead>
               <tbody>
-                <tr><th scope="row" class="mono">id</th><td>текст</td><td>—</td><td>Код записи, <span class="mono">S-001 … S-240</span>. Порядок кодов совпадает с порядком добавления записей в набор.</td></tr>
-                <tr><th scope="row" class="mono">school</th><td>категория</td><td>—</td><td>Школа: <span class="mono">A</span>, <span class="mono">B</span> или <span class="mono">C</span> (см. таблицу школ ниже).</td></tr>
-                <tr><th scope="row" class="mono">sleep</th><td>число</td><td>часы</td><td>Сон в ночь перед тестом, округлён до 0,01 ч.</td></tr>
-                <tr><th scope="row" class="mono">screen</th><td>число</td><td>часы</td><td>Экранное время после 19:00 в тот же вечер.</td></tr>
-                <tr><th scope="row" class="mono">score</th><td>число</td><td>баллы 0–100</td><td>Результат теста по одному предмету.</td></tr>
+                <tr><th scope="row" class="mono">id</th><td>text</td><td>—</td><td>Record code, <span class="mono">S-001 … S-240</span>. The order of the codes matches the order in which the records were added.</td></tr>
+                <tr><th scope="row" class="mono">school</th><td>category</td><td>—</td><td>School: <span class="mono">A</span>, <span class="mono">B</span> or <span class="mono">C</span> (see the table of schools below).</td></tr>
+                <tr><th scope="row" class="mono">sleep</th><td>number</td><td>hours</td><td>Sleep on the night before the test, rounded to 0.01 h.</td></tr>
+                <tr><th scope="row" class="mono">screen</th><td>number</td><td>hours</td><td>Screen time after 19:00 on the same evening.</td></tr>
+                <tr><th scope="row" class="mono">score</th><td>number</td><td>points 0-100</td><td>Test result in one subject.</td></tr>
               </tbody>
             </table>
           </div>
-          <h3 style="margin-top:1rem">Школы набора</h3>
+          <h3 style="margin-top:1rem">Schools in the dataset</h3>
           <div class="table-scroll">
             <table id="schools-table">
-              <caption class="sr-only">Вымышленные школы набора и их характеристики</caption>
+              <caption class="sr-only">The fictional schools of the dataset and their characteristics</caption>
               <thead>
-                <tr><th scope="col">Код</th><th scope="col">Название (вымышленное)</th><th scope="col">Начало занятий</th><th class="num" scope="col">Записей</th></tr>
+                <tr><th scope="col">Code</th><th scope="col">Name (fictional)</th><th scope="col">Start time</th><th class="num" scope="col">Records</th></tr>
               </thead>
               <tbody id="schools-tbody"></tbody>
             </table>
@@ -422,51 +422,51 @@ footer.app-footer p{max-width:var(--measure)}
         </div>
       </div>
 
-      <h3 style="margin-top:1.2rem">Сводка по всему набору</h3>
+      <h3 style="margin-top:1.2rem">Summary of the whole dataset</h3>
       <div class="table-scroll">
         <table id="population-summary">
-          <caption>Сводные характеристики всех 240 записей. Эти числа не меняются ни от каких настроек графиков.</caption>
+          <caption>Summary statistics for all 240 records. These numbers do not change with any chart setting.</caption>
           <thead>
-            <tr><th scope="col">Показатель</th><th class="num" scope="col">Сон, ч</th><th class="num" scope="col">Экран, ч</th><th class="num" scope="col">Балл</th></tr>
+            <tr><th scope="col">Measure</th><th class="num" scope="col">Sleep, h</th><th class="num" scope="col">Screen, h</th><th class="num" scope="col">Score</th></tr>
           </thead>
           <tbody id="population-summary-body"></tbody>
         </table>
       </div>
 
       <details class="table-alt">
-        <summary>Показать первые 12 записей набора (и кнопку «показать все 240»)</summary>
+        <summary>Show the first 12 records of the dataset (and the show all 240 button)</summary>
         <div class="table-scroll">
           <table id="population-head">
-            <caption>Фрагмент набора данных: первые 12 записей в исходном порядке</caption>
-            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+            <caption>An excerpt of the dataset: the first 12 records in their original order</caption>
+            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, h</th><th class="num" scope="col">screen, h</th><th class="num" scope="col">score</th></tr></thead>
             <tbody id="population-head-body"></tbody>
           </table>
         </div>
-        <p style="padding:.5rem .75rem"><button type="button" class="btn-sm" id="btn-show-all" aria-expanded="false" aria-controls="population-all">Показать все 240 записей</button></p>
+        <p style="padding:.5rem .75rem"><button type="button" class="btn-sm" id="btn-show-all" aria-expanded="false" aria-controls="population-all">Show all 240 records</button></p>
         <div class="table-scroll" id="population-all" hidden>
           <table>
-            <caption>Полный набор данных (240 записей в исходном порядке)</caption>
-            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+            <caption>The full dataset (240 records in their original order)</caption>
+            <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, h</th><th class="num" scope="col">screen, h</th><th class="num" scope="col">score</th></tr></thead>
             <tbody id="population-all-body"></tbody>
           </table>
         </div>
       </details>
 
-      <p class="row" style="margin-top:1rem"><button type="button" class="btn-primary" id="btn-start-2">Перейти к делу 1</button></p>
+      <p class="row" style="margin-top:1rem"><button type="button" class="btn-primary" id="btn-start-2">Go to case 1</button></p>
     </article>
   </section>
 
-  <!-- ═══════════════════ ЭКРАН 1: РАМКА ГРАФИКА ═══════════════════════ -->
+  <!-- ═══════════════════ SCREEN 1: CHART FRAMING ═══════════════════════ -->
   <section id="stage-1" class="stage" aria-labelledby="h-a1" hidden>
     <article class="card">
-      <p class="pill">Дело 1 из 3 · оформление графика</p>
-      <h2 id="h-a1">Одна и та же таблица, два разных впечатления</h2>
-      <p>Автор заголовка нарисовал средний балл трёх школ. Ниже — <strong>тот же самый набор данных</strong>, показанный в двух оформлениях. Переключите вид и сравните сначала <em>картинку</em>, а потом <em>числа</em>.</p>
+      <p class="pill">Case 1 of 3 · chart framing</p>
+      <h2 id="h-a1">The same table, two different impressions</h2>
+      <p>The headline writer charted the average score of three schools. Below is <strong>the very same dataset</strong> shown in two framings. Switch the view and compare first the <em>picture</em>, and then the <em>numbers</em>.</p>
 
       <div class="row" role="group" aria-labelledby="framing-switch-label">
-        <span id="framing-switch-label" class="small" style="font-weight:700">Оформление вертикальной оси:</span>
-        <button type="button" class="btn-sm" id="btn-view-zero" aria-pressed="true">Начало оси от нуля</button>
-        <button type="button" class="btn-sm" id="btn-view-zoom" aria-pressed="false">Начало оси с 70</button>
+        <span id="framing-switch-label" class="small" style="font-weight:700">Vertical axis framing:</span>
+        <button type="button" class="btn-sm" id="btn-view-zero" aria-pressed="true">Axis starts at zero</button>
+        <button type="button" class="btn-sm" id="btn-view-zoom" aria-pressed="false">Axis starts at 70</button>
       </div>
 
       <div class="grid-2-wide" style="margin-top:.9rem">
@@ -477,11 +477,11 @@ footer.app-footer p{max-width:var(--measure)}
           <p class="chart-caption" id="framing-caption"></p>
           <div class="legend" id="framing-legend"></div>
           <details class="table-alt">
-            <summary>Числовые данные этого графика (таблица-эквивалент)</summary>
+            <summary>The numbers behind this chart (table equivalent)</summary>
             <div class="table-scroll">
               <table id="framing-table">
-                <caption>Средний балл теста по школам: числа, которые стоят за столбцами</caption>
-                <thead><tr><th scope="col">Школа</th><th class="num" scope="col">Средний балл</th><th class="num" scope="col">Записей</th><th class="num" scope="col">Высота столбца в текущем виде</th></tr></thead>
+                <caption>Average test score by school: the numbers behind the bars</caption>
+                <thead><tr><th scope="col">School</th><th class="num" scope="col">Average score</th><th class="num" scope="col">Records</th><th class="num" scope="col">Bar height in the current view</th></tr></thead>
                 <tbody id="framing-tbody"></tbody>
               </table>
             </div>
@@ -490,29 +490,29 @@ footer.app-footer p{max-width:var(--measure)}
 
         <div class="stack">
           <div class="panel">
-            <h3 style="margin-top:0">Настройте ось сами</h3>
+            <h3 style="margin-top:0">Set the axis yourself</h3>
             <div class="stack">
               <div>
-                <label for="axis-top">Верхняя граница оси: <output id="axis-top-out" for="axis-top">100</output> баллов</label>
+                <label for="axis-top">Upper axis bound: <output id="axis-top-out" for="axis-top">100</output> points</label>
                 <input type="range" id="axis-top" min="80" max="100" step="1" value="100"
                        aria-describedby="axis-top-help">
-                <p class="tiny muted" id="axis-top-help">Двигайте ползунок: допустимый диапазон 80–100 баллов.</p>
+                <p class="tiny muted" id="axis-top-help">Move the slider: the allowed range is 80-100 points.</p>
               </div>
               <div>
-                <label for="axis-bottom">Нижняя граница оси: <output id="axis-bottom-out" for="axis-bottom">0</output> баллов</label>
+                <label for="axis-bottom">Lower axis bound: <output id="axis-bottom-out" for="axis-bottom">0</output> points</label>
                 <input type="range" id="axis-bottom" min="0" max="92" step="1" value="0"
                        aria-describedby="axis-bottom-help">
-                <p class="tiny muted" id="axis-bottom-help">Границы не могут сойтись: приложение автоматически держит между ними не меньше 3 баллов.</p>
+                <p class="tiny muted" id="axis-bottom-help">The bounds cannot meet: the app always keeps at least 3 points between them.</p>
               </div>
-              <p><button type="button" class="btn-sm" id="btn-axis-reset">Вернуть ось от нуля</button></p>
+              <p><button type="button" class="btn-sm" id="btn-axis-reset">Return the axis to zero</button></p>
             </div>
           </div>
 
           <div class="panel">
-            <h3 style="margin-top:0">Числа, которые не двигаются</h3>
+            <h3 style="margin-top:0">Numbers that do not move</h3>
             <div class="table-scroll">
               <table id="invariants-table">
-                <caption>Эти величины считаются по данным и не зависят от оформления оси</caption>
+                <caption>These values are computed from the data and do not depend on how the axis is framed</caption>
                 <tbody id="invariants-tbody"></tbody>
               </table>
             </div>
@@ -521,79 +521,79 @@ footer.app-footer p{max-width:var(--measure)}
       </div>
 
       <form id="form-framing" class="panel" style="margin-top:1rem" novalidate>
-        <h3 style="margin-top:0">Гипотеза перед проверкой</h3>
-        <p class="small">Сформулируйте предположение, а потом проверьте его по таблицам выше. Приложение не «угадывает» ваш текст — оно проверит числовые утверждения и даст разбор.</p>
+        <h3 style="margin-top:0">A hypothesis before you check</h3>
+        <p class="small">State a guess, then check it against the tables above. The app does not guess what your text means: it checks the mechanical features of the answer and gives you feedback.</p>
 
         <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
-          <legend style="font-weight:700;padding:0 .3rem">Что изменится при переходе от оси с нуля к оси с 70?</legend>
+          <legend style="font-weight:700;padding:0 .3rem">What changes when you switch from an axis starting at zero to one starting at 70?</legend>
           <div class="stack" id="framing-choices"></div>
         </fieldset>
 
         <p class="row" style="margin:.9rem 0 0">
-          <button type="submit" class="btn-primary">Проверить гипотезу</button>
-          <button type="button" class="btn" data-hint="hint-framing">Подсказка</button>
+          <button type="submit" class="btn-primary">Check the hypothesis</button>
+          <button type="button" class="btn" data-hint="hint-framing">Hint</button>
         </p>
         <details class="hint" id="hint-framing">
-          <summary>Подсказка к делу 1</summary>
-          <p class="small">Сравните не картинку, а числа. Посмотрите в таблицу «высота столбца» и в таблицу «числа, которые не двигаются». Первое — это рисунок, он зависит от оси. Второе — свойства данных, они одинаковы в любом оформлении. Ещё обратите внимание, во сколько раз самый низкий столбец ниже самого высокого при разных границах оси.</p>
+          <summary>Hint for case 1</summary>
+          <p class="small">Compare numbers, not pictures. Look at the bar height table and the numbers that do not move table. The first is a drawing and depends on the axis. The second are properties of the data, the same in any framing. Also note how many times shorter the lowest bar is than the highest one under different axis bounds.</p>
         </details>
         <div class="feedback" id="framing-feedback" role="status" aria-live="polite"></div>
 
         <div id="framing-followup" hidden style="margin-top:.9rem">
           <hr class="hr">
-          <h3>Ваша запись в блокнот</h3>
-          <label for="framing-notes">Опишите своими словами, что именно изменилось и что осталось тем же.</label>
+          <h3>Your notebook entry</h3>
+          <label for="framing-notes">Describe in your own words exactly what changed and what stayed the same.</label>
           <textarea id="framing-notes" rows="4" aria-describedby="framing-notes-help"></textarea>
-          <p class="tiny muted" id="framing-notes-help">Формулировки свободные: смысл проверяете вы, приложение оценивает только форму ответа.</p>
+          <p class="tiny muted" id="framing-notes-help">Wording is free: you judge the meaning, the app only checks the form of the answer.</p>
           <div class="feedback" id="framing-notes-feedback" role="status" aria-live="polite"></div>
-          <p class="row"><button type="button" class="btn-sm" id="btn-framing-save">Сохранить наблюдение</button></p>
+          <p class="row"><button type="button" class="btn-sm" id="btn-framing-save">Save the observation</button></p>
         </div>
       </form>
 
       <p class="row" style="margin-top:1rem">
-        <button type="button" class="btn-primary" id="btn-a1-next" disabled>Перейти к делу 2</button>
-        <span class="small muted" id="a1-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+        <button type="button" class="btn-primary" id="btn-a1-next" disabled>Go to case 2</button>
+        <span class="small muted" id="a1-lock">Available once you save an observation to the notebook.</span>
       </p>
     </article>
   </section>
 
-  <!-- ═══════════════════════ ЭКРАН 2: ВЫБОРКА ═══════════════════════ -->
+  <!-- ═══════════════════════ SCREEN 2: SAMPLING ═══════════════════════ -->
   <section id="stage-2" class="stage" aria-labelledby="h-a2" hidden>
     <article class="card">
-      <p class="pill">Дело 2 из 3 · выборка</p>
-      <h2 id="h-a2">240 записей — это ещё не все ученики</h2>
-      <p>Автор заголовка опросил не всех. Ниже четыре задокументированных способа отобрать участников. Выберите способ и размер выборки, сравните её состав с полным набором и посмотрите, к какому выводу она бы привела.</p>
+      <p class="pill">Case 2 of 3 · sampling</p>
+      <h2 id="h-a2">240 records are not all the students</h2>
+      <p>The headline writer did not survey everyone. Below are four documented ways of picking participants. Choose a method and a sample size, compare the composition with the full dataset and see what conclusion it would have produced.</p>
 
       <div class="grid-2-wide">
         <div class="stack">
           <div class="panel">
-            <h3 style="margin-top:0">Способ отбора</h3>
+            <h3 style="margin-top:0">Selection method</h3>
             <fieldset style="border:0;padding:0;margin:0">
-              <legend class="sr-only">Выберите способ отбора участников</legend>
+              <legend class="sr-only">Choose how participants are selected</legend>
               <div class="stack" id="method-choices"></div>
             </fieldset>
             <p class="small muted" id="method-definition" style="margin-top:.6rem"></p>
           </div>
 
           <div class="panel">
-            <h3 style="margin-top:0">Объём выборки</h3>
+            <h3 style="margin-top:0">Sample size</h3>
             <div class="scale-row">
               <input type="range" id="sample-size" min="10" max="200" step="10" value="10"
                      aria-describedby="sample-size-help">
               <output id="sample-size-out" for="sample-size">10</output>
             </div>
-            <p class="tiny muted" id="sample-size-help">От 10 до 200 записей.</p>
+            <p class="tiny muted" id="sample-size-help">From 10 to 200 records.</p>
             <div class="row" style="margin-top:.4rem">
-              <button type="button" class="btn-primary btn-sm" id="btn-sample-run">Взять выборку</button>
-              <button type="button" class="btn btn-sm" id="btn-sample-reset">Сбросить выборку</button>
+              <button type="button" class="btn-primary btn-sm" id="btn-sample-run">Draw a sample</button>
+              <button type="button" class="btn btn-sm" id="btn-sample-reset">Clear the sample</button>
             </div>
-            <label for="seed-input" style="margin-top:.7rem;font-weight:650" class="small">Сид генератора (одно и то же число — один и тот же результат)</label>
+            <label for="seed-input" style="margin-top:.7rem;font-weight:650" class="small">Generator seed (same number, same result)</label>
             <input type="number" id="seed-input" value="7" min="1" max="99999" step="1" inputmode="numeric" style="max-width:9rem">
           </div>
 
           <div class="flag flag-info" id="sample-status">
-            <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>Выборка ещё не взята</span>
-            <p class="small" style="margin:.35rem 0 0" id="sample-status-text">Нажмите «Взять выборку» — на графике и в таблице появится сравнение.</p>
+            <span class="flag-title"><span class="flag-icon" aria-hidden="true">i</span>No sample drawn yet</span>
+            <p class="small" style="margin:.35rem 0 0" id="sample-status-text">Press Draw a sample - a comparison appears on the chart and in the table.</p>
           </div>
         </div>
 
@@ -604,25 +604,25 @@ footer.app-footer p{max-width:var(--measure)}
           <p class="chart-caption" id="sample-caption"></p>
           <div class="legend" id="sample-legend"></div>
           <details class="table-alt">
-            <summary>Состав выборки и популяции (таблица-эквивалент)</summary>
+            <summary>Sample and population composition (table equivalent)</summary>
             <div class="table-scroll">
               <table id="sample-table">
-                <caption>Доля школ и средние значения: выборка против полного набора</caption>
-                <thead><tr><th scope="col">Показатель</th><th class="num" scope="col">Полный набор (240)</th><th class="num" scope="col">Ваша выборка</th><th class="num" scope="col">Расхождение</th></tr></thead>
+                <caption>School shares and averages: the sample against the full dataset</caption>
+                <thead><tr><th scope="col">Measure</th><th class="num" scope="col">Full dataset (240)</th><th class="num" scope="col">Your sample</th><th class="num" scope="col">Difference</th></tr></thead>
                 <tbody id="sample-tbody"></tbody>
               </table>
             </div>
             <div class="table-scroll" style="border-top:1px solid var(--line)">
               <table id="sample-schools-table">
-                <caption>Доля каждой школы: выборка против популяции</caption>
-                <thead><tr><th scope="col">Школа</th><th class="num" scope="col">В популяции</th><th class="num" scope="col">В выборке</th><th scope="col">Оценка</th></tr></thead>
+                <caption>The share of each school: sample against population</caption>
+                <thead><tr><th scope="col">School</th><th class="num" scope="col">In the population</th><th class="num" scope="col">In the sample</th><th scope="col">Assessment</th></tr></thead>
                 <tbody id="sample-schools-tbody"></tbody>
               </table>
             </div>
             <div class="table-scroll" style="border-top:1px solid var(--line)">
               <table id="sample-first-table">
-                <caption>Первые 12 записей вашей выборки — чтобы увидеть, кого именно вы опросили</caption>
-                <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, ч</th><th class="num" scope="col">screen, ч</th><th class="num" scope="col">score</th></tr></thead>
+                <caption>The first 12 records of your sample, so you can see who exactly you surveyed</caption>
+                <thead><tr><th scope="col">id</th><th scope="col">school</th><th class="num" scope="col">sleep, h</th><th class="num" scope="col">screen, h</th><th class="num" scope="col">score</th></tr></thead>
                 <tbody id="sample-first-tbody"></tbody>
               </table>
             </div>
@@ -631,45 +631,45 @@ footer.app-footer p{max-width:var(--measure)}
       </div>
 
       <form id="form-sample" class="panel" style="margin-top:1rem" novalidate>
-        <h3 style="margin-top:0">Проверка смещения</h3>
+        <h3 style="margin-top:0">Checking for bias</h3>
         <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
-          <legend style="font-weight:700;padding:0 .3rem">Что показывает ваша выборка?</legend>
+          <legend style="font-weight:700;padding:0 .3rem">What does your sample show?</legend>
           <div class="stack" id="sample-choices"></div>
         </fieldset>
         <p class="row" style="margin:.9rem 0 0">
-          <button type="submit" class="btn-primary">Проверить</button>
-          <button type="button" class="btn" data-hint="hint-sample">Подсказка</button>
+          <button type="submit" class="btn-primary">Check</button>
+          <button type="button" class="btn" data-hint="hint-sample">Hint</button>
         </p>
         <details class="hint" id="hint-sample">
-          <summary>Подсказка к делу 2</summary>
-          <p class="small">Смотрите не на среднее в выборке, а на её состав. Если в выборке 100% одной школы, то любое её среднее описывает только эту школу — независимо от того, 10 записей вы взяли или 200. Сравните долю каждой школы в выборке с её долей в полном наборе: расхождение и есть смещение. И попробуйте взять выборку размера 200 удобным способом — станет ли она ближе к полному набору?</p>
+          <summary>Hint for case 2</summary>
+          <p class="small">Look not at the average in the sample but at its composition. If the sample is 100% one school, then any average describes only that school, whether you drew 10 records or 200. Compare the share of each school in the sample with its share in the full dataset: the gap is the bias. Then try drawing a sample of 200 the convenient way: does it get any closer to the full dataset?</p>
         </details>
         <div class="feedback" id="sample-feedback" role="status" aria-live="polite"></div>
 
         <div id="sample-followup" hidden style="margin-top:.9rem">
           <hr class="hr">
-          <h3>Ваша запись в блокнот</h3>
-          <label for="sample-notes">Какой способ отбора исказил бы картину и почему? Ответьте с опорой на числа из таблицы.</label>
+          <h3>Your notebook entry</h3>
+          <label for="sample-notes">Which selection method would distort the picture, and why? Answer using the numbers from the table.</label>
           <textarea id="sample-notes" rows="4" aria-describedby="sample-notes-help"></textarea>
-          <p class="tiny muted" id="sample-notes-help">Назовите конкретный показатель (долю, среднее, расхождение) — так вывод будет проверяемым.</p>
+          <p class="tiny muted" id="sample-notes-help">Name a concrete measure (a share, an average, a gap) - that makes the conclusion checkable.</p>
           <div class="feedback" id="sample-notes-feedback" role="status" aria-live="polite"></div>
-          <p class="row"><button type="button" class="btn-sm" id="btn-sample-save">Сохранить наблюдение</button></p>
+          <p class="row"><button type="button" class="btn-sm" id="btn-sample-save">Save the observation</button></p>
         </div>
       </form>
 
       <p class="row" style="margin-top:1rem">
-        <button type="button" class="btn-primary" id="btn-a2-next" disabled>Перейти к делу 3</button>
-        <span class="small muted" id="a2-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+        <button type="button" class="btn-primary" id="btn-a2-next" disabled>Go to case 3</button>
+        <span class="small muted" id="a2-lock">Available once you save an observation to the notebook.</span>
       </p>
     </article>
   </section>
 
-  <!-- ═══════════════════════ ЭКРАН 3: КОРРЕЛЯЦИЯ ═══════════════════════ -->
+  <!-- ═══════════════════════ SCREEN 3: CORRELATION ═══════════════════════ -->
   <section id="stage-3" class="stage" aria-labelledby="h-a3" hidden>
     <article class="card">
-      <p class="pill">Дело 3 из 3 · связь и причина</p>
-      <h2 id="h-a3">Связь есть. Причина — не обязательно</h2>
-      <p>На точечном графике ниже 240 точек: по горизонтали — сон, по вертикали — балл. Наведите порядок в данных: посмотрите на все точки сразу, а потом разделите их по школам и по полосам сна. Один и тот же набор данных умеет показывать разные картины — и это ключ к делу.</p>
+      <p class="pill">Case 3 of 3 · association and cause</p>
+      <h2 id="h-a3">There is an association. A cause is not guaranteed</h2>
+      <p>The scatter plot below holds 240 points: sleep across, score up. Bring order to the data: look at all the points at once, then split them by school and by sleep band. The same dataset can show different pictures, and that is the key to this case.</p>
 
       <div class="grid-2-wide">
         <div>
@@ -679,11 +679,11 @@ footer.app-footer p{max-width:var(--measure)}
           <p class="chart-caption" id="corr-caption"></p>
           <div class="legend" id="corr-legend"></div>
           <details class="table-alt">
-            <summary>Числа этого графика (таблица-эквивалент)</summary>
+            <summary>The numbers behind this chart (table equivalent)</summary>
             <div class="table-scroll">
               <table id="corr-table">
-                <caption>Связь сна и балла: целиком и внутри групп</caption>
-                <thead><tr><th scope="col">Что считаем</th><th class="num" scope="col">Записей</th><th class="num" scope="col">r (связь сна и балла)</th><th class="num" scope="col">Средний сон, ч</th><th class="num" scope="col">Средний балл</th></tr></thead>
+                <caption>The link between sleep and score: overall and within groups</caption>
+                <thead><tr><th scope="col">What we measure</th><th class="num" scope="col">Records</th><th class="num" scope="col">r (link between sleep and score)</th><th class="num" scope="col">Average sleep, h</th><th class="num" scope="col">Average score</th></tr></thead>
                 <tbody id="corr-tbody"></tbody>
               </table>
             </div>
@@ -692,134 +692,134 @@ footer.app-footer p{max-width:var(--measure)}
 
         <div class="stack">
           <div class="panel">
-            <h3 style="margin-top:0">Как смотреть на точки</h3>
+            <h3 style="margin-top:0">How to look at the points</h3>
             <fieldset style="border:0;padding:0;margin:0">
-              <legend class="sr-only">Выберите способ группировки точек</legend>
+              <legend class="sr-only">Choose how the points are grouped</legend>
               <div class="stack" id="corr-view-choices"></div>
             </fieldset>
             <hr class="hr" style="margin:.7rem 0">
             <fieldset style="border:0;padding:0;margin:0">
-              <legend style="font-weight:650;padding:0" class="small">Масштаб горизонтальной оси (сон)</legend>
+              <legend style="font-weight:650;padding:0" class="small">Horizontal axis scale (sleep)</legend>
               <div class="stack" id="corr-scale-choices"></div>
             </fieldset>
           </div>
 
           <div class="panel">
-            <h3 style="margin-top:0">Что показывают группы</h3>
+            <h3 style="margin-top:0">What the groups show</h3>
             <div class="table-scroll">
               <table id="corr-groups-table">
-                <caption>Средние значения внутри каждой группы</caption>
-                <thead><tr><th scope="col">Группа</th><th class="num" scope="col">Записей</th><th class="num" scope="col">Сон, ч</th><th class="num" scope="col">Экран, ч</th><th class="num" scope="col">Балл</th><th class="num" scope="col">r внутри</th></tr></thead>
+                <caption>Averages within each group</caption>
+                <thead><tr><th scope="col">Group</th><th class="num" scope="col">Records</th><th class="num" scope="col">Sleep, h</th><th class="num" scope="col">Screen, h</th><th class="num" scope="col">Score</th><th class="num" scope="col">r within</th></tr></thead>
                 <tbody id="corr-groups-tbody"></tbody>
               </table>
             </div>
           </div>
 
           <div class="panel">
-            <h3 style="margin-top:0">Третья переменная</h3>
-            <p class="small" style="margin-top:0">Обратите внимание на столбец «Экран, ч». Он движется вместе со школой. Проверьте, что произойдёт со связью, если сравнивать учеников <em>из одной школы</em> — то есть с одинаковым расписанием.</p>
+            <h3 style="margin-top:0">The third variable</h3>
+            <p class="small" style="margin-top:0">Look at the Screen, h column. It moves together with the school. Check what happens to the link when you compare students <em>from a single school</em> , that is, with the same schedule.</p>
             <p class="row row-tight" style="margin:.5rem 0 0">
-              <button type="button" class="btn-sm" id="btn-corr-strata">Разделить по полосам сна</button>
-              <button type="button" class="btn-sm" id="btn-corr-all">Показать все точки</button>
+              <button type="button" class="btn-sm" id="btn-corr-strata">Split by sleep bands</button>
+              <button type="button" class="btn-sm" id="btn-corr-all">Show all points</button>
             </p>
           </div>
         </div>
       </div>
 
       <form id="form-corr" class="panel" style="margin-top:1rem" novalidate>
-        <h3 style="margin-top:0">Какой вывод выдерживает проверку?</h3>
-        <p class="small">Сначала посмотрите график в двух-трёх режимах, потом выберите формулировку. Можно менять выбор сколько угодно раз.</p>
+        <h3 style="margin-top:0">Which conclusion survives checking?</h3>
+        <p class="small">Look at the chart in two or three modes first, then pick a statement. You may change your choice as often as you like.</p>
         <fieldset style="border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin:0">
-          <legend style="font-weight:700;padding:0 .3rem">Выберите вывод</legend>
+          <legend style="font-weight:700;padding:0 .3rem">Choose a conclusion</legend>
           <div class="stack" id="corr-choices"></div>
         </fieldset>
         <p class="row" style="margin:.9rem 0 0">
-          <button type="submit" class="btn-primary">Обосновать выбор</button>
-          <button type="button" class="btn" data-hint="hint-corr">Подсказка</button>
+          <button type="submit" class="btn-primary">Back up your choice</button>
+          <button type="button" class="btn" data-hint="hint-corr">Hint</button>
         </p>
         <details class="hint" id="hint-corr">
-          <summary>Подсказка к делу 3</summary>
-          <p class="small">Связь на смешанных данных может возникать из-за того, что группы различаются сразу по двум признакам. Посмотрите на строку «Все данные» и на строки отдельных школ в таблице: сравните величину r. Если внутри школ связь почти исчезает, значит, её создаёт не сон сам по себе, а то, что различает школы. Ещё посмотрите, как меняется экранное время от школы A к школе C.</p>
+          <summary>Hint for case 3</summary>
+          <p class="small">On pooled data a link can appear because the groups differ on two traits at once. Look at the All data row and the rows for individual schools in the table: compare the size of r. If the link almost vanishes within schools, then it is created not by sleep itself but by whatever distinguishes the schools. Also watch how screen time changes from school A to school C.</p>
         </details>
         <div class="feedback" id="corr-feedback" role="status" aria-live="polite"></div>
 
         <div id="corr-followup" hidden style="margin-top:.9rem">
           <hr class="hr">
-          <h3>Ваша запись в блокнот</h3>
-          <label for="corr-notes">Назовите третью переменную и объясните, как она создаёт видимую связь.</label>
+          <h3>Your notebook entry</h3>
+          <label for="corr-notes">Name the third variable and explain how it creates the visible link.</label>
           <textarea id="corr-notes" rows="4" aria-describedby="corr-notes-help"></textarea>
-          <p class="tiny muted" id="corr-notes-help">Опирайтесь на числа: r целиком, r внутри школы, средние по школам.</p>
+          <p class="tiny muted" id="corr-notes-help">Use numbers: r overall, r within a school, the averages per school.</p>
           <div class="feedback" id="corr-notes-feedback" role="status" aria-live="polite"></div>
-          <p class="row"><button type="button" class="btn-sm" id="btn-corr-save">Сохранить наблюдение</button></p>
+          <p class="row"><button type="button" class="btn-sm" id="btn-corr-save">Save the observation</button></p>
         </div>
       </form>
 
       <p class="row" style="margin-top:1rem">
-        <button type="button" class="btn-primary" id="btn-a3-next" disabled>Перейти к итоговому отчёту</button>
-        <span class="small muted" id="a3-lock">Доступно после того, как вы запишете наблюдение в блокнот.</span>
+        <button type="button" class="btn-primary" id="btn-a3-next" disabled>Go to the final report</button>
+        <span class="small muted" id="a3-lock">Available once you save an observation to the notebook.</span>
       </p>
     </article>
   </section>
 
-  <!-- ═══════════════════════ ЭКРАН 4: ОТЧЁТ ═══════════════════════ -->
+  <!-- ═══════════════════════ SCREEN 4: REPORT ═══════════════════════ -->
   <section id="stage-4" class="stage" aria-labelledby="h-a4" hidden>
     <article class="card">
-      <p class="pill">Финал · свежее применение</p>
-      <h2 id="h-a4">Собственный заголовок из трёх частей</h2>
-      <p>Теперь вы пишете заголовок сами — но не как автор из начала занятия. Хороший заголовок о данных содержит три части, и все три обязательны:</p>
+      <p class="pill">Final · a fresh application</p>
+      <h2 id="h-a4">Your own headline, in three parts</h2>
+      <p>Now you write the headline yourself, but not the way the author at the start did. A good headline about data has three parts, and all three are required:</p>
       <ol>
-        <li><strong>утверждение</strong> — что именно связано или меняется (без слова «доказано»);</li>
-        <li><strong>наблюдение</strong> — конкретное число из данных с единицей измерения;</li>
-        <li><strong>ограничение</strong> — оговорка: при каких условиях это верно и что могло бы объяснить связь иначе.</li>
+        <li><strong>a claim</strong> - what exactly is linked or changing (without the word proven);</li>
+        <li><strong>an observation</strong> - a concrete number from the data with its unit;</li>
+        <li><strong>a limitation</strong> - a caveat: under what conditions it holds and what else could explain the link.</li>
       </ol>
-      <p class="small muted">Используйте не меньше двух проблем, которые разбирали: оформление графика, смещение выборки, разницу между связью и причиной.</p>
+      <p class="small muted">Use at least two of the issues you worked on: chart framing, sampling bias, and the difference between association and cause.</p>
 
       <form id="form-final" novalidate>
-        <label for="final-headline" style="font-weight:700">Ваш заголовок</label>
+        <label for="final-headline" style="font-weight:700">Your headline</label>
         <textarea id="final-headline" rows="3" style="min-height:84px" aria-describedby="final-headline-help"></textarea>
-        <p class="tiny muted" id="final-headline-help">Например, по такой схеме: «[Что меняется] связано с [чем], но [ограничение]: в данных видно [число]».</p>
+        <p class="tiny muted" id="final-headline-help">For example, following this pattern: [what changes] is linked to [what], but [limitation]: the data show [number].</p>
         <p class="row" style="margin-top:.7rem">
-          <button type="submit" class="btn-primary">Проверить три части</button>
-          <button type="button" class="btn" data-hint="hint-final">Подсказка</button>
+          <button type="submit" class="btn-primary">Check the three parts</button>
+          <button type="button" class="btn" data-hint="hint-final">Hint</button>
         </p>
         <details class="hint" id="hint-final">
-          <summary>Подсказка к финальному заголовку</summary>
-          <p class="small">Начните с ограничения — так проще не соврать. Затем добавьте число, которое это ограничение подтверждает: например, разницу средних, долю или величину связи. И только потом сформулируйте сам вывод. Если после этого хочется написать «доказано» — замените на «связано» или «в этих данных видно».</p>
+          <summary>Hint for the final headline</summary>
+          <p class="small">Start with the limitation: that makes it harder to go wrong. Then add the number that supports it, for instance a difference in averages, a share or the size of the link. Only then write the conclusion itself. If you still feel like writing proven, replace it with linked or the data show.</p>
         </details>
         <div class="feedback" id="final-feedback" role="status" aria-live="polite"></div>
       </form>
 
       <details class="table-alt" id="exemplar-block" open>
-        <summary>Как выглядит сильный заголовок (разбор примера)</summary>
+        <summary>What a strong headline looks like (a worked example)</summary>
         <div style="padding:.7rem .8rem">
-          <p class="small"><strong>Пример:</strong> «Ученики трёх вымышленных школ спали тем меньше, чем позже начинались занятия, и балл при этом был выше, но связь внутри одной школы почти исчезает: на всех 240 записях r ≈ −0,33, а внутри школы C — около −0,06».</p>
+          <p class="small"><strong>Example:</strong> Students of three fictional schools slept less the later their lessons started, and their scores were higher, but the link almost vanishes within a single school: across all 240 records r is about -0.33, while within school C it is about -0.06.</p>
           <ul class="small">
-            <li><strong>Утверждение:</strong> «спали меньше, чем позже начинались занятия, и балл выше» — связь названа связью.</li>
-            <li><strong>Наблюдение:</strong> «240 записей», «r ≈ −0,33», «внутри школы C ≈ −0,06» — числа с контекстом.</li>
-            <li><strong>Ограничение:</strong> «но связь внутри одной школы почти исчезает» — прямо указано, что общая картина может объясняться различием школ.</li>
+            <li><strong>Claim:</strong> slept less the later their lessons started, and their scores were higher - the link is called a link.</li>
+            <li><strong>Observation:</strong> 240 records, r about -0.33, within school C about -0.06 - numbers with their context.</li>
+            <li><strong>Limitation:</strong> but the link almost vanishes within a single school - it says straight out that the overall picture may be explained by differences between schools.</li>
           </ul>
-          <p class="small muted" style="margin-bottom:0">Это <em>один</em> из возможных сильных заголовков, а не образец для копирования. Заголовок с другим ограничением (например, про смещение выборки) тоже может быть верным — если он опирается на те же данные.</p>
+          <p class="small muted" style="margin-bottom:0">This is <em>one</em> of several possible strong headlines, not a template to copy. A headline with a different limitation (about sampling bias, say) can be just as valid, as long as it rests on the same data.</p>
         </div>
       </details>
 
       <div class="report-summary" style="margin-top:1rem">
-        <h3 style="margin-top:0">Самооценка по чек-листу</h3>
-        <p class="small">Отметьте то, что считаете выполненным. Это ваш инструмент, а не оценка: никто, кроме вас, не видит эти отметки, и они никуда не отправляются.</p>
+        <h3 style="margin-top:0">Self-assessment checklist</h3>
+        <p class="small">Tick what you consider done. This is your own tool, not a grade: nobody but you sees these ticks and they are never sent anywhere.</p>
         <ul class="checklist" id="selfcheck-list"></ul>
         <p class="small" id="selfcheck-result" role="status" aria-live="polite"></p>
       </div>
 
       <div class="grid-2" style="margin-top:1rem">
         <div class="panel">
-          <h3 style="margin-top:0">Итог занятия</h3>
+          <h3 style="margin-top:0">Lesson summary</h3>
           <div id="completion-summary"></div>
         </div>
         <div class="panel">
-          <h3 style="margin-top:0">Что потренировать дальше</h3>
+          <h3 style="margin-top:0">What to practise next</h3>
           <ul class="small" id="next-practice"></ul>
           <p class="row" style="margin:.6rem 0 0">
-            <button type="button" class="btn-sm" id="btn-print">Распечатать отчёт</button>
-            <button type="button" class="btn-sm" id="btn-reset-2">Сбросить и пройти заново</button>
+            <button type="button" class="btn-sm" id="btn-print">Print the report</button>
+            <button type="button" class="btn-sm" id="btn-reset-2">Reset and start over</button>
           </p>
         </div>
       </div>
@@ -827,35 +827,35 @@ footer.app-footer p{max-width:var(--measure)}
   </section>
 </main>
 
-<!-- ═══════════════════════ БЛОКНОТ НАБЛЮДЕНИЙ ═══════════════════════ -->
+<!-- ═══════════════════════ OBSERVATION NOTEBOOK ═══════════════════════ -->
 <section class="shell" aria-labelledby="h-notebook">
   <article class="card" id="notebook-panel" hidden>
-    <h2 id="h-notebook" tabindex="-1">Блокнот наблюдений</h2>
+    <h2 id="h-notebook" tabindex="-1">Observation notebook</h2>
     <p class="small muted" id="storage-notice"></p>
     <div id="notebook-list"></div>
     <p class="row" style="margin-top:.8rem">
-      <button type="button" class="btn-sm" id="btn-notebook-close">Скрыть блокнот</button>
+      <button type="button" class="btn-sm" id="btn-notebook-close">Hide the notebook</button>
     </p>
   </article>
 </section>
 
 <footer class="app-footer">
   <div class="shell">
-    <p><strong>Бюро расследований данных</strong> — учебное приложение. Все ученики, школы и числа <strong>вымышлены</strong> и созданы специально для занятия; закономерности встроены в данные намеренно. Приложение не собирает и не отправляет никаких данных о вас, не содержит аналитики, рекламы и внешних запросов.</p>
-    <p class="tiny">Оригинальный код: MIT. Ссылки на внешние источники намеренно не размещены в детском интерфейсе — они собраны в файле <span class="mono">EDUCATOR_GUIDE.md</span> для взрослого. Ход работы и ограничения описаны в <span class="mono">README.md</span> и <span class="mono">TEST_REPORT.md</span>.</p>
+    <p><strong>Data Detectives Bureau</strong> is a classroom app. Every student, school and number is <strong>fictional</strong> and was created for this lesson; the patterns were built into the data on purpose. The app collects and sends no data about you, and contains no analytics, no ads and no external requests.</p>
+    <p class="tiny">Original code: MIT. External references are deliberately kept out of the student interface; they are collected in <span class="mono">EDUCATOR_GUIDE.md</span> for the adult. How the work was done and its limits are described in <span class="mono">README.md</span> and <span class="mono">TEST_REPORT.md</span>.</p>
   </div>
 </footer>
 
 <noscript>
   <div class="shell" style="padding-block:1rem">
     <div class="card">
-      <h2>Нужен включённый JavaScript</h2>
-      <p>Интерактивные дела (график, выборка, связь и причина) работают на JavaScript внутри этой страницы. Без него текст, словарь данных и таблицы читаются, но проверить гипотезу не получится. Скрипт локальный: никаких внешних загрузок страница не делает.</p>
+      <h2>JavaScript is required</h2>
+      <p>The interactive cases (chart framing, sampling, association and cause) run on JavaScript inside this page. Without it the text, the data dictionary and the tables are still readable, but you cannot test a hypothesis. The script is local: the page loads nothing from outside.</p>
     </div>
   </div>
 </noscript>
 <script>
-  /* ==== CONFIG:EMBEDDED-LOGIC (сгенерировано build.js из logic.js) ==== */
+  /* ==== CONFIG:EMBEDDED-LOGIC (generated by build.js from logic.js) ==== */
   var DDLogic = (function () {
   'use strict';
   'use strict';
@@ -1025,9 +1025,9 @@ footer.app-footer p{max-width:var(--measure)}
   var SCHOOLS = [
 
 
-    { code: 'A', label: 'Гимназия «Ранний свет» (вымышленная)', start: '8:00', n: 96, sleep: 7.9, screen: 11, score: 74 },
-    { code: 'B', label: 'Лицей «Полдень» (вымышленный)', start: '10:00', n: 84, sleep: 7.0, screen: 19, score: 80 },
-    { code: 'C', label: 'Школа «Вечерний колледж» (вымышленная)', start: '12:00', n: 60, sleep: 6.3, screen: 28, score: 86 }
+    { code: 'A', label: 'Gymnasium "Early Light" (fictional)', start: '8:00', n: 96, sleep: 7.9, screen: 11, score: 74 },
+    { code: 'B', label: 'Lyceum "Midday" (fictional)', start: '10:00', n: 84, sleep: 7.0, screen: 19, score: 80 },
+    { code: 'C', label: 'School "Evening College" (fictional)', start: '12:00', n: 60, sleep: 6.3, screen: 28, score: 86 }
   ];
 
 
@@ -1075,44 +1075,44 @@ footer.app-footer p{max-width:var(--measure)}
   var METHODS = {
     sms_first: {
       code: 'sms_first',
-      name: 'Обзвон по алфавитному списку',
+      name: 'Phone calls down the alphabetical list',
       bias: 'biased',
-      definition: 'Берём первых N учеников из официального списка, отсортированного по алфавиту (фамилия), и звоним им. ' +
-        'В алфавитном списке нет ничего случайного: он не перемешивает признаки сна, а три школы идут блоками. ' +
-        'Поэтому в начало списка попадают почти только ученики одной школы.',
-      why: 'Систематическое смещение отбора (не случайный механизм отбора).'
+      definition: 'We take the first N students from the official list sorted alphabetically by surname and call them. ' +
+        'There is nothing random about an alphabetical list: it does not shuffle sleep patterns, and the three schools sit in blocks. ' +
+        'So the top of the list holds almost nothing but students of a single school.',
+      why: 'Systematic selection bias (the selection mechanism is not random).'
     },
     sms_selfselect: {
       code: 'sms_selfselect',
-      name: 'Добровольный ночной опрос в чате',
+      name: 'Voluntary late-night chat survey',
       bias: 'biased',
-      definition: 'В 23:40 в общий чат класса выкладывается ссылка на опрос; отвечают те, кто сейчас в сети, ' +
-        'то есть в основном ученики с вечерним графиком. Кто спит — тот не отвечает.',
-      why: 'Смещение самоотбора: вероятность попасть в выборку зависит от изучаемого признака (сна).'
+      definition: 'At 23:40 a survey link is posted in the class group chat; only those online right now answer, ' +
+        'which means mostly students on a late schedule. Anyone asleep does not answer.',
+      why: 'Self-selection bias: the chance of being sampled depends on the very trait under study (sleep).'
     },
     random: {
       code: 'random',
-      name: 'Случайная выборка без возвращения (жеребьёвка)',
+      name: 'Simple random sample without replacement (lottery draw)',
       bias: 'unbiased',
-      definition: 'Каждый ученик получает номер из списка всех 240 и равный шанс попасть в выборку; ' +
-        'после отбора карточка убирается из барабана (без возвращения). Генератор — детерминированный (seeded), ' +
-        'поэтому один и тот же сид даёт один и тот же результат.',
-      why: 'Равные и независимые от признаков шансы попасть в выборку.'
+      definition: 'Every student gets a number from the list of all 240 and an equal chance of being sampled; ' +
+        'after a draw the card leaves the drum (no replacement). The generator is deterministic (seeded), ' +
+        'so the same seed always gives the same result.',
+      why: 'Equal chances of selection, independent of any trait.'
     },
     cluster: {
       code: 'cluster',
-      name: 'Опрос одного потока целиком',
+      name: 'Survey of one whole year group',
       bias: 'mixed',
-      definition: 'Опрошен один поток целиком — все 96 учеников школы A («Ранний свет»). Это не случайная выборка учеников, ' +
-        'а случайный (для простоты) выбор одного учебного потока. Объём большой, но внутри потока нет учеников школ B и C.',
-      why: 'Кластерная выборка: много наблюдений, но из одного «кластера».'
+      definition: 'One whole year group is surveyed: all 96 students of school A ("Early Light"). This is not a random sample of students ' +
+        'but (for simplicity) a random choice of one school stream. The size is large, yet the stream contains no students from schools B and C.',
+      why: 'Cluster sampling: many observations, but all from one cluster.'
     }
   };
 
 
   function drawSample(population, methodCode, size, seed) {
     var m = METHODS[methodCode];
-    if (!m) throw new Error('Неизвестный метод выборки: ' + methodCode);
+    if (!m) throw new Error('Unknown sampling method: ' + methodCode);
     var pop = population || [];
     var n = clamp(Math.floor(size || 10), 1, pop.length);
     var taken;
@@ -1264,7 +1264,7 @@ footer.app-footer p{max-width:var(--measure)}
   }
 
   function bandLabel(band) {
-    return band === 'A' ? 'Мало сна (< 6,5 ч)' : (band === 'B' ? 'Средне (6,5–7,5 ч)' : 'Больше сна (≥ 7,5 ч)');
+    return band === 'A' ? 'Little sleep (< 6.5 h)' : (band === 'B' ? 'Medium (6.5-7.5 h)' : 'More sleep (>= 7.5 h)');
   }
 
 
@@ -1279,7 +1279,7 @@ footer.app-footer p{max-width:var(--measure)}
       var rs = grouped[g];
       return {
         key: g,
-        label: groupKeyOrStrata === 'strata' ? bandLabel(g) : ('Школа ' + g),
+        label: groupKeyOrStrata === 'strata' ? bandLabel(g) : ('School ' + g),
         n: rs.length,
         r: corrOfRows(rs),
         meanSleep: mean(rs.map(function (r) { return r.sleep; })),
@@ -1299,21 +1299,23 @@ footer.app-footer p{max-width:var(--measure)}
 
 
   function describeR(r) {
-    if (!isFinite(r)) return 'не считается (нет разброса данных)';
+    if (!isFinite(r)) return 'not computable (no spread in the data)';
     var a = Math.abs(r);
-    var word = a < 0.2 ? 'почти нет связи' : a < 0.4 ? 'слабая связь' : a < 0.6 ? 'умеренная связь' : a < 0.8 ? 'заметная связь' : 'сильная связь';
-    var dir = r < 0 ? 'отрицательная' : 'положительная';
+    var word = a < 0.2 ? 'almost no relationship' : a < 0.4 ? 'weak relationship' : a < 0.6 ? 'moderate relationship' : a < 0.8 ? 'noticeable relationship' : 'strong relationship';
+    var dir = r < 0 ? 'negative' : 'positive';
     return word + ', ' + dir;
   }
 
   function fmt(v, dp) {
     if (v === null || v === undefined || (typeof v === 'number' && !isFinite(v))) return '—';
-    return Number(v).toFixed(dp === undefined ? 2 : dp).replace('.', ',');
+
+
+    return Number(v).toFixed(dp === undefined ? 2 : dp);
   }
 
   function pct(v, dp) {
     if (!isFinite(v)) return '—';
-    return (v * 100).toFixed(dp === undefined ? 0 : dp).replace('.', ',') + '%';
+    return (v * 100).toFixed(dp === undefined ? 0 : dp) + '%';
   }
 
 
@@ -1323,11 +1325,18 @@ footer.app-footer p{max-width:var(--measure)}
 
 
 
-  var HEDGE_WORDS = ['может', 'возможно', 'похоже', 'связан', 'связь', 'связана', 'склонн', 'частично', 'вероятно', 'не обязательно', 'по-видимому', 'однако'];
-  var CAUSAL_TRAPS = ['доказывает', 'доказано', 'причина', 'приводит к', 'из-за того что', 'заставляет', 'влияет на'];
+
+
+
+
+
+  var HEDGE_WORDS = ['может', 'возможно', 'похоже', 'связан', 'связь', 'связана', 'склонн', 'частично', 'вероятно', 'не обязательно', 'по-видимому', 'однако',
+    'may', 'might', 'could', 'possibly', 'perhaps', 'appears', 'seems', 'suggests', 'likely', 'linked', 'associated', 'related', 'partly', 'however', 'not necessarily', 'roughly', 'tends to'];
+  var CAUSAL_TRAPS = ['доказывает', 'доказано', 'причина', 'приводит к', 'из-за того что', 'заставляет', 'влияет на',
+    'proves', 'proven', 'causes', 'caused', 'because of', 'leads to', 'makes', 'affects'];
 
   function hasNumber(text) {
-    return /-?\d+([.,]\d+)?\s*(ч|час|балл|%|мин|процент)?/i.test(text || '');
+    return /-?\d+([.,]\d+)?\s*(h|hour|hours|hrs|point|points|%|min|minutes)?/i.test(text || '');
   }
 
   function reviewText(text, opts) {
@@ -1340,9 +1349,9 @@ footer.app-footer p{max-width:var(--measure)}
     var minWords = opts.minWords === undefined ? 8 : opts.minWords;
 
     var checks = [
-      { id: 'len', label: 'Текст достаточно развёрнут (не одна фраза из 2 слов)', pass: words >= minWords, hint: 'Добавьте описание: что именно вы заметили и при каких условиях.' },
-      { id: 'num', label: 'Есть конкретное число или величина из данных', pass: hasNumber(t), hint: 'Назовите число: разницу средних, долю, r, объём выборки.' },
-      { id: 'nuance', label: 'Есть осторожная формулировка (ограничение, «может», «связано»)', pass: hedge.length > 0, hint: 'Добавьте ограничение: «в этих данных», «не доказывает», «возможно».' }
+      { id: 'len', label: 'The answer is long enough (more than a two-word phrase)', pass: words >= minWords, hint: 'Add detail: what exactly you noticed and under what conditions.' },
+      { id: 'num', label: 'There is a concrete number or quantity from the data', pass: hasNumber(t), hint: 'Name a number: the difference in means, a share, r, the sample size.' },
+      { id: 'nuance', label: 'There is a cautious phrase (a caveat, "may", "is associated with")', pass: hedge.length > 0, hint: 'Add a caveat: "in these data", "does not prove", "possibly".' }
     ];
     return {
       words: words,
@@ -1350,7 +1359,7 @@ footer.app-footer p{max-width:var(--measure)}
       mechanicalPassed: checks.filter(function (c) { return c.pass; }).length,
       hedgeFound: hedge,
       casualClaims: traps,
-      note: 'Это проверка формы и осторожности, а не смысла. Смысл оцените сами по чек-листу ниже.'
+      note: 'This is a check of form and caution, not of meaning. Judge the meaning yourself with the checklist below.'
     };
   }
 
@@ -1362,25 +1371,28 @@ footer.app-footer p{max-width:var(--measure)}
     var t = (text || '').trim();
     var low = t.toLowerCase();
     var words = t ? t.split(/\s+/).filter(Boolean).length : 0;
-    var claimMarkers = ['связан', 'связь', 'больше', 'меньше', 'выше', 'ниже', 'растёт', 'падает', 'сильнее', 'слабее'];
-    var limitMarkers = ['но', 'однако', 'если', 'только', 'не доказывает', 'может', 'похоже', 'осторожно', 'при условии', 'среди', 'в этих данных', 'возможно'];
-    var observationMarkers = ['%', 'балл', 'час', 'ч.', 'средн', 'разниц', 'доля', 'выборк'];
+    var claimMarkers = ['связан', 'связь', 'больше', 'меньше', 'выше', 'ниже', 'растёт', 'падает', 'сильнее', 'слабее',
+      'linked', 'related', 'association', 'correlat', 'more', 'less', 'higher', 'lower', 'rises', 'falls', 'stronger', 'weaker'];
+    var limitMarkers = ['но', 'однако', 'если', 'только', 'не доказывает', 'может', 'похоже', 'осторожно', 'при условии', 'среди', 'в этих данных', 'возможно',
+      'however', 'although', 'though', 'but ', 'if ', 'only', 'may', 'might', 'not prove', 'possible', 'perhaps', 'suggests', 'in these data', 'among', 'cannot', 'not necessarily', 'roughly'];
+    var observationMarkers = ['%', 'балл', 'час', 'ч.', 'средн', 'разниц', 'доля', 'выборк',
+      'score', 'hour', 'point', 'averag', 'differen', 'share', 'sample', 'percent'];
 
     var checks = [
-      { id: 'claim', label: 'Утверждение сформулировано (что именно связано или меняется)', pass: words >= 6 && claimMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
-      { id: 'obs', label: 'Указано наблюдение из данных (число, единица измерения)', pass: observationMarkers.some(function (w) { return low.indexOf(w) !== -1; }) || hasNumber(t) },
-      { id: 'lim', label: 'Добавлено ограничение (оговорка, альтернативное объяснение)', pass: limitMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
-      { id: 'len', label: 'Заголовок читается с одного раза (6–60 слов)', pass: words >= 6 && words <= 60 }
+      { id: 'claim', label: 'A claim is stated (what exactly is linked or changing)', pass: words >= 6 && claimMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
+      { id: 'obs', label: 'An observation from the data is given (a number, a unit)', pass: observationMarkers.some(function (w) { return low.indexOf(w) !== -1; }) || hasNumber(t) },
+      { id: 'lim', label: 'A limitation is added (a caveat, an alternative explanation)', pass: limitMarkers.some(function (w) { return low.indexOf(w) !== -1; }) },
+      { id: 'len', label: 'The headline reads in one go (6-60 words)', pass: words >= 6 && words <= 60 }
     ];
     return { words: words, checks: checks, passed: checks.filter(function (c) { return c.pass; }).length, total: checks.length };
   }
 
 
   function rewardFor(passed) {
-    if (passed >= 4) return 'Заголовок собран полностью: утверждение, наблюдение, ограничение.';
-    if (passed === 3) return 'Не хватает одной части. Проверьте подсказки ниже.';
-    if (passed === 2) return 'Есть две части из трёх. Добавьте то, что подсвечено.';
-    return 'Пока это скорее мнение, чем заголовок с доказательством. Ничего страшного — исправьте и отправьте снова.';
+    if (passed >= 4) return 'All three parts are in place: claim, observation, limitation.';
+    if (passed === 3) return 'One part is missing. Check the hints below.';
+    if (passed === 2) return 'Two parts out of three are there. Add what is highlighted.';
+    return 'So far this reads more like an opinion than an evidence-based headline. Nothing is wrong - fix it and submit again.';
   }
 
   return {
@@ -1514,7 +1526,7 @@ footer.app-footer p{max-width:var(--measure)}
         el('span', { class: 'check-mark', 'aria-hidden': 'true', text: c.pass ? '✓' : '○' }),
         el('span', {}, [
           el('span', { text: c.label + ' ' }),
-          el('strong', { text: c.pass ? 'выполнено' : 'пока нет' })
+          el('strong', { text: c.pass ? 'done' : 'not yet' })
         ])
       ]));
     });
@@ -1522,45 +1534,45 @@ footer.app-footer p{max-width:var(--measure)}
   }
 
   var FRAMING_CHOICES = [
-    { id: 'f1', text: 'Изменятся и картинка, и средние баллы: данные пересчитаются под новую ось.', verdict: 'no', why: 'Средние баллы не могут измениться от оформления: они считаются по таблице данных, а не по рисунку. Проверьте блок «Числа, которые не двигаются» — там одни и те же значения в обоих видах.' },
-    { id: 'f2', text: 'Изменятся только столбцы: разница между ними будет выглядеть больше, чем при оси от нуля. Сами баллы останутся теми же.', verdict: 'yes', why: 'Верно. Высота столбца — это рисунок, он зависит от границ оси; средние баллы — это числа, они не зависят ни от чего. Поэтому одна и та же разница в 6 баллов может выглядеть и как «почти ничего», и как «обвал».' },
-    { id: 'f3', text: 'Ничего не изменится: ось влияет только на подписи цифр по бокам.', verdict: 'no', why: 'Ось меняет не только подписи, но и пропорции столбцов: при обрезанной оси разница визуально раздувается. Именно поэтому важно смотреть на числа, а не только на картинку.' },
-    { id: 'f4', text: 'Изменятся средние баллы, потому что ось обрезает часть данных.', verdict: 'no', why: 'Обрезка оси не удаляет данные: она меняет только то, как они нарисованы. Ни одна запись не исчезает, среднее остаётся прежним.' }
+    { id: 'f1', text: 'Both the picture and the average scores will change: the data are recomputed for the new axis.', verdict: 'no', why: 'Average scores cannot change with framing: they come from the data table, not from the drawing. Check the Numbers that do not move block - the values are the same in both views.' },
+    { id: 'f2', text: 'Only the bars will change: the gap between them will look bigger than with an axis from zero. The scores themselves stay the same.', verdict: 'yes', why: 'Correct. Bar height is a drawing and depends on the axis bounds; average scores are numbers and depend on nothing. So the same 6-point gap can look like almost nothing or like a collapse.' },
+    { id: 'f3', text: 'Nothing will change: the axis only affects the number labels on the sides.', verdict: 'no', why: 'The axis changes not only the labels but the proportions of the bars: with a truncated axis the gap is visually inflated. That is exactly why you should look at the numbers, not only at the picture.' },
+    { id: 'f4', text: 'The average scores will change because the axis cuts off part of the data.', verdict: 'no', why: 'Truncating the axis does not delete data: it only changes how they are drawn. No record disappears and the average stays the same.' }
   ];
 
   var SAMPLE_CHOICES = [
-    { id: 's1', text: 'Чем больше выборка, тем ближе её среднее к полному набору — независимо от способа отбора.', verdict: 'no', why: 'Размер помогает только при честном отборе. Если способ отбора систематически исключает часть учеников, объём не исправляет смещение: возьмите удобным способом все 200 записей и сравните долю школ — она останется перекошенной.' },
-    { id: 's2', text: 'Если способ отбора тянет одну школу, выборка останется смещённой при любом объёме: большая выборка даст большую уверенность в неправильной цифре.', verdict: 'yes', why: 'Именно так. Смещение — свойство процедуры отбора, а не размера. Больший объём сужает случайный разброс, но систематическую ошибку сохраняет и делает её только увереннее.' },
-    { id: 's3', text: 'Смещение есть только у маленьких выборок: выборка в 200 записей уже считается представительной.', verdict: 'no', why: 'Представительность определяется процедурой, а не числом. Опрошенный «поток школы A» из 96 человек не содержит ни одного ученика двух других школ — и никакой размер это не исправит.' },
-    { id: 's4', text: 'Смещение исчезнет, если аккуратно усреднить несколько удобных выборок.', verdict: 'no', why: 'Усреднение нескольких одинаково перекошенных выборок даёт ту же перекошенную картину. Разные смещения могут даже частично гасить друг друга, но результат всё равно непроверяем.' }
+    { id: 's1', text: 'The larger the sample, the closer its average to the full dataset, whatever the selection method.', verdict: 'no', why: 'Size helps only when selection is fair. If the method systematically excludes some students, more records do not fix the bias: draw all 200 records the convenient way and compare the school shares - they stay skewed.' },
+    { id: 's2', text: 'If the method favours one school, the sample stays biased at any size: a large sample just gives more confidence in a wrong number.', verdict: 'yes', why: 'Exactly. Bias is a property of the selection procedure, not of size. More records narrow the random spread but keep the systematic error, only making it more confident.' },
+    { id: 's3', text: 'Only small samples are biased: a sample of 200 records already counts as representative.', verdict: 'no', why: 'Representativeness is decided by the procedure, not by the number. The surveyed year group of school A holds 96 people and not a single student from the other two schools, and no sample size can fix that.' },
+    { id: 's4', text: 'The bias disappears if you carefully average several convenient samples.', verdict: 'no', why: 'Averaging several equally skewed samples gives the same skewed picture. Different biases may even partly cancel each other out, but the result is still not checkable.' }
   ];
 
   var CORR_CHOICES = [
-    { id: 'c1', text: 'Меньше сна — ниже балл: связь заметная, значит сон влияет на результат.', verdict: 'no', why: 'В данных действительно видна заметная отрицательная связь на всех записях. Но проверьте, что произойдёт внутри отдельных школ: там связь почти исчезает. Значит, на смешанных данных её создаёт то, чем школы различаются, а не сон сам по себе.' },
-    { id: 'c2', text: 'Связь на всех записях заметная, но внутри каждой школы она почти исчезает: значит, её создаёт различие между школами (расписание и вечернее экранное время), а не сон отдельного ученика.', verdict: 'yes', why: 'Сильный вывод. Вы сделали главное для этой задачи: сравнили общую картину с картиной внутри групп. Общая связь может возникать из-за третьей переменной — здесь это условия школы, с которыми связаны и сон, и экранное время, и балл.' },
-    { id: 'c3', text: 'Это доказано: данные точно показывают причину низких баллов.', verdict: 'no', why: 'Слово «доказано» здесь не проходит: по наблюдениям нельзя отличить причину от совпадения или от третьей переменной. Такие данные поддерживают осторожную формулировку «связано», а не «причина».' },
-    { id: 'c4', text: 'Никакой связи нет вообще, раз внутри школ r близок к нулю.', verdict: 'no', why: 'Связь есть, и она заметная: посмотрите строку «Все данные». Просто её величина меняется в зависимости от того, сравниваем мы школы между собой или учеников внутри одной школы. Отрицать связь целиком так же неверно, как объявлять её причиной.' }
+    { id: 'c1', text: 'Less sleep means a lower score: the link is visible, so sleep affects the result.', verdict: 'no', why: 'There is indeed a visible negative link across all records. But check what happens within individual schools: there the link almost vanishes. So on pooled data it is created by whatever distinguishes the schools, not by sleep itself.' },
+    { id: 'c2', text: 'The link is visible across all records, but within each school it almost vanishes: so it is created by differences between schools (schedule and evening screen time), not by the sleep of an individual student.', verdict: 'yes', why: 'A strong conclusion. You did the main thing for this case: you compared the overall picture with the picture within groups. An overall link can come from a third variable - here the school conditions, which are tied to sleep, screen time and score alike.' },
+    { id: 'c3', text: 'This is proven: the data show exactly what causes low scores.', verdict: 'no', why: 'The word proven does not hold here: observations cannot separate a cause from coincidence or from a third variable. Such data support the cautious wording is linked to, not the cause.' },
+    { id: 'c4', text: 'There is no link at all, since r is close to zero within schools.', verdict: 'no', why: 'There is a link and it is visible: look at the All data row. Its size simply depends on whether we compare schools with each other or students within one school. Denying the link outright is as wrong as calling it a cause.' }
   ];
 
   var FRAMING_CHECK = [
-    { id: 'x1', text: 'Высота столбцов (рисунок) зависит от границ оси' },
-    { id: 'x2', text: 'Средние баллы и число записей не зависят от оформления' },
-    { id: 'x3', text: 'Аккуратный график может начинаться не с нуля — вопрос в том, предупреждён ли читатель' },
-    { id: 'x4', text: 'Разницу в 6 баллов можно показать и как «почти ничего», и как «обвал»' }
+    { id: 'x1', text: 'Bar height (a drawing) depends on the axis bounds' },
+    { id: 'x2', text: 'Average scores and the number of records do not depend on framing' },
+    { id: 'x3', text: 'An honest chart may start away from zero; the question is whether the reader is warned' },
+    { id: 'x4', text: 'A 6-point gap can be shown as almost nothing or as a collapse' }
   ];
 
   var SAMPLE_CHECK = [
-    { id: 'y1', text: 'Смещение — это про процедуру отбора, а не про размер выборки' },
-    { id: 'y2', text: 'Объём выборки уменьшает случайный разброс, но не систематическую ошибку' },
-    { id: 'y3', text: 'Состав выборки проверяется сравнением долей с полным набором' },
-    { id: 'y4', text: 'Один поток целиком — большая выборка, но из одной школы' }
+    { id: 'y1', text: 'Bias is about the selection procedure, not about the sample size' },
+    { id: 'y2', text: 'Sample size reduces random spread, not systematic error' },
+    { id: 'y3', text: 'Sample composition is checked by comparing shares with the full dataset' },
+    { id: 'y4', text: 'One whole year group is a large sample, but from a single school' }
   ];
 
   var CORR_CHECK = [
-    { id: 'z1', text: 'Общая связь может создаваться третьей переменной, различающей группы' },
-    { id: 'z2', text: 'Сравнение r целиком и r внутри групп — основной инструмент проверки' },
-    { id: 'z3', text: 'Заметная связь сама по себе не устанавливает причину' },
-    { id: 'z4', text: 'Стратификация (разбиение на группы) меняет вывод, а не данные' }
+    { id: 'z1', text: 'An overall link can be created by a third variable that separates the groups' },
+    { id: 'z2', text: 'Comparing r overall with r within groups is the main checking tool' },
+    { id: 'z3', text: 'A visible link by itself does not establish a cause' },
+    { id: 'z4', text: 'Stratification (splitting into groups) changes the conclusion, not the data' }
   ];
 
   var STAGE_HASH = ['start', 'activity-1', 'activity-2', 'activity-3', 'report'];
@@ -1621,11 +1633,11 @@ footer.app-footer p{max-width:var(--measure)}
     var fill = $('#progress-fill'), label = $('#progress-label');
     if (fill) fill.style.width = (frac * 100).toFixed(1) + '%';
     if (label) {
-      label.textContent = 'Шаг ' + (state.stage + 1) + ' из ' + STAGES +
-        ' · обязательных дел закрыто: ' + done + ' из 3';
+      label.textContent = 'Step ' + (state.stage + 1) + ' of ' + STAGES +
+        ' · required cases closed: ' + done + ' of 3';
     }
     var track = $('#progress-track');
-    if (track) track.setAttribute('aria-label', 'Прогресс урока: закрыто ' + done + ' из 3 обязательных дел');
+    if (track) track.setAttribute('aria-label', 'Lesson progress: ' + done + ' of 3 required cases closed');
     $$('#main-nav .nav-tab').forEach(function (b) {
       var i = Number(b.getAttribute('data-go'));
       if (i >= 1 && i <= 3 && doneFor(i)) b.classList.add('tab-done');
@@ -1635,17 +1647,17 @@ footer.app-footer p{max-width:var(--measure)}
       var lock = $('#a' + n + '-lock');
       var ok = doneFor(Number(n));
       if (btn) btn.disabled = !ok;
-      if (lock) { lock.hidden = ok; lock.textContent = ok ? '' : 'Доступно после того, как вы запишете наблюдение в блокнот.'; }
+      if (lock) { lock.hidden = ok; lock.textContent = ok ? '' : 'Available once you save an observation to the notebook.'; }
     });
     renderNotebook();
   }
 
   function notebookEntries() {
     var out = [];
-    if (state.framing.saved) out.push({ head: 'Дело 1 · оформление графика', body: state.framing.notes });
-    if (state.sample.saved) out.push({ head: 'Дело 2 · ' + L.METHODS[state.sample.method].name + ' (n = ' + state.sample.size + ')', body: state.sample.notes });
-    if (state.corr.saved) out.push({ head: 'Дело 3 · связь и причина', body: state.corr.notes });
-    if (state.final.submitted && state.final.headline.trim()) out.push({ head: 'Итог · собственный заголовок', body: state.final.headline });
+    if (state.framing.saved) out.push({ head: 'Case 1 · chart framing', body: state.framing.notes });
+    if (state.sample.saved) out.push({ head: 'Case 2 · ' + L.METHODS[state.sample.method].name + ' (n = ' + state.sample.size + ')', body: state.sample.notes });
+    if (state.corr.saved) out.push({ head: 'Case 3 · association and cause', body: state.corr.notes });
+    if (state.final.submitted && state.final.headline.trim()) out.push({ head: 'Final · your own headline', body: state.final.headline });
     return out;
   }
 
@@ -1657,7 +1669,7 @@ footer.app-footer p{max-width:var(--measure)}
     if (!list) return;
     clear(list);
     if (!entries.length) {
-      list.appendChild(el('p', { class: 'small muted', text: 'Пока пусто. Записи появляются здесь по мере расследования.' }));
+      list.appendChild(el('p', { class: 'small muted', text: 'Empty for now. Entries appear here as you work through the investigation.' }));
       return;
     }
     entries.forEach(function (e) {
@@ -1865,12 +1877,12 @@ footer.app-footer p{max-width:var(--measure)}
     ctx.fillStyle = PAL.axis;
     ctx.font = 'bold 12px "Segoe UI",Tahoma,sans-serif';
     ctx.textBaseline = 'bottom'; ctx.textAlign = 'center';
-    ctx.fillText('Сон перед тестом, ч', (p.x0 + p.x1) / 2, h - 4);
+    ctx.fillText('Sleep before the test, h', (p.x0 + p.x1) / 2, h - 4);
     ctx.save();
     ctx.translate(14, (p.y0 + p.y1) / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textBaseline = 'top';
-    ctx.fillText('Балл за тест (0–100)', 0, 0);
+    ctx.fillText('Test score (0-100)', 0, 0);
     ctx.restore();
 
     rows.forEach(function (r) {
@@ -1897,7 +1909,7 @@ footer.app-footer p{max-width:var(--measure)}
     var order = ['A', 'B', 'C'];
     return order.map(function (code) {
       var g = rep.groups.filter(function (x) { return x.key === code; })[0];
-      return { code: code, mean: g ? g.meanScore : NaN, n: g ? g.n : 0, label: 'Школа ' + code };
+      return { code: code, mean: g ? g.meanScore : NaN, n: g ? g.n : 0, label: 'School ' + code };
     });
   }
 
@@ -1920,9 +1932,9 @@ footer.app-footer p{max-width:var(--measure)}
       fills: [PAL.barA, PAL.barB, PAL.barC],
       patterns: [0, 1, -1],
       bounds: bounds,
-      yLabel: 'Средний балл (0–100)',
+      yLabel: 'Average score (0-100)',
       valueText: function (v) { return L.fmt(v, 1); },
-      note: framingUI.zoom ? 'Ось начинается с ' + framingUI.bottom + ', а не с нуля' : 'Ось начинается с нуля'
+      note: framingUI.zoom ? 'Axis starts at ' + framingUI.bottom + ', not at zero' : 'Axis starts at zero'
     });
 
     var spans = framingUI.zoom
@@ -1931,9 +1943,9 @@ footer.app-footer p{max-width:var(--measure)}
 
     var cap = $('#framing-caption');
     if (cap) {
-      cap.textContent = 'Средний балл теста по трём школам (' + (framingUI.zoom ? 'ось ' + framingUI.bottom + '–' + bounds.max : 'ось 0–' + bounds.max) +
-        '). Самая низкая школа отличается от самой высокой на ' + L.fmt(Math.max.apply(null, values) - Math.min.apply(null, values), 1) +
-        ' балла; в текущем оформлении это ' + L.pct(spans, 0) + ' высоты графика.';
+      cap.textContent = 'Average test score across three schools (' + (framingUI.zoom ? 'axis ' + framingUI.bottom + '–' + bounds.max : 'axis 0-' + bounds.max) +
+        '). The lowest school differs from the highest by ' + L.fmt(Math.max.apply(null, values) - Math.min.apply(null, values), 1) +
+        ' points; in the current framing that is ' + L.pct(spans, 0) + ' of the chart height.';
     }
     var legend = $('#framing-legend');
     if (legend) {
@@ -1947,12 +1959,12 @@ footer.app-footer p{max-width:var(--measure)}
       data.forEach(function (d, i) {
         legend.appendChild(el('span', { class: 'legend-item' }, [
           el('span', { class: 'swatch', style: swatchStyle[i % 3] }),
-          el('span', { text: d.label + ' (' + d.n + ' записей)' })
+          el('span', { text: d.label + ' (' + d.n + ' records)' })
         ]));
       });
       legend.appendChild(el('span', { class: 'legend-item' }, [
         el('span', { class: 'swatch', style: 'background:linear-gradient(90deg,' + PAL.barA + ' 0 33%,' + PAL.barB + ' 33% 66%,' + PAL.barC + ' 66% 100%)' }),
-        el('span', { text: 'Школы различаются и цветом, и штриховкой — цвет здесь не единственный признак' })
+        el('span', { text: 'Schools differ in both colour and hatching - colour is not the only cue here' })
       ]));
     }
 
@@ -1975,12 +1987,12 @@ footer.app-footer p{max-width:var(--measure)}
       clear(ib);
       var vals = values;
       var rows = [
-        ['Средний балл самой низкой школы', L.fmt(Math.min.apply(null, vals), 1) + ' балла'],
-        ['Средний балл самой высокой школы', L.fmt(Math.max.apply(null, vals), 1) + ' балла'],
-        ['Разница между ними', L.fmt(Math.max.apply(null, vals) - Math.min.apply(null, vals), 1) + ' балла'],
-        ['Отношение самой высокой к самой низкой', L.fmt(Math.max.apply(null, vals) / Math.min.apply(null, vals), 3) + '×'],
-        ['Всего записей в данных', '240'],
-        ['Текущие границы оси', bounds.min + '–' + bounds.max + ' баллов (это оформление, а не данные)']
+        ['Average score of the lowest school', L.fmt(Math.min.apply(null, vals), 1) + ' points'],
+        ['Average score of the highest school', L.fmt(Math.max.apply(null, vals), 1) + ' points'],
+        ['Difference between them', L.fmt(Math.max.apply(null, vals) - Math.min.apply(null, vals), 1) + ' points'],
+        ['Ratio of the highest to the lowest', L.fmt(Math.max.apply(null, vals) / Math.min.apply(null, vals), 3) + '×'],
+        ['Total records in the data', '240'],
+        ['Current axis bounds', bounds.min + '–' + bounds.max + ' points (this is framing, not data)']
       ];
       rows.forEach(function (r) {
         ib.appendChild(el('tr', {}, [el('th', { scope: 'row', text: r[0] }), el('td', { class: 'num', text: r[1] })]));
@@ -2033,20 +2045,20 @@ footer.app-footer p{max-width:var(--measure)}
 
     var values = [], labels = [], fills = [], patterns = [], texts = [];
     comp.bySchool.forEach(function (b) {
-      values.push(b.popShare * 100); labels.push('Школа ' + b.school + ' · полный набор');
+      values.push(b.popShare * 100); labels.push('School ' + b.school + ' · full dataset');
       fills.push(PAL.pop); patterns.push(0); texts.push(L.pct(b.popShare, 0));
     });
     comp.bySchool.forEach(function (b) {
-      values.push((isFinite(b.sampleShare) ? b.sampleShare : 0) * 100); labels.push('Школа ' + b.school + ' · выборка');
+      values.push((isFinite(b.sampleShare) ? b.sampleShare : 0) * 100); labels.push('School ' + b.school + ' · sample');
       fills.push(PAL.sam); patterns.push(1); texts.push(isFinite(b.sampleShare) ? L.pct(b.sampleShare, 0) : '—');
     });
 
     var bounds = { min: 0, max: 100, ticks: L.ticksBetween(0, 100, 20) };
     drawBarChart(cv, {
       values: values, labels: labels, fills: fills, patterns: patterns, bounds: bounds,
-      yLabel: 'Доля в группе, %',
+      yLabel: 'Share in group, %',
       valueText: function (v) { return L.fmt(v, 0) + '%'; },
-      note: sampleResult ? 'Выборка показана штриховкой · n = ' + sampleResult.meta.size + ' из 240' : 'Выборка не взята: показан только полный набор'
+      note: sampleResult ? 'Sample shown with hatching · n = ' + sampleResult.meta.size + ' of 240' : 'No sample drawn: only the full dataset is shown'
     });
 
     var cap = $('#sample-caption');
@@ -2055,18 +2067,18 @@ footer.app-footer p{max-width:var(--measure)}
         var worst = comp.bySchool.slice().sort(function (a, b) {
           return Math.abs(b.sampleShare - b.popShare) - Math.abs(a.sampleShare - a.popShare);
         })[0];
-        cap.textContent = 'Состав выборки против полного набора. Способ: ' + sampleResult.meta.methodName + '; объём n = ' + sampleResult.meta.size +
-          '. Наибольшее расхождение — школа ' + worst.school + ': ' + L.pct(worst.popShare, 0) + ' в наборе против ' + L.pct(worst.sampleShare, 0) + ' в выборке.';
+        cap.textContent = 'Sample composition against the full dataset. Method: ' + sampleResult.meta.methodName + '; size n = ' + sampleResult.meta.size +
+          '. Largest gap: school ' + worst.school + ': ' + L.pct(worst.popShare, 0) + ' in the dataset against ' + L.pct(worst.sampleShare, 0) + ' in the sample.';
       } else {
-        cap.textContent = 'Пока показан только состав полного набора из 240 записей: школа A — 40%, школа B — 35%, школа C — 25%.';
+        cap.textContent = 'For now only the composition of the full dataset of 240 records is shown: school A 40%, school B 35%, school C 25%.';
       }
     }
 
     var legend = $('#sample-legend');
     if (legend) {
       clear(legend);
-      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch', style: 'background:' + PAL.pop }), el('span', { text: 'Полный набор (240)' })]));
-      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch swatch-hatch', style: 'background:' + PAL.sam }), el('span', { text: 'Ваша выборка (штриховка)' })]));
+      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch', style: 'background:' + PAL.pop }), el('span', { text: 'Full dataset (240)' })]));
+      legend.appendChild(el('span', { class: 'legend-item' }, [el('span', { class: 'swatch swatch-hatch', style: 'background:' + PAL.sam }), el('span', { text: 'Your sample (hatched)' })]));
     }
   }
 
@@ -2084,12 +2096,12 @@ footer.app-footer p{max-width:var(--measure)}
           el('td', { class: 'num', text: diff })
         ]);
       }
-      tbody.appendChild(row('Средний сон, ч', c.meanSleep.population, c.meanSleep.sample, function (v) { return L.fmt(v, 2); }));
-      tbody.appendChild(row('Средний балл', c.meanScore.population, c.meanScore.sample, function (v) { return L.fmt(v, 1); }));
-      tbody.appendChild(row('Среднее экранное время, ч', c.meanScreen.population, c.meanScreen.sample, function (v) { return L.fmt(v, 1); }));
-      tbody.appendChild(row('Доля спящих меньше 7 ч', c.lowSleepShare.population, c.lowSleepShare.sample, function (v) { return L.pct(v, 0); }));
+      tbody.appendChild(row('Average sleep, h', c.meanSleep.population, c.meanSleep.sample, function (v) { return L.fmt(v, 2); }));
+      tbody.appendChild(row('Average score', c.meanScore.population, c.meanScore.sample, function (v) { return L.fmt(v, 1); }));
+      tbody.appendChild(row('Average screen time, h', c.meanScreen.population, c.meanScreen.sample, function (v) { return L.fmt(v, 1); }));
+      tbody.appendChild(row('Share sleeping less than 7 h', c.lowSleepShare.population, c.lowSleepShare.sample, function (v) { return L.pct(v, 0); }));
       tbody.appendChild(el('tr', {}, [
-        el('th', { scope: 'row', text: 'Записей в наборе' }),
+        el('th', { scope: 'row', text: 'Records in the dataset' }),
         el('td', { class: 'num', text: String(POP.length) }),
         el('td', { class: 'num', text: sampleResult ? String(sampleResult.meta.size) : '0' }),
         el('td', { class: 'num', text: '—' })
@@ -2102,9 +2114,9 @@ footer.app-footer p{max-width:var(--measure)}
       var comp = sampleResult ? sampleResult.comp : L.sampleComposition([], POP);
       comp.bySchool.forEach(function (b) {
         var diff = isFinite(b.sampleShare) ? Math.abs(b.sampleShare - b.popShare) : NaN;
-        var verdict = !sampleResult ? '—' : (diff <= 0.05 ? 'Состав совпадает' : diff <= 0.12 ? 'Небольшое расхождение' : 'Заметное расхождение');
+        var verdict = !sampleResult ? '—' : (diff <= 0.05 ? 'Composition matches' : diff <= 0.12 ? 'Minor difference' : 'Notable difference');
         st.appendChild(el('tr', {}, [
-          el('th', { scope: 'row', text: 'Школа ' + b.school }),
+          el('th', { scope: 'row', text: 'School ' + b.school }),
           el('td', { class: 'num', text: L.pct(b.popShare, 0) + ' (' + b.popCount + ')' }),
           el('td', { class: 'num', text: sampleResult ? L.pct(b.sampleShare, 0) + ' (' + b.sampleCount + ')' : '—' }),
           el('td', { text: verdict })
@@ -2116,7 +2128,7 @@ footer.app-footer p{max-width:var(--measure)}
     if (ft) {
       clear(ft);
       var rows = sampleResult ? sampleResult.rows.slice(0, 12) : [];
-      if (!rows.length) ft.appendChild(el('tr', {}, [el('td', { colspan: '5', text: 'Выборка пока не взята.' })]));
+      if (!rows.length) ft.appendChild(el('tr', {}, [el('td', { colspan: '5', text: 'No sample drawn yet.' })]));
       rows.forEach(function (r) {
         ft.appendChild(el('tr', {}, [
           el('td', { class: 'mono', text: r.id }),
@@ -2153,10 +2165,10 @@ footer.app-footer p{max-width:var(--measure)}
       return Math.abs(b.sampleShare - b.popShare) - Math.abs(a.sampleShare - a.popShare);
     })[0];
     var dev = Math.abs(worst.sampleShare - worst.popShare);
-    var text = 'Способ: ' + m.methodName + '. Объём: ' + m.size + ' записей. Расхождение по школе ' + worst.school + ': ' + L.pct(dev, 0) + ' пункта.';
-    if (m.bias === 'biased') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Выборка взята · способ систематически смещённый', text + ' Определение способа объясняет, почему именно так.');
-    else if (m.bias === 'mixed') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Выборка взята · способ с частичным смещением', text);
-    else setSampleStatus('ok', 'Выборка взята · способ без систематического смещения', text + ' Жеребьёвка не гарантирует идеального совпадения — она гарантирует равные шансы.');
+    var text = 'Method: ' + m.methodName + '. Size: ' + m.size + ' records. Deviation for school ' + worst.school + ': ' + L.pct(dev, 0) + ' percentage points.';
+    if (m.bias === 'biased') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Sample drawn · systematically biased method', text + ' The method definition explains why.');
+    else if (m.bias === 'mixed') setSampleStatus(dev > 0.12 ? 'warn' : 'info', 'Sample drawn · partially biased method', text);
+    else setSampleStatus('ok', 'Sample drawn · method without systematic bias', text + ' A lottery draw does not guarantee a perfect match: it guarantees equal chances.');
     save();
   }
 
@@ -2174,14 +2186,14 @@ footer.app-footer p{max-width:var(--measure)}
         sampleResult = null;
         state.sample.drawn = false;
         $('#method-definition').textContent = m.definition;
-        setSampleStatus('info', 'Способ изменён: ' + m.name, 'Нажмите «Взять выборку», чтобы увидеть его результат. Тип отбора: ' + (m.bias === 'biased' ? 'систематически смещённый' : m.bias === 'mixed' ? 'частично смещённый' : 'без систематического смещения') + '.');
+        setSampleStatus('info', 'Method changed: ' + m.name, 'Press Draw a sample to see its result. Selection type: ' + (m.bias === 'biased' ? 'systematically biased' : m.bias === 'mixed' ? 'partially biased' : 'without systematic bias') + '.');
         drawSampleChart(); renderSampleTables(); save();
       });
       box.appendChild(el('label', { class: 'row', for: id, style: 'align-items:flex-start;gap:.6rem;cursor:pointer;padding:.35rem 0' }, [
         input,
         el('span', {}, [
           el('strong', { text: m.name + ' ' }),
-          el('span', { class: 'pill ' + (m.bias === 'unbiased' ? 'pill-ok' : 'pill-todo'), text: m.bias === 'unbiased' ? 'без смещения' : m.bias === 'biased' ? 'смещённый' : 'частично смещённый' }),
+          el('span', { class: 'pill ' + (m.bias === 'unbiased' ? 'pill-ok' : 'pill-todo'), text: m.bias === 'unbiased' ? 'unbiased' : m.bias === 'biased' ? 'biased' : 'partially biased' }),
           el('span', { class: 'tiny muted', style: 'display:block;margin-top:.2rem', text: m.why })
         ])
       ]));
@@ -2212,33 +2224,33 @@ footer.app-footer p{max-width:var(--measure)}
     drawScatter(cv, rows, groups, {
       honestX: state.corr.scale === 'honest',
       honestY: false,
-      note: state.corr.scale === 'honest' ? 'Ось сна: 0–10 ч (от нуля)' : 'Ось сна: подогнана под данные ' +
+      note: state.corr.scale === 'honest' ? 'Sleep axis: 0-10 h (from zero)' : 'Sleep axis: fitted to the data ' +
         L.fmt(Math.min.apply(null, POP.map(function (r) { return r.sleep; })), 1) + '–' +
-        L.fmt(Math.max.apply(null, POP.map(function (r) { return r.sleep; })), 1) + ' ч'
+        L.fmt(Math.max.apply(null, POP.map(function (r) { return r.sleep; })), 1) + ' h'
     });
 
     var cap = $('#corr-caption');
     if (cap) {
       var scaleNote = state.corr.scale === 'honest'
-        ? 'Ось сна начинается от нуля — как в честном графике.'
-        : 'Ось сна подогнана под диапазон данных: точки разъехались сильнее, но числа те же.';
-      var viewNote = state.corr.view === 'all' ? 'Все 240 точек одним цветом.'
-        : state.corr.view === 'school' ? 'Точки разделены по трём школам: цвет и форма различают группы.'
-          : 'Точки разделены на три полосы по количеству сна.';
-      cap.textContent = 'Связь сна и балла. ' + viewNote + ' ' + scaleNote +
-        ' Связь на всех записях: r = ' + L.fmt(rep.overallR) + ' (' + L.describeR(rep.overallR) + ').';
+        ? 'The sleep axis starts at zero, as in an honest chart.'
+        : 'The sleep axis is fitted to the data range: the points spread out more, but the numbers are the same.';
+      var viewNote = state.corr.view === 'all' ? 'All 240 points in one colour.'
+        : state.corr.view === 'school' ? 'Points split by the three schools: colour and shape tell the groups apart.'
+          : 'Points split into three bands by amount of sleep.';
+      cap.textContent = 'The link between sleep and score. ' + viewNote + ' ' + scaleNote +
+        ' Link across all records: r = ' + L.fmt(rep.overallR) + ' (' + L.describeR(rep.overallR) + ').';
     }
 
     var legend = $('#corr-legend');
     if (legend) {
       clear(legend);
       if (state.corr.view === 'all') {
-        legend.appendChild(el('span', { class: 'legend-item', text: 'Все точки показаны одним цветом — так видна общая картина.' }));
+        legend.appendChild(el('span', { class: 'legend-item', text: 'All points share one colour, so the overall picture is visible.' }));
       } else if (state.corr.view === 'school') {
-        [['A', 'круг'], ['B', 'квадрат'], ['C', 'треугольник']].forEach(function (p) {
+        [['A', 'circle'], ['B', 'square'], ['C', 'triangle']].forEach(function (p) {
           legend.appendChild(el('span', { class: 'legend-item' }, [
             el('span', { class: 'swatch', style: 'background:' + GROUP_COLORS[p[0]] }),
-            el('span', { text: 'Школа ' + p[0] + ' (' + p[1] + ')' })
+            el('span', { text: 'School ' + p[0] + ' (' + p[1] + ')' })
           ]));
         });
       } else {
@@ -2255,7 +2267,7 @@ footer.app-footer p{max-width:var(--measure)}
     if (tb) {
       clear(tb);
       tb.appendChild(el('tr', {}, [
-        el('th', { scope: 'row', text: 'Все данные (240 записей)' }),
+        el('th', { scope: 'row', text: 'All data (240 records)' }),
         el('td', { class: 'num', text: String(rep.n) }),
         el('td', { class: 'num', text: L.fmt(rep.overallR) }),
         el('td', { class: 'num', text: L.fmt(L.mean(POP.map(function (r) { return r.sleep; })), 2) }),
@@ -2263,7 +2275,7 @@ footer.app-footer p{max-width:var(--measure)}
       ]));
       rep.groups.forEach(function (g) {
         tb.appendChild(el('tr', {}, [
-          el('th', { scope: 'row', text: g.label + (state.corr.view === 'strata' ? '' : ' (внутри школы)') }),
+          el('th', { scope: 'row', text: g.label + (state.corr.view === 'strata' ? '' : ' (within school)') }),
           el('td', { class: 'num', text: String(g.n) }),
           el('td', { class: 'num', text: L.fmt(g.r) }),
           el('td', { class: 'num', text: L.fmt(g.meanSleep, 2) }),
@@ -2293,9 +2305,9 @@ footer.app-footer p{max-width:var(--measure)}
     if (!box) return;
     clear(box);
     var opts = [
-      { id: 'all', label: 'Все точки одним цветом', note: 'Общая картина по 240 записям.' },
-      { id: 'school', label: 'Разделить по школам', note: 'Три группы: цвет и форма различают их.' },
-      { id: 'strata', label: 'Разделить по полосам сна', note: 'Группы по количеству сна, а не по школе.' }
+      { id: 'all', label: 'All points in one colour', note: 'The overall picture across 240 records.' },
+      { id: 'school', label: 'Split by school', note: 'Three groups: colour and shape tell them apart.' },
+      { id: 'strata', label: 'Split by sleep bands', note: 'Groups by amount of sleep, not by school.' }
     ];
     opts.forEach(function (o) {
       var id = 'corr-view-' + o.id;
@@ -2312,7 +2324,7 @@ footer.app-footer p{max-width:var(--measure)}
     var sbox = $('#corr-scale-choices');
     if (sbox) {
       clear(sbox);
-      [{ id: 'honest', label: 'Ось сна от нуля (0–10 ч)' }, { id: 'auto', label: 'Ось сна подогнана под данные' }].forEach(function (o) {
+      [{ id: 'honest', label: 'Sleep axis from zero (0-10 h)' }, { id: 'auto', label: 'Sleep axis fitted to the data' }].forEach(function (o) {
         var id = 'corr-scale-' + o.id;
         var input = el('input', { type: 'radio', name: 'corr-scale', id: id, value: o.id });
         if (state.corr.scale === o.id) input.checked = true;
@@ -2359,23 +2371,23 @@ footer.app-footer p{max-width:var(--measure)}
     var c = FRAMING_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
     var out = $('#framing-feedback');
     clear(out);
-    if (!c) { out.appendChild(flag('info', 'Выберите вариант', 'Отметьте одну из формулировок — тогда появится разбор.')); return; }
+    if (!c) { out.appendChild(flag('info', 'Choose an option', 'Tick one of the statements and the feedback appears.')); return; }
     out.appendChild(flag(c.verdict === 'yes' ? 'ok' : 'warn',
-      c.verdict === 'yes' ? 'Верно' : 'Стоит пересмотреть',
+      c.verdict === 'yes' ? 'Correct' : 'Worth reconsidering',
       c.why));
-    out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Попробовать снова можно сколько угодно раз — выберите другой вариант и нажмите «Проверить гипотезу».' }));
+    out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'You can try again as often as you like: pick another option and press Check the hypothesis.' }));
   }
 
   function sampleFeedback(choiceId) {
     var c = SAMPLE_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
     var out = $('#sample-feedback');
     clear(out);
-    if (!c) { out.appendChild(flag('info', 'Выберите вариант', 'Отметьте одну из формулировок.')); return; }
+    if (!c) { out.appendChild(flag('info', 'Choose an option', 'Tick one of the statements.')); return; }
     if (c.verdict === 'yes') {
-      out.appendChild(flag('ok', 'Верно', c.why));
+      out.appendChild(flag('ok', 'Correct', c.why));
     } else {
-      out.appendChild(flag('warn', 'Стоит пересмотреть', c.why));
-      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Проверить можно так: выберите удобный способ отбора, поставьте ползунок на 200 и нажмите «Взять выборку». Посмотрите на долю школ — смещение останется.' }));
+      out.appendChild(flag('warn', 'Worth reconsidering', c.why));
+      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'You can check it like this: choose a convenient selection method, set the slider to 200 and press Draw a sample. Look at the school shares - the bias stays.' }));
     }
   }
 
@@ -2383,10 +2395,10 @@ footer.app-footer p{max-width:var(--measure)}
     var c = CORR_CHOICES.filter(function (x) { return x.id === choiceId; })[0];
     var out = $('#corr-feedback');
     clear(out);
-    if (!c) { out.appendChild(flag('info', 'Выберите вывод', 'Отметьте одну из формулировок.')); return; }
-    out.appendChild(flag(c.verdict === 'yes' ? 'ok' : 'warn', c.verdict === 'yes' ? 'Вывод выдерживает проверку' : 'Вывод стоит уточнить', c.why));
+    if (!c) { out.appendChild(flag('info', 'Choose a conclusion', 'Tick one of the statements.')); return; }
+    out.appendChild(flag(c.verdict === 'yes' ? 'ok' : 'warn', c.verdict === 'yes' ? 'The conclusion survives checking' : 'The conclusion needs refining', c.why));
     if (c.verdict !== 'yes') {
-      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Посмотрите в таблицу «Числа этого графика»: строка «Все данные» и строки школ. Сравните величину r. Затем попробуйте другой вывод.' }));
+      out.appendChild(el('p', { class: 'small muted', style: 'margin-top:.5rem', text: 'Look at the The numbers behind this chart table: the All data row and the rows for each school. Compare the size of r. Then try another conclusion.' }));
     }
   }
 
@@ -2395,11 +2407,11 @@ footer.app-footer p{max-width:var(--measure)}
     clear(out);
     var r = L.reviewText(text, opts || {});
     out.appendChild(flag(r.mechanicalPassed === 3 ? 'ok' : 'info',
-      r.mechanicalPassed === 3 ? 'Ответ записан' : 'Ответ можно усилить',
-      'Слов: ' + r.words + '. Механических признаков выполнено: ' + r.mechanicalPassed + ' из 3.'));
+      r.mechanicalPassed === 3 ? 'Answer recorded' : 'The answer can be strengthened',
+      'Words: ' + r.words + '. Mechanical checks passed: ' + r.mechanicalPassed + ' of 3.'));
     out.appendChild(checklist(r.checks));
     if (r.casualClaims.length) {
-      out.appendChild(flag('warn', 'Замечены «сильные» слова', 'В тексте есть: ' + r.casualClaims.join(', ') + '. Если это утверждение о причине — данных для него недостаточно. Если вы спорите с такой формулировкой, всё в порядке.'));
+      out.appendChild(flag('warn', 'Strong wording detected', 'The text contains: ' + r.casualClaims.join(', ') + '. If this is a claim about a cause, the data do not support it. If you are arguing against such wording, that is fine.'));
     }
     out.appendChild(el('p', { class: 'tiny muted', style: 'margin-top:.4rem', text: r.note }));
     return r;
@@ -2410,18 +2422,18 @@ footer.app-footer p{max-width:var(--measure)}
     clear(out);
     var r = L.reviewHeadline(text);
     out.appendChild(flag(r.passed >= 3 ? (r.passed === 4 ? 'ok' : 'info') : 'warn',
-      r.passed === 4 ? 'Все три части на месте' : 'Проверка трёх частей',
+      r.passed === 4 ? 'All three parts are in place' : 'Three-part check',
       L.rewardFor(r.passed)));
     out.appendChild(checklist(r.checks.map(function (c) { return { pass: c.pass, label: c.label }; })));
-    out.appendChild(el('p', { class: 'tiny muted', style: 'margin-top:.4rem', text: 'Проверка механическая: наличие утверждения, числа и ограничения. Смысл и убедительность формулировки оцениваете вы — или обсуждаете с учителем. Приложение не оценивает текст автоматически и никуда его не отправляет.' }));
+    out.appendChild(el('p', { class: 'tiny muted', style: 'margin-top:.4rem', text: 'The check is mechanical: a claim, a number and a limitation. You judge the meaning and how convincing the wording is, or discuss it with a teacher. The app does not grade the text and never sends it anywhere.' }));
   }
 
   var SELFCHECK = [
-    { id: 'sc1', text: 'Я могу объяснить, как оформление графика меняет впечатление, не меняя числа' },
-    { id: 'sc2', text: 'Я могу назвать признак, по которому выборка оказалась непохожей на полный набор' },
-    { id: 'sc3', text: 'Я могу объяснить, почему заметная связь сама по себе не доказывает причину' },
-    { id: 'sc4', text: 'В моём заголовке есть утверждение, число из данных и ограничение' },
-    { id: 'sc5', text: 'Я могу назвать хотя бы одно место, где моя первая версия оказалась неточной' }
+    { id: 'sc1', text: 'I can explain how chart framing changes the impression without changing the numbers' },
+    { id: 'sc2', text: 'I can name a trait that made the sample unlike the full dataset' },
+    { id: 'sc3', text: 'I can explain why a noticeable link alone does not prove a cause' },
+    { id: 'sc4', text: 'My headline has a claim, a number from the data and a limitation' },
+    { id: 'sc5', text: 'I can name at least one place where my first version was inaccurate' }
   ];
 
   function renderSelfCheck() {
@@ -2446,8 +2458,8 @@ footer.app-footer p{max-width:var(--measure)}
     var done = SELFCHECK.filter(function (it) { return state.selfcheck[it.id]; }).length;
     var out = $('#selfcheck-result');
     if (!out) return;
-    out.textContent = done === 0 ? 'Отметьте то, в чём уверены. Это ваша памятка, а не оценка: отметки остаются в этом браузере.'
-      : 'Отмечено ' + done + ' из ' + SELFCHECK.length + '. ' + (done === SELFCHECK.length ? 'Список закрыт — можно распечатать отчёт.' : 'Остальные пункты можно добавить, если захотите.');
+    out.textContent = done === 0 ? 'Tick what you are sure about. This is your own memo, not a grade: the ticks stay in this browser.'
+      : 'Ticked ' + done + ' of ' + SELFCHECK.length + '. ' + (done === SELFCHECK.length ? 'The list is complete: you can print the report.' : 'You can add the remaining items if you like.');
   }
 
   function renderCompletion() {
@@ -2455,24 +2467,24 @@ footer.app-footer p{max-width:var(--measure)}
     if (!box) return;
     clear(box);
     var items = [
-      { t: 'Дело 1 · рамка графика', ok: state.framing.saved, note: state.framing.saved ? 'наблюдение записано' : 'наблюдение ещё не записано' },
-      { t: 'Дело 2 · выборка', ok: state.sample.saved, note: state.sample.saved ? ('наблюдение записано · способ: ' + L.METHODS[state.sample.method].name) : 'наблюдение ещё не записано' },
-      { t: 'Дело 3 · связь и причина', ok: state.corr.saved, note: state.corr.saved ? 'наблюдение записано' : 'наблюдение ещё не записано' },
-      { t: 'Итоговый заголовок', ok: state.final.submitted, note: state.final.submitted ? 'проверен на три части' : 'ещё не проверен' }
+      { t: 'Case 1 · chart framing', ok: state.framing.saved, note: state.framing.saved ? 'observation saved' : 'observation not saved yet' },
+      { t: 'Case 2 · sampling', ok: state.sample.saved, note: state.sample.saved ? ('observation saved · method: ' + L.METHODS[state.sample.method].name) : 'observation not saved yet' },
+      { t: 'Case 3 · association and cause', ok: state.corr.saved, note: state.corr.saved ? 'observation saved' : 'observation not saved yet' },
+      { t: 'Final headline', ok: state.final.submitted, note: state.final.submitted ? 'checked for three parts' : 'not checked yet' }
     ];
     var ul = el('ul', { class: 'checklist' });
     items.forEach(function (i) {
       ul.appendChild(el('li', { class: i.ok ? 'check-pass' : 'check-todo' }, [
         el('span', { class: 'check-mark', 'aria-hidden': 'true', text: i.ok ? '✓' : '○' }),
-        el('span', {}, [el('strong', { text: i.t }), el('span', { class: 'small', text: ' — ' + i.note + (i.ok ? '; выполнено' : '; пока нет') })])
+        el('span', {}, [el('strong', { text: i.t }), el('span', { class: 'small', text: ' — ' + i.note + (i.ok ? '; done' : '; not yet') })])
       ]));
     });
     box.appendChild(ul);
     box.appendChild(el('p', {
       class: 'small',
       text: (state.framing.saved && state.sample.saved && state.corr.saved)
-        ? 'Все три обязательных дела закрыты. Это значит, что вы прошли все три проверки — а не то, что приложение признало ваш текст правильным: суждение остаётся за вами.'
-        : 'Можно вернуться к незакрытому делу через вкладки вверху — прогресс не потеряется.'
+        ? 'All three required cases are closed. That means you worked through all three checks, not that the app declared your text correct: the judgement stays with you.'
+        : 'You can return to an open case through the tabs above - your progress is kept.'
     }));
   }
 
@@ -2481,9 +2493,9 @@ footer.app-footer p{max-width:var(--measure)}
     if (!ul) return;
     clear(ul);
     var items = [
-      'Возьмите из этого же набора другой вопрос: «У кого больше экранное время — те и спят меньше?» Проверьте связь целиком и внутри каждой школы. Совпадает ли вывод с тем, что вы получили про сон и балл?',
-      'Придумайте сами график, который на одних и тех же числах выглядит убедительнее, чем есть: подберите границы оси и объясните в двух предложениях, что именно вы преувеличили.',
-      'Спросите у взрослого, какую цифру из новостей он считает убедительной, и разберите её по чек-листу: кто выборка, что оформление, где связь подменяет причину.'
+      'Take another question from the same dataset: do those with more screen time also sleep less? Check the link overall and within each school. Does the conclusion match the one you drew about sleep and score?',
+      'Design a chart that makes the same numbers look more convincing than they are: choose the axis bounds and explain in two sentences exactly what you exaggerated.',
+      'Ask an adult which number from the news they find convincing, then take it apart with the checklist: who is the sample, what is the framing, where does a link stand in for a cause.'
     ];
     items.forEach(function (t) { ul.appendChild(el('li', { class: 'small', text: t })); });
   }
@@ -2619,7 +2631,7 @@ footer.app-footer p{max-width:var(--measure)}
       if (txt.length < 20) {
         var out = $('#framing-notes-feedback');
         clear(out);
-        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Нужно хотя бы одно предложение: что изменилось в оформлении и что осталось неизменным в числах. Ваш текущий текст: ' + txt.split(/\s+/).filter(Boolean).length + ' слов.'));
+        out.appendChild(flag('stop', 'The entry is too short so far', 'At least one sentence is needed: what changed in the framing and what stayed the same in the numbers. Your current text: ' + txt.split(/\s+/).filter(Boolean).length + ' words.'));
         return;
       }
       state.framing.notes = txt;
@@ -2657,7 +2669,7 @@ footer.app-footer p{max-width:var(--measure)}
     var srst = $('#btn-sample-reset');
     if (srst) srst.addEventListener('click', function () {
       sampleResult = null; state.sample.drawn = false;
-      setSampleStatus('info', 'Выборка сброшена', 'Данные не изменились: сброшена только ваша выборка. Нажмите «Взять выборку» ещё раз — с тем же сидом получится тот же результат.');
+      setSampleStatus('info', 'Sample cleared', 'The data did not change: only your sample was cleared. Press Draw a sample again - the same seed gives the same result.');
       drawSampleChart(); renderSampleTables(); save();
     });
 
@@ -2671,7 +2683,7 @@ footer.app-footer p{max-width:var(--measure)}
       if (!sampleResult) {
         var out = $('#sample-feedback');
         clear(out);
-        out.appendChild(flag('info', 'Сначала возьмите выборку', 'Нажмите «Взять выборку» — без данных проверить утверждение нельзя.'));
+        out.appendChild(flag('info', 'Draw a sample first', 'Press Draw a sample - without data the statement cannot be checked.'));
         return;
       }
       if (!state.sample.choice) { sampleFeedback(null); return; }
@@ -2685,7 +2697,7 @@ footer.app-footer p{max-width:var(--measure)}
       var txt = $('#sample-notes').value.trim();
       if (txt.length < 20) {
         var out = $('#sample-notes-feedback'); clear(out);
-        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Напишите хотя бы одно предложение с числом из таблицы. Сейчас слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        out.appendChild(flag('stop', 'The entry is too short so far', 'Write at least one sentence with a number from the table. Words so far: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
         return;
       }
       state.sample.notes = txt;
@@ -2725,7 +2737,7 @@ footer.app-footer p{max-width:var(--measure)}
       var txt = $('#corr-notes').value.trim();
       if (txt.length < 20) {
         var out = $('#corr-notes-feedback'); clear(out);
-        out.appendChild(flag('stop', 'Запись пока слишком короткая', 'Опишите третью переменную одним предложением с числом. Сейчас слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        out.appendChild(flag('stop', 'The entry is too short so far', 'Describe the third variable in one sentence with a number. Words so far: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
         return;
       }
       state.corr.notes = txt;
@@ -2746,7 +2758,7 @@ footer.app-footer p{max-width:var(--measure)}
       state.final.headline = txt;
       if (txt.length < 10) {
         var out = $('#final-feedback'); clear(out);
-        out.appendChild(flag('stop', 'Пока это не заголовок', 'Напишите хотя бы одно предложение. Пока слов: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
+        out.appendChild(flag('stop', 'This is not a headline yet', 'Write at least one sentence. Words so far: ' + txt.split(/\s+/).filter(Boolean).length + '.'));
         return;
       }
       state.final.submitted = true;
@@ -2762,8 +2774,8 @@ footer.app-footer p{max-width:var(--measure)}
     if (showAll) showAll.addEventListener('click', function () {
       var box = $('#population-all');
       var open = box.hasAttribute('hidden');
-      if (open) { box.removeAttribute('hidden'); showAll.textContent = 'Скрыть полный список'; }
-      else { box.setAttribute('hidden', ''); showAll.textContent = 'Показать все 240 записей'; }
+      if (open) { box.removeAttribute('hidden'); showAll.textContent = 'Hide the full list'; }
+      else { box.setAttribute('hidden', ''); showAll.textContent = 'Show all 240 records'; }
       showAll.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
@@ -2799,13 +2811,13 @@ footer.app-footer p{max-width:var(--measure)}
           score = POP.map(function (r) { return r.score; });
       function srt(a) { return a.slice().sort(function (x, y) { return x - y; }); }
       var rows = [
-        ['Минимум', Math.min.apply(null, sleep), Math.min.apply(null, screen), Math.min.apply(null, score)],
-        ['Среднее', L.mean(sleep), L.mean(screen), L.mean(score)],
-        ['Медиана', L.median(sleep), L.median(screen), L.median(score)],
-        ['Максимум', Math.max.apply(null, sleep), Math.max.apply(null, screen), Math.max.apply(null, score)],
-        ['Ст. отклонение', L.stdev(sleep), L.stdev(screen), L.stdev(score)],
-        ['1-й процентиль из 10 (10%)', L.percentile(srt(sleep), 0.1), L.percentile(srt(screen), 0.1), L.percentile(srt(score), 0.1)],
-        ['9-й процентиль из 10 (90%)', L.percentile(srt(sleep), 0.9), L.percentile(srt(screen), 0.9), L.percentile(srt(score), 0.9)]
+        ['Minimum', Math.min.apply(null, sleep), Math.min.apply(null, screen), Math.min.apply(null, score)],
+        ['Mean', L.mean(sleep), L.mean(screen), L.mean(score)],
+        ['Median', L.median(sleep), L.median(screen), L.median(score)],
+        ['Maximum', Math.max.apply(null, sleep), Math.max.apply(null, screen), Math.max.apply(null, score)],
+        ['Std. deviation', L.stdev(sleep), L.stdev(screen), L.stdev(score)],
+        ['10th percentile (10%)', L.percentile(srt(sleep), 0.1), L.percentile(srt(screen), 0.1), L.percentile(srt(score), 0.1)],
+        ['90th percentile (90%)', L.percentile(srt(sleep), 0.9), L.percentile(srt(screen), 0.9), L.percentile(srt(score), 0.9)]
       ];
       rows.forEach(function (r) {
         pb.appendChild(el('tr', {}, [
@@ -2884,11 +2896,11 @@ footer.app-footer p{max-width:var(--measure)}
     var notice = $('#storage-notice');
     if (notice) {
       notice.textContent = storeAvailable
-        ? 'Прогресс сохраняется только в этом браузере (локальное хранилище) и никуда не отправляется. Кнопка «Сбросить всё» удаляет его полностью.'
-        : 'Локальное хранилище недоступно (например, приватный режим): прогресс сохраняется только до перезагрузки страницы.';
+        ? 'Progress is saved only in this browser (local storage) and is never sent anywhere. The Reset everything button deletes it completely.'
+        : 'Local storage is unavailable (private mode, for instance): progress is kept only until the page is reloaded.';
     }
-    setSampleStatus('info', state.sample.drawn ? 'Выборка восстановлена' : 'Выборка ещё не взята',
-      state.sample.drawn ? 'Вы вернулись к сохранённой выборке. Сид и способ можно изменить.' : 'Нажмите «Взять выборку» — на графике и в таблице появится сравнение.');
+    setSampleStatus('info', state.sample.drawn ? 'Sample restored' : 'No sample drawn yet',
+      state.sample.drawn ? 'You are back to the saved sample. The seed and the method can be changed.' : 'Press Draw a sample - a comparison appears on the chart and in the table.');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
