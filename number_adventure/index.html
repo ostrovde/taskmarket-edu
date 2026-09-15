@@ -1409,7 +1409,7 @@ dialog::backdrop{background:rgba(18,35,58,.45)}
     [0,1].forEach(function(i){
       var t = $("a2tab" + i);
       t.setAttribute("aria-selected", i === a2.tab ? "true" : "false");
-      t.onclick = function(){ a2.tab = i; a2Round = i === 0 ? 0 : 2; a2StartRound(); };
+      t.onclick = function(){ a2.tab = i; a2.round = i === 0 ? 0 : 2; a2StartRound(); };
     });
   }
   function a2StartRound(){
